@@ -32,7 +32,7 @@ twitch-videoad.js application/javascript
                         liveVid.style.filter = "brightness(0%)";
                         var createTempStream = async function() {
                             // Create new video stream TODO: Do this with callbacks
-                            var channelName = "nickmercs";
+                            var channelName = window.location.pathname.substr(1);// TODO: Better way of determining the channel name
                             var playerType = "thunderdome";
                             var CLIENT_ID = "kimne78kx3ncx6brgo4mv6wki5h1ko";
                             var tempM3u8 = null;
@@ -69,8 +69,8 @@ twitch-videoad.js application/javascript
                                     tempVideo.hls.loadSource(tempM3u8);
                                     tempVideo.hls.attachMedia(tempVideo);
                                 }
-                                console.log(tempVideo);
-                                console.log(tempM3u8);
+                                //console.log(tempVideo);
+                                //console.log(tempM3u8);
                             }
                         }
                         createTempStream();
