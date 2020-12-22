@@ -14,7 +14,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
   - No ads.
   - The stream is 480p for the duration of the stream.
 - mute-black
-  - Ads are muted / blacked out for the duration of the ad
+  - Ads are muted / blacked out for the duration of the ad (also you might see tiny bits of the ad).
 
 ## Applying a solution (uBlock Origin)
 
