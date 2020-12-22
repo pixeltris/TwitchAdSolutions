@@ -63,6 +63,7 @@ twitch-videoad.js application/javascript
                             if (tempM3u8 != null) {
                                 tempVideo = document.createElement('video');
                                 tempVideo.autoplay = true;
+                                tempVideo.volume = originalVolume;
                                 disabledVideo.parentElement.insertBefore(tempVideo, disabledVideo.nextSibling);
                                 if (Hls.isSupported()) {
                                     tempVideo.hls = new Hls();
