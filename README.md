@@ -6,10 +6,11 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 - dyn
   - Ad segments are replaced by a low resolution stream segments (on a m3u8 level).
-  - Stuttering and looping of segments may occur.
+  - Skips 2-3 seconds when switching to the live stream.
+  - Stuttering and looping of segments often occur (during the ad segments).
 - dyn-video-swap
   - Ads are replaced by a low resolution stream for the duration of the ad.
-  - Similar to `dyn`, but may have a larger jump in time.
+  - Similar to `dyn`, but skips closer to 20 seconds when switching to the live stream.
   - You might see tiny bits of the ad.
   - Audio controls wont work whilst the ad is playing.
 - low-res

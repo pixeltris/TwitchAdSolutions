@@ -2,16 +2,85 @@
 twitch-videoad.js application/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
+    ////////////////////////////
+    // BEGIN WORKER
+    ////////////////////////////
+    const oldWorker = window.Worker;
+    window.Worker = class Worker extends oldWorker {
+        constructor(twitchBlobUrl) {
+            var jsURL = getWasmWorkerUrl(twitchBlobUrl);
+            var version = jsURL.match(/wasmworker\.min\-(.*)\.js/)[1];
+            var newBlobStr = `
+                var Module = {
+                    WASM_BINARY_URL: '${jsURL.replace('.js', '.wasm')}',
+                    WASM_CACHE_MODE: true
+                }
+                ${detectAds.toString()}
+                ${hookWorkerFetch.toString()}
+                hookWorkerFetch();
+                importScripts('${jsURL}');
+            `
+            super(URL.createObjectURL(new Blob([newBlobStr])));
+            this.onmessage = function(e) {
+                if (e.data.key == 'HideAd') {
+                    onFoundAd();
+                }
+            }
+        }
+    }
+    function getWasmWorkerUrl(twitchBlobUrl) {
+        var req = new XMLHttpRequest();
+        req.open('GET', twitchBlobUrl, false);
+        req.send();
+        return req.responseText.split("'")[1];
+    }
+    async function detectAds(url, textStr) {
+        if (!textStr.includes(',live') && textStr.includes('stitched-ad')) {
+            postMessage({key:'HideAd'});
+        }
+        return textStr;
+    }
+    function hookWorkerFetch() {
+        var realFetch = fetch;
+        fetch = async function(url, options) {
+            if (typeof url === 'string') {
+                if (url.endsWith('m3u8')) {
+                    // Based on https://github.com/jpillora/xhook
+                    return new Promise(function(resolve, reject) {
+                        var processAfter = async function(response) {
+                            var str = await detectAds(url, await response.text());
+                            resolve(new Response(str));
+                        };
+                        var send = function() {
+                            return realFetch(url, options).then(function(response) {
+                                processAfter(response);
+                            })['catch'](function(err) {
+                                console.log('fetch hook err ' + err);
+                                reject(err);
+                            });
+                        };
+                        send();
+                    });
+                }
+            }
+            return realFetch.apply(this, arguments);
+        }
+    }
+    ////////////////////////////
+    // END WORKER
+    ////////////////////////////
     var disabledVideo = null;
     var foundAdContainer = false;
+    var foundBannerPrev = false;
     var originalVolume = 0;
+    /*//Maybe a bit heavy handed...
     var originalAppendChild = Element.prototype.appendChild;
     Element.prototype.appendChild = function() {
         originalAppendChild.apply(this, arguments);
         if (arguments[0] && arguments[0].innerHTML && arguments[0].innerHTML.includes('tw-c-text-overlay') && arguments[0].innerHTML.includes('ad-banner')) {
             onFoundAd();
         }
-    };
+    };*/
     function onFoundAd() {
         if (!foundAdContainer) {
             //hide ad contianers
@@ -44,18 +113,20 @@ twitch-videoad.js application/javascript
             for (var i = 0; i < adBanner.length; i++) {
                 if (adBanner[i].attributes["data-test-selector"]) {
                     foundAd = true;
+                    foundBannerPrev = true;
                     break;
                 }
             }
             if (foundAd) {
                 onFoundAd();
-            } else {
+            } else if (!foundAd && foundBannerPrev) {
                 //if no ad and video blacked out, unmute and disable black out
                 if (disabledVideo) {
                     disabledVideo.volume = originalVolume;
                     disabledVideo.style.filter = "";
                     disabledVideo = null;
                     foundAdContainer = false;
+                    foundBannerPrev = false;
                 }
             }
             setTimeout(checkForAd,100);
