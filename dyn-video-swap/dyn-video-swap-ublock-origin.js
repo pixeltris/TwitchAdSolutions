@@ -18,6 +18,13 @@ twitch-videoad.js application/javascript
                     break;
                 }
             }
+            if (tempVideo && disabledVideo && tempVideo.paused != disabledVideo.paused) {
+                if (disabledVideo.paused) {
+                    tempVideo.pause();
+                } else {
+                    tempVideo.play();
+                }
+            }
             if (foundAd && typeof Hls !== 'undefined') {
                 //if found ad and video is visible, black out video and mute
                 if (!disabledVideo) {
@@ -30,6 +37,11 @@ twitch-videoad.js application/javascript
                         liveVid.volume = 0;
                         //black out
                         liveVid.style.filter = "brightness(0%)";
+                        //hide ad contianers
+                        var adContainers = document.querySelectorAll('[data-test-selector="sad-overlay"]');
+                        for (var i = 0; i < adContainers.length; i++) {
+                            adContainers[i].style.display = "none";
+                        }
                         var createTempStream = async function() {
                             // Create new video stream TODO: Do this with callbacks
                             var channelName = window.location.pathname.substr(1);// TODO: Better way of determining the channel name
