@@ -3,6 +3,7 @@ twitch-videoad.js application/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
     var disabledVideo = null;
+    var foundAdContainer = false;
     var originalVolume = 0;
     var originalAppendChild = Element.prototype.appendChild;
     Element.prototype.appendChild = function() {
@@ -12,7 +13,17 @@ twitch-videoad.js application/javascript
         }
     };
     function onFoundAd() {
-        if (!disabledVideo) {
+        if (!foundAdContainer) {
+            //hide ad contianers
+            var adContainers = document.querySelectorAll('[data-test-selector="sad-overlay"]');
+            for (var i = 0; i < adContainers.length; i++) {
+                adContainers[i].style.display = "none";
+            }
+            foundAdContainer = adContainers.length > 0;
+        }
+        if (disabledVideo) {
+            disabledVideo.volume = 0;
+        } else {
             //get livestream video element
             var liveVid = document.getElementsByTagName("video");
             if (liveVid.length) {
@@ -22,11 +33,6 @@ twitch-videoad.js application/javascript
                 liveVid.volume = 0;
                 //black out
                 liveVid.style.filter = "brightness(0%)";
-                //hide ad contianers
-                var adContainers = document.querySelectorAll('[data-test-selector="sad-overlay"]');
-                for (var i = 0; i < adContainers.length; i++) {
-                    adContainers[i].style.display = "none";
-                }
             }
         }
     }
@@ -49,6 +55,7 @@ twitch-videoad.js application/javascript
                     disabledVideo.volume = originalVolume;
                     disabledVideo.style.filter = "";
                     disabledVideo = null;
+                    foundAdContainer = false;
                 }
             }
             setTimeout(checkForAd,100);
