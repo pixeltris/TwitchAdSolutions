@@ -7,6 +7,8 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 - dyn-skip
   - When ads play this instantly notifies Twitch that ads were watched. It then refreshes the stream (either full reload, or using FZZ extension).
   - May potentially result in multiple refreshes if ads are being served aggressively.
+- dyn-skip-min
+  - dyn-skip variant which doesn't require a reload (WIP/experimental)
 - dyn
   - Ad segments are replaced by a low resolution stream segments (on a m3u8 level).
   - Skips 2-3 seconds when switching to the live stream.
