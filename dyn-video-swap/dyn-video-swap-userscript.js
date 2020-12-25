@@ -1,7 +1,17 @@
+// ==UserScript==
+// @name         TwitchAdSolutions (dyn-video-swap)
+// @namespace    https://github.com/pixeltris/TwitchAdSolutions
+// @version      1.0
+// @description  Replaces twitch ads with lower resolution live stream
+// @author       pixeltris
+// @match        *://*.twitch.tv/*
+// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap-userscript.js
+// @run-at       document-start
+// @grant        none
+// ==/UserScript==
 // Adapted from dyn / mute-black
-twitch-videoad.js application/javascript
 (function() {
-    if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
+    'use strict';
     ////////////////////////////
     // BEGIN WORKER
     ////////////////////////////

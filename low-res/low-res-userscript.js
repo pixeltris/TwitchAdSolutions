@@ -1,6 +1,16 @@
-twitch-videoad.js application/javascript
+// ==UserScript==
+// @name         TwitchAdSolutions (low-res)
+// @namespace    https://github.com/pixeltris/TwitchAdSolutions
+// @version      1.0
+// @description  Avoids Twitch ads by using a lower resolution live stream without ads
+// @author       pixeltris
+// @match        *://*.twitch.tv/*
+// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-userscript.js
+// @run-at       document-start
+// @grant        none
+// ==/UserScript==
 (function() {
-    if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
+    'use strict';
     function hookFetch() {
         var OPT_ACCESS_TOKEN_PLAYER_TYPE = 'thunderdome';//480p
         //var OPT_ACCESS_TOKEN_PLAYER_TYPE = 'picture-by-picture';//360p
