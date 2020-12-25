@@ -11,7 +11,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
   - Ad segments are replaced by a low resolution stream segments (on a m3u8 level).
   - Skips 2-3 seconds when switching to the live stream.
   - Stuttering and looping of segments often occur (during the ad segments).
-  - **NOTE: Removing segments doesn't notify Twitch that ads were watched**
+  - **NOTE: Removing segments doesn't notify Twitch that ads were watched (aka more served ads).**
 - dyn-video-swap
   - Ads are replaced by a low resolution stream for the duration of the ad.
   - Similar to `dyn`, but skips closer to 20 seconds when switching to the live stream.
@@ -31,6 +31,10 @@ uBlock Origin solutions are single files, suffixed by `ublock-origin.js` e.g. `l
 - Navigate to the uBlock Origin Dashboard (the extension options)
 - Under the `My filters` tab add `twitch.tv##+js(twitch-videoad)`.
 - Under the `Settings` tab, enable `I am an advanced user`, then click the cog that appears. Modify the value of `userResourcesLocation` from `unset` to the full url of the solution you wish to use (if a url is already in use, add a space after the existing url). e.g. `userResourcesLocation https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/dyn/dyn-ublock-origin.js` 
+
+## Applying a solution (userscript)
+
+Tampermonkey / Greasemonkey can be used on the files suffixed by `userscript.js` e.g. `low-res-userscript.js`
 
 ## Other solutions / projects
 
