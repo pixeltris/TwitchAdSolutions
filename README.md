@@ -4,24 +4,25 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 ## Current solutions
 
-- dyn-skip
+- dyn-skip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip.user.js))
   - Notifies Twitch that ads were watched before requesting the main live stream.
   - May slightly slow down loading of streams.
   - Falls back to mute-black if this fails (use an alternative solution if it always fails for you, as it adds additional load).
-- dyn-video-swap
+  - **Currently only handles pre-rolls** (mid-roll ads should be blacked out) (mid-rolls will requires a player reload, which currently isn't implemented)
+- dyn-video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap.user.js))
   - Ads are replaced by a low resolution stream for the duration of the ad.
   - Similar to `dyn`, but skips closer to 20 seconds when switching to the live stream.
   - You might see tiny bits of the ad.
   - Audio controls wont work whilst the ad is playing.
-- dyn
+- dyn ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn/dyn-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn/dyn.user.js))
   - Ad segments are replaced by a low resolution stream segments (on a m3u8 level).
   - Skips 2-3 seconds when switching to the live stream.
   - Stuttering and looping of segments often occur (during the ad segments).
   - **NOTE: Removing segments doesn't notify Twitch that ads were watched (aka more served ads).**
-- low-res
+- low-res ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js))
   - No ads.
   - The stream is 480p for the duration of the stream.
-- mute-black
+- mute-black ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black.user.js))
   - Ads are muted / blacked out for the duration of the ad.
   - You might see tiny bits of the ad.
 
@@ -37,7 +38,7 @@ uBlock Origin solutions are single files, suffixed by `ublock-origin.js` e.g. `l
 
 Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. `low-res.user.js`
 
-- Viewing the "Raw" file should prompt the user script to be added e.g. https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn/dyn.user.js
+- Viewing one of the userscript files should prompt the given script to be added
 
 ## Other solutions / projects
 
@@ -51,7 +52,7 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 
 ## NOTE/TODO
 
-NOTE: Many of these solutions could do with improvements.
-TODO: Add script to auto generate UserScript files from the uBlock Origin scripts.
-TODO: Test midroll ads.
-TODO: More testing in general.
+NOTE: Many of these solutions could do with improvements.  
+TODO: Add script to auto generate all configured scripts from the base script.  
+TODO: Test midroll ads.  
+TODO: More testing in general.  
