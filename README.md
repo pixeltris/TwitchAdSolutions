@@ -35,7 +35,9 @@ uBlock Origin solutions are single files, suffixed by `ublock-origin.js` e.g. `l
 
 ## Applying a solution (userscript)
 
-Tampermonkey / Greasemonkey can be used on the files suffixed by `userscript.js` e.g. `low-res-userscript.js`
+Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. `low-res.user.js`
+
+- Viewing the "Raw" file should prompt the user script to be added e.g. https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn/dyn.user.js
 
 ## Other solutions / projects
 
