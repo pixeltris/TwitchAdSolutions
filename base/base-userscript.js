@@ -15,7 +15,7 @@
         scope.OPT_MODE_MUTE_BLACK = false;
         scope.OPT_MODE_VIDEO_SWAP = false;
         scope.OPT_MODE_LOW_RES = false;
-        scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
+        scope.OPT_MODE_STRIP_AD_SEGMENTS = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 2;// Larger values might increase load time. Lower values may increase ad chance.
         scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'thunderdome';
