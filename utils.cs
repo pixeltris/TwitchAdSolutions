@@ -33,14 +33,116 @@ namespace TwitchAdUtils
             MiniNoAd
         }
         
-        static void Main()
+        static void Main(string[] args)
         {
+            if (args.Length >= 1 && args[0] == "build_scripts")
+            {
+                // This takes "base.user.js" and updates all of the other scripts based on the cfg values
+                BuildScripts();
+                return;
+            }
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
             Console.Write("Enter channel name: ");
             string channel = Console.ReadLine();
             Console.WriteLine("Fetching channel '" + channel + "'");
             RunImpl(RunnerMode.Regular, channel);
             //RunImpl(RunnerMode.MiniNoAd, channel);
+        }
+        
+        static void BuildScripts()
+        {
+            string baseScriptName = "base";
+            string suffixConfg = ".cfg";
+            string suffixUserscript = ".user.js";
+            string suffixUblock = "-ublock-origin.js";
+            string baseFile = Path.Combine(baseScriptName, baseScriptName + ".user.js");
+            if (File.Exists(baseFile))
+            {
+                foreach (string dir in Directory.GetDirectories(Environment.CurrentDirectory))
+                {
+                    DirectoryInfo dirInfo = new DirectoryInfo(dir);
+                    if (dirInfo.Name != baseScriptName)
+                    {
+                        string cfgFile = Path.Combine(dir, dirInfo.Name + suffixConfg);
+                        string userscriptFile = Path.Combine(dir, dirInfo.Name + suffixUserscript);
+                        string ublockFile = Path.Combine(dir, dirInfo.Name + suffixUblock);
+                        if (File.Exists(userscriptFile) && File.Exists(ublockFile) && File.Exists(cfgFile))
+                        {
+                            Dictionary<string, string> cfgValues = new Dictionary<string, string>();
+                            string[] cfgLines = File.ReadAllLines(cfgFile);
+                            for (int i = 0; i < cfgLines.Length; i++)
+                            {
+                                string line = cfgLines[i];
+                                if (!string.IsNullOrEmpty(line))
+                                {
+                                    int spaceIndex = line.IndexOf(' ');
+                                    if (spaceIndex > 0)
+                                    {
+                                        cfgValues["scope." + line.Substring(0, spaceIndex).Trim() + " "] = line.Substring(spaceIndex + 1).Trim();
+                                    }
+                                }
+                            }
+                            Console.WriteLine(dir);
+                            foreach (KeyValuePair<string, string> val in cfgValues)
+                            {
+                                Console.WriteLine(val.Key + " = " + val.Value);
+                            }
+                            Console.WriteLine("=============================");
+                            
+                            StringBuilder sbUserscript = new StringBuilder();
+                            StringBuilder sbUblock = new StringBuilder();
+                            string[] lines = File.ReadAllLines(baseFile);
+                            bool modifiedOptions = false;
+                            bool foundUserScriptEnd = false;
+                            for (int i = 0; i < lines.Length; i++)
+                            {
+                                string line = lines[i];
+                                if (line.Trim().StartsWith("declareOptions("))
+                                {
+                                    modifiedOptions = true;
+                                }
+                                if (!modifiedOptions)
+                                {
+                                    if (!foundUserScriptEnd)
+                                    {
+                                        sbUserscript.AppendLine(line);
+                                        if (line.Contains("/UserScript"))
+                                        {
+                                            sbUblock.AppendLine("twitch-videoad.js application/javascript");
+                                            foundUserScriptEnd = true;
+                                        }
+                                    }
+                                    else if (line.Trim().StartsWith("'use strict'"))
+                                    {
+                                        sbUserscript.AppendLine(line);
+                                        sbUblock.AppendLine("    if ( /(^|\\.)twitch\\.tv$/.test(document.location.hostname) === false ) { return; }");
+                                    }
+                                    else
+                                    {
+                                        foreach (KeyValuePair<string, string> val in cfgValues)
+                                        {
+                                            if (line.Contains(val.Key))
+                                            {
+                                                line = line.Substring(0, line.IndexOf(val.Key) + val.Key.Length) + "= " + val.Value + ";";
+                                                break;
+                                            }
+                                        }
+                                        sbUserscript.AppendLine(line);
+                                        sbUblock.AppendLine(line);
+                                    }
+                                }
+                                else
+                                {
+                                    sbUserscript.AppendLine(line);
+                                    sbUblock.AppendLine(line);
+                                }
+                            }
+                            File.WriteAllText(userscriptFile, sbUserscript.ToString());
+                            File.WriteAllText(ublockFile, sbUblock.ToString());
+                        }
+                    }
+                }
+            }
         }
         
         static void Run(RunnerMode mode, string channel)

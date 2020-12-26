@@ -9,6 +9,7 @@ twitch-videoad.js application/javascript
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 2;// Larger values might increase load time. Lower values may increase ad chance.
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
         scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'thunderdome';
         scope.OPT_INITIAL_M3U8_ATTEMPTS = 1;
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = '';
@@ -357,26 +358,31 @@ twitch-videoad.js application/javascript
                         visible: true,
                     };
                     for (let podPosition = 0; podPosition < podLength; podPosition++) {
-                        const extendedData = {
-                            ...baseData,
-                            ad_id: adId,
-                            ad_position: podPosition,
-                            duration: 30,
-                            creative_id: creativeId,
-                            total_ads: podLength,
-                            order_id: orderId,
-                            line_item_id: lineItemId,
-                        };
-                        await gqlRequest(makeGraphQlPacket('video_ad_impression', radToken, extendedData));
-                        for (let quartile = 0; quartile < 4; quartile++) {
-                            await gqlRequest(
-                                makeGraphQlPacket('video_ad_quartile_complete', radToken, {
-                                    ...extendedData,
-                                    quartile: quartile + 1,
-                                })
-                            );
+                        if (OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS) {
+                            // This is all that's actually required at the moment
+                            await gqlRequest(makeGraphQlPacket('video_ad_pod_complete', radToken, baseData));
+                        } else {
+                            const extendedData = {
+                                ...baseData,
+                                ad_id: adId,
+                                ad_position: podPosition,
+                                duration: 30,
+                                creative_id: creativeId,
+                                total_ads: podLength,
+                                order_id: orderId,
+                                line_item_id: lineItemId,
+                            };
+                            await gqlRequest(makeGraphQlPacket('video_ad_impression', radToken, extendedData));
+                            for (let quartile = 0; quartile < 4; quartile++) {
+                                await gqlRequest(
+                                    makeGraphQlPacket('video_ad_quartile_complete', radToken, {
+                                        ...extendedData,
+                                        quartile: quartile + 1,
+                                    })
+                                );
+                            }
+                            await gqlRequest(makeGraphQlPacket('video_ad_pod_complete', radToken, baseData));
                         }
-                        await gqlRequest(makeGraphQlPacket('video_ad_pod_complete', radToken, baseData));
                     }
                 }
             } else {

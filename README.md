@@ -15,7 +15,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
   - You might see tiny bits of the ad.
   - Audio controls wont work whilst the ad is playing.
 - dyn ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn/dyn-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn/dyn.user.js))
-  - Ad segments are replaced by a low resolution stream segments (on a m3u8 level).
+  - Ad segments are replaced by low resolution stream segments (on a m3u8 level).
   - Skips 2-3 seconds when switching to the live stream.
   - Stuttering and looping of segments often occur (during the ad segments).
   - **NOTE: Removing segments doesn't notify Twitch that ads were watched (aka more served ads).**
@@ -53,6 +53,5 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 ## NOTE/TODO
 
 NOTE: Many of these solutions could do with improvements.  
-TODO: Add script to auto generate all configured scripts from the base script.  
 TODO: Test midroll ads.  
 TODO: More testing in general.  
