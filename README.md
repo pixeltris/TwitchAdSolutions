@@ -8,7 +8,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
   - Notifies Twitch that ads were watched before requesting the main live stream.
   - May slightly slow down loading of streams.
   - Falls back to mute-black if this fails (use an alternative solution if it always fails for you, as it adds additional load).
-  - **Currently only handles pre-rolls** (mid-roll ads should be blacked out) (mid-rolls will requires a player reload, which currently isn't implemented)
+  - **Currently only handles pre-rolls** (mid-roll ads should be muted/blacked out) (mid-rolls will require a player reload, which currently isn't implemented)
 - dyn-video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap.user.js))
   - Ads are replaced by a low resolution stream for the duration of the ad.
   - Similar to `dyn`, but skips closer to 20 seconds when switching to the live stream.
