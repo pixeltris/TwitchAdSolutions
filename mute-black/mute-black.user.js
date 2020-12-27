@@ -19,6 +19,7 @@
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 2;// Larger values might increase load time. Lower values may increase ad chance.
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = false;
         scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'thunderdome';
         scope.OPT_INITIAL_M3U8_ATTEMPTS = 1;
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = '';
@@ -123,12 +124,10 @@
     async function processM3U8(url, textStr, realFetch) {
         var haveAdTags = textStr.includes(AD_SIGNIFIER);
         if (haveAdTags) {
-            if (!OPT_MODE_STRIP_AD_SEGMENTS) {// TODO: Look into "Failed to execute ‘postMessage’ on ‘DOMWindow’: The target origin provided (‘https://supervisor.ext-twitch.tv’) does not match the recipient window’s origin (‘https://www.twitch.tv’)."
-                postMessage({
-                    key: 'UboFoundAdSegment',
-                    hasLiveSeg: textStr.includes(LIVE_SIGNIFIER)
-                });
-            }
+            postMessage({
+                key: 'UboFoundAdSegment',
+                hasLiveSeg: textStr.includes(LIVE_SIGNIFIER)
+            });
         }
         if (!OPT_MODE_STRIP_AD_SEGMENTS) {
             return textStr;
@@ -483,7 +482,15 @@
         }
     }
     function onFoundAd(hasLiveSeg) {
+        if (OPT_MODE_NOTIFY_ADS_WATCHED && OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT) {
+            console.log('OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT');
+            reloadTwitchPlayer();
+            return;
+        }
         if (hasLiveSeg) {
+            return;
+        }
+        if (!OPT_MODE_MUTE_BLACK && !OPT_MODE_VIDEO_SWAP) {
             return;
         }
         if (OPT_MODE_VIDEO_SWAP && typeof Hls === 'undefined') {
@@ -597,6 +604,60 @@
         }
         setTimeout(pollForAds,100);
     }
+    function reloadTwitchPlayer() {
+        // Taken from ttv-tools / ffz
+        // https://github.com/Nerixyz/ttv-tools/blob/master/src/context/twitch-player.ts
+        // https://github.com/FrankerFaceZ/FrankerFaceZ/blob/master/src/sites/twitch-twilight/modules/player.jsx
+        function findReactNode(root, constraint) {
+            if (root.stateNode && constraint(root.stateNode)) {
+                return root.stateNode;
+            }
+            let node = root.child;
+            while (node) {
+                const result = findReactNode(node, constraint);
+                if (result) {
+                    return result;
+                }
+                node = node.sibling;
+            }
+            return null;
+        }
+        var reactRootNode = document.querySelector('#root')?._reactRootContainer?._internalRoot?.current;
+        if (!reactRootNode) {
+            console.log('Could not find react root');
+            return;
+        }
+        var player = findReactNode(reactRootNode, node => node.setPlayerActive && node.props?.mediaPlayerInstance)?.props?.mediaPlayerInstance;
+        var playerState = findReactNode(reactRootNode, node => node.setSrc && node.setInitialPlaybackSettings);
+        if (!player) {
+            console.log('Could not find player');
+            return;
+        }
+        if (!playerState) {
+            console.log('Could not find player state');
+            return;
+        }
+        if (player.paused) {
+            return;
+        }
+        const sink = player.mediaSinkManager || player.core?.mediaSinkManager;
+        if (sink?.video?._ffz_compressor) {
+            const video = sink.video;
+            const volume = video.volume ?? player.getVolume();
+            const muted = player.isMuted();
+            const newVideo = document.createElement('video');
+            newVideo.volume = muted ? 0 : volume;
+            newVideo.playsInline = true;
+            video.replaceWith(newVideo);
+            player.attachHTMLVideoElement(newVideo);
+            setImmediate(() => {
+                player.setVolume(volume);
+                player.setMuted(muted);
+            });
+        }
+        playerState.setSrc({ isNewMediaPlayerInstance: true, refreshAccessToken: true });// ffz sets this false
+    }
+    window.reloadTwitchPlayer = reloadTwitchPlayer;
     function onContentLoaded() {
         // These modes use polling of the ad elements (e.g. ad banner text) to show/hide content
         if (!OPT_MODE_VIDEO_SWAP && !OPT_MODE_MUTE_BLACK) {

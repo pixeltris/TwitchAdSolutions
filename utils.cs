@@ -19,6 +19,7 @@ namespace TwitchAdUtils
         public static string UserAgent = UserAgentChrome;
         public static bool UseOldAccessToken = false;
         public static bool UseAccessTokenTemplate = false;
+        public static bool ShouldNotifyAdWatched = true;
         public static string PlayerTypeRegular = "site";//embed
         public static string PlayerTypeMiniNoAd = "picture-by-picture";
         public static string Platform = "web";
@@ -43,7 +44,7 @@ namespace TwitchAdUtils
             }
             ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
             Console.Write("Enter channel name: ");
-            string channel = Console.ReadLine();
+            string channel = Console.ReadLine().ToLower();
             Console.WriteLine("Fetching channel '" + channel + "'");
             RunImpl(RunnerMode.Regular, channel);
             //RunImpl(RunnerMode.MiniNoAd, channel);
@@ -85,7 +86,7 @@ namespace TwitchAdUtils
                             Console.WriteLine(dir);
                             foreach (KeyValuePair<string, string> val in cfgValues)
                             {
-                                Console.WriteLine(val.Key + " = " + val.Value);
+                                Console.WriteLine(val.Key + "= " + val.Value);
                             }
                             Console.WriteLine("=============================");
                             
@@ -259,7 +260,10 @@ namespace TwitchAdUtils
                                     if (streamM3u8.Contains(AdSignifier))
                                     {
                                         Console.WriteLine("has ad " + DateTime.Now.TimeOfDay);
-                                        NotifyWatchedAd(uniqueId, streamM3u8);
+                                        if (!UseOldAccessToken && ShouldNotifyAdWatched)
+                                        {
+                                            NotifyWatchedAd(uniqueId, streamM3u8);
+                                        }
                                     }
                                     else
                                     {
