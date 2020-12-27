@@ -61,9 +61,9 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 
 ---
 
-https://github.com/streamlink/streamlink (desktop application)
-https://github.com/nopbreak/TwitchMod (android app)
-https://twitchls.com/ (external site - purple screen may display every 10-15 mins)
+- https://github.com/streamlink/streamlink (desktop application)
+- https://github.com/nopbreak/TwitchMod (android app)
+- https://twitchls.com/ (external site - purple screen may display every 10-15 mins)
 
 ## NOTE/TODO
 
