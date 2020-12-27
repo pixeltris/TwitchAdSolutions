@@ -1,26 +1,17 @@
-// ==UserScript==
-// @name         TwitchAdSolutions
-// @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.0
-// @description  Multiple solutions for blocking Twitch ads
-// @author       pixeltris
-// @match        *://*.twitch.tv/*
-// @run-at       document-start
-// @grant        none
-// ==/UserScript==
+twitch-videoad.js application/javascript
 (function() {
-    'use strict';
+    if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
     function declareOptions(scope) {
         // Options / globals
         scope.OPT_MODE_MUTE_BLACK = false;
-        scope.OPT_MODE_VIDEO_SWAP = true;
+        scope.OPT_MODE_VIDEO_SWAP = false;
         scope.OPT_MODE_LOW_RES = false;
         scope.OPT_MODE_STRIP_AD_SEGMENTS = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 2;// Larger values might increase load time. Lower values may increase ad chance.
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = false;
-        scope.OPT_MODE_PROXY_M3U8 = '';
+        scope.OPT_MODE_PROXY_M3U8 = 'https://choosen.dev/stream/twitch/';
         scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'thunderdome';
         scope.OPT_INITIAL_M3U8_ATTEMPTS = 1;
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = '';

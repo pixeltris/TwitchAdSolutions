@@ -28,6 +28,10 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 - mute-black ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black.user.js))
   - Ads are muted / blacked out for the duration of the ad.
   - You might see tiny bits of the ad.
+- proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))
+  - Uses a proxy server (set to one controlled by @lukix29) to fetch an ad-free stream.
+  - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
+  - **Assumes the proxy server acts in good faith and maintains a good uptime.**
 
 ## Applying a solution (uBlock Origin)
 
@@ -45,13 +49,21 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 
 ## Other solutions / projects
 
-- https://github.com/odensc/ttv-ublock (extension, purple screen may display every 10-15 mins)
+- https://github.com/odensc/ttv-ublock (extension - purple screen may display every 10-15 mins)
 - https://github.com/Nerixyz/ttv-tools (Firefox extension)
 - https://github.com/LeonHeidelbach/ttv_adEraser (extension)
+- https://github.com/instance01/Twitch-HLS-AdBlock (extension)
 - https://github.com/Wilkolicious/twitchAdSkip (UserScript + FrankerFaceZ)
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707 (UserScript + FrankerFaceZ(optional))
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code (UserScript + FrankerFaceZ(optional))
-- Alternate Player for Twitch.tv - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js)
+- [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
+- [Twitch AdBlock](https://chrome.google.com/webstore/detail/mipdalemhlhfenbikcloloheedmmecme) - [code](https://robwu.nl/crxviewer/?crx=mipdalemhlhfenbikcloloheedmmecme&qf=js/background.js) (chrome extension - uses a proxy server to fetch an ad-free stream)
+
+---
+
+https://github.com/streamlink/streamlink (desktop application)
+https://github.com/nopbreak/TwitchMod (android app)
+https://twitchls.com/ (external site - purple screen may display every 10-15 mins)
 
 ## NOTE/TODO
 

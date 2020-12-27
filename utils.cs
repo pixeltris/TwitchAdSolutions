@@ -21,7 +21,7 @@ namespace TwitchAdUtils
         public static bool UseAccessTokenTemplate = false;
         public static bool ShouldNotifyAdWatched = true;
         public static string PlayerTypeRegular = "site";//embed
-        public static string PlayerTypeMiniNoAd = "picture-by-picture";
+        public static string PlayerTypeMiniNoAd = "picture-by-picture";//thunderdome
         public static string Platform = "web";
         public static string PlayerBackend = "mediaplayer";
         public static string MainM3U8AdditionalParams = "";
