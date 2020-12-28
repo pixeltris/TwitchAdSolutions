@@ -8,45 +8,61 @@ using System.Reflection;
 using System.Threading;
 using System.Net;
 using System.IO;
+using System.Diagnostics;
 
 namespace TwitchAdUtils
 {
     class Program
     {
-        public static string ClientID = "kimne78kx3ncx6brgo4mv6wki5h1ko";
-        public static string UserAgentChrome = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36";
-        public static string UserAgentFirefox = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
-        public static string UserAgent = UserAgentChrome;
-        public static bool UseOldAccessToken = false;
-        public static bool UseAccessTokenTemplate = false;
-        public static bool ShouldNotifyAdWatched = true;
-        public static string PlayerTypeRegular = "site";//embed
-        public static string PlayerTypeMiniNoAd = "picture-by-picture";//thunderdome
-        public static string Platform = "web";
-        public static string PlayerBackend = "mediaplayer";
-        public static string MainM3U8AdditionalParams = "";
-        public static string AdSignifier = "stitched-ad";
-        public static TimeSpan LoopDelay = TimeSpan.FromSeconds(1);
+        static string ClientID = "kimne78kx3ncx6brgo4mv6wki5h1ko";
+        static string UserAgentChrome = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36";
+        static string UserAgentFirefox = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
+        static string UserAgent = UserAgentChrome;
+        static bool UseOldAccessToken = false;
+        static bool UseAccessTokenTemplate = false;
+        static bool ShouldNotifyAdWatched = true;
+        static string PlayerTypeNormal = "site";//embed
+        static string PlayerTypeMiniNoAd = "picture-by-picture";//"thunderdome";
+        static string Platform = "web";
+        static string PlayerBackend = "mediaplayer";
+        static string MainM3U8AdditionalParams = "";
+        static string AdSignifier = "stitched-ad";
+        static string ProxyUrl = "http://choosen.dev/stream/twitch/";
+        static int TargetResolution = 480;
+        static TimeSpan LoopDelay = TimeSpan.FromSeconds(1);
         
         enum RunnerMode
         {
-            Regular,
-            MiniNoAd
+            Normal,
+            MiniNoAd,
+            Proxy
         }
         
         static void Main(string[] args)
         {
+            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+            
             if (args.Length >= 1 && args[0] == "build_scripts")
             {
                 // This takes "base.user.js" and updates all of the other scripts based on the cfg values
                 BuildScripts();
                 return;
             }
-            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+            if (args.Length >= 1 && args[0] == "m3u8")
+            {
+                // Tests modifications of m3u8 files
+                Console.WriteLine("Starting local server (http://localhost)");
+                TwitchTestServer testServer = new TwitchTestServer();
+                testServer.Start(80);
+                Console.ReadLine();
+                return;
+            }
+            
             Console.Write("Enter channel name: ");
             string channel = Console.ReadLine().ToLower();
             Console.WriteLine("Fetching channel '" + channel + "'");
-            RunImpl(RunnerMode.Regular, channel);
+            RunImpl(RunnerMode.Normal, channel);
             //RunImpl(RunnerMode.MiniNoAd, channel);
         }
         
@@ -156,11 +172,12 @@ namespace TwitchAdUtils
             thread.Start();
         }
         
-        static void RunImpl(RunnerMode mode, string channel)
+        static string RunImpl(RunnerMode mode, string channel, bool isFetchingM3U8 = false, bool forceSkipAd = false)
         {
-            string playerType = mode == RunnerMode.Regular ? PlayerTypeRegular : PlayerTypeMiniNoAd;
+            string playerType = mode == RunnerMode.MiniNoAd ? PlayerTypeMiniNoAd : PlayerTypeNormal;
             string cookies = null;
             string uniqueId = null;
+            int cycle = 0;
             while (true)
             {
                 if (string.IsNullOrEmpty(cookies))
@@ -177,70 +194,88 @@ namespace TwitchAdUtils
                 if (string.IsNullOrEmpty(uniqueId))
                 {
                     Console.WriteLine("unique_id is null");
-                    return;
+                    return null;
                 }
                 using (WebClient wc = new WebClient())
                 {
                     string response = null, token = null, sig = null;
                     wc.Proxy = null;
-                    if (UseOldAccessToken)
+                    if (mode != RunnerMode.Proxy)
                     {
-                        wc.Headers.Clear();
-                        wc.Headers["client-id"] = ClientID;
-                        wc.Headers["accept"] = "application/vnd.twitchtv.v5+json; charset=UTF-8";
-                        wc.Headers["accept-encoding"] = "gzip, deflate, br";
-                        wc.Headers["accept-language"] = "en-us";
-                        wc.Headers["content-type"] = "application/json; charset=UTF-8";
-                        wc.Headers["origin"] = "https://www.twitch.tv";
-                        wc.Headers["referer"] = "https://www.twitch.tv/";
-                        wc.Headers["user-agent"] = UserAgent;
-                        wc.Headers["x-requested-with"] = "XMLHttpRequest";
-                        wc.Headers["cookie"] = cookies;
-                        response = wc.DownloadString("https://api.twitch.tv/api/channels/" + channel + "/access_token?oauth_token=undefined&need_https=true&platform=" + Platform + "&player_type=" + playerType + "&player_backend=" + PlayerBackend);
-                        if (!string.IsNullOrEmpty(response))
+                        if (UseOldAccessToken)
                         {
-                            TwitchAccessTokenOld tokenInfo = JSONSerializer<TwitchAccessTokenOld>.DeSerialize(response);
-                            if (tokenInfo != null && !string.IsNullOrEmpty(tokenInfo.token) && !string.IsNullOrEmpty(tokenInfo.sig))
+                            wc.Headers.Clear();
+                            wc.Headers["client-id"] = ClientID;
+                            wc.Headers["accept"] = "application/vnd.twitchtv.v5+json; charset=UTF-8";
+                            wc.Headers["accept-encoding"] = "gzip, deflate, br";
+                            wc.Headers["accept-language"] = "en-us";
+                            wc.Headers["content-type"] = "application/json; charset=UTF-8";
+                            wc.Headers["origin"] = "https://www.twitch.tv";
+                            wc.Headers["referer"] = "https://www.twitch.tv/";
+                            wc.Headers["user-agent"] = UserAgent;
+                            wc.Headers["x-requested-with"] = "XMLHttpRequest";
+                            wc.Headers["cookie"] = cookies;
+                            response = wc.DownloadString("https://api.twitch.tv/api/channels/" + channel + "/access_token?oauth_token=undefined&need_https=true&platform=" + Platform + "&player_type=" + playerType + "&player_backend=" + PlayerBackend);
+                            if (!string.IsNullOrEmpty(response))
                             {
-                                token = tokenInfo.token;
-                                sig = tokenInfo.sig;
+                                TwitchAccessTokenOld tokenInfo = JSONSerializer<TwitchAccessTokenOld>.DeSerialize(response);
+                                if (tokenInfo != null && !string.IsNullOrEmpty(tokenInfo.token) && !string.IsNullOrEmpty(tokenInfo.sig))
+                                {
+                                    token = tokenInfo.token;
+                                    sig = tokenInfo.sig;
+                                }
                             }
-                        }
-                    }
-                    else
-                    {
-                        wc.Headers.Clear();
-                        wc.Headers["client-id"] = ClientID;
-                        wc.Headers["Device-ID"] = uniqueId;
-                        wc.Headers["accept"] = "*/*";
-                        wc.Headers["accept-encoding"] = "gzip, deflate, br";
-                        wc.Headers["accept-language"] = "en-us";
-                        wc.Headers["content-type"] = "text/plain; charset=UTF-8";
-                        wc.Headers["origin"] = "https://www.twitch.tv";
-                        wc.Headers["referer"] = "https://www.twitch.tv/";
-                        wc.Headers["user-agent"] = UserAgent;
-                        if (UseAccessTokenTemplate)
-                        {
-                            response = wc.UploadString("https://gql.twitch.tv/gql", @"{""operationName"":""PlaybackAccessToken_Template"",""query"":""query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: \""" + Platform + @"\"", playerBackend: \""" + PlayerBackend + @"\"", playerType: $playerType}) @include(if: $isLive) {    value    signature    __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: \""" + Platform + @"\"", playerBackend: \""" + PlayerBackend + @"\"", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}"",""variables"":{""isLive"":true,""login"":""" + channel + @""",""isVod"":false,""vodID"":"""",""playerType"":""" + playerType + @"""}}");
                         }
                         else
                         {
-                            response = wc.UploadString("https://gql.twitch.tv/gql", @"{""operationName"":""PlaybackAccessToken"",""variables"":{""isLive"":true,""login"":""" + channel + @""",""isVod"":false,""vodID"":"""",""playerType"":""" + playerType + @"""},""extensions"":{""persistedQuery"":{""version"":1,""sha256Hash"":""0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712""}}}");
-                        }
-                        if (!string.IsNullOrEmpty(response))
-                        {
-                            TwitchAccessToken tokenInfo = JSONSerializer<TwitchAccessToken>.DeSerialize(response);
-                            if (tokenInfo != null && tokenInfo.data != null && tokenInfo.data.streamPlaybackAccessToken != null &&
-                                !string.IsNullOrEmpty(tokenInfo.data.streamPlaybackAccessToken.value) && !string.IsNullOrEmpty(tokenInfo.data.streamPlaybackAccessToken.signature))
+                            wc.Headers.Clear();
+                            wc.Headers["client-id"] = ClientID;
+                            wc.Headers["Device-ID"] = uniqueId;
+                            wc.Headers["accept"] = "*/*";
+                            wc.Headers["accept-encoding"] = "gzip, deflate, br";
+                            wc.Headers["accept-language"] = "en-us";
+                            wc.Headers["content-type"] = "text/plain; charset=UTF-8";
+                            wc.Headers["origin"] = "https://www.twitch.tv";
+                            wc.Headers["referer"] = "https://www.twitch.tv/";
+                            wc.Headers["user-agent"] = UserAgent;
+                            if (UseAccessTokenTemplate)
                             {
-                                token = tokenInfo.data.streamPlaybackAccessToken.value;
-                                sig = tokenInfo.data.streamPlaybackAccessToken.signature;
+                                response = wc.UploadString("https://gql.twitch.tv/gql", @"{""operationName"":""PlaybackAccessToken_Template"",""query"":""query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: \""" + Platform + @"\"", playerBackend: \""" + PlayerBackend + @"\"", playerType: $playerType}) @include(if: $isLive) {    value    signature    __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: \""" + Platform + @"\"", playerBackend: \""" + PlayerBackend + @"\"", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}"",""variables"":{""isLive"":true,""login"":""" + channel + @""",""isVod"":false,""vodID"":"""",""playerType"":""" + playerType + @"""}}");
+                            }
+                            else
+                            {
+                                response = wc.UploadString("https://gql.twitch.tv/gql", @"{""operationName"":""PlaybackAccessToken"",""variables"":{""isLive"":true,""login"":""" + channel + @""",""isVod"":false,""vodID"":"""",""playerType"":""" + playerType + @"""},""extensions"":{""persistedQuery"":{""version"":1,""sha256Hash"":""0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712""}}}");
+                            }
+                            if (!string.IsNullOrEmpty(response))
+                            {
+                                TwitchAccessToken tokenInfo = JSONSerializer<TwitchAccessToken>.DeSerialize(response);
+                                if (tokenInfo != null && tokenInfo.data != null && tokenInfo.data.streamPlaybackAccessToken != null &&
+                                    !string.IsNullOrEmpty(tokenInfo.data.streamPlaybackAccessToken.value) && !string.IsNullOrEmpty(tokenInfo.data.streamPlaybackAccessToken.signature))
+                                {
+                                    token = tokenInfo.data.streamPlaybackAccessToken.value;
+                                    sig = tokenInfo.data.streamPlaybackAccessToken.signature;
+                                }
                             }
                         }
                     }
-                    if (!string.IsNullOrEmpty(token))
+                    if (mode == RunnerMode.Proxy || !string.IsNullOrEmpty(token))
                     {
-                        string url = "https://usher.ttvnw.net/api/channel/hls/" + channel + ".m3u8?allow_source=true&sig=" + sig + "&token=" + System.Web.HttpUtility.UrlEncode(token) + MainM3U8AdditionalParams;
+                        string url = null;
+                        if (mode == RunnerMode.Proxy)
+                        {
+                            url = ProxyUrl + channel;
+                        }
+                        else
+                        {
+                            url = "https://usher.ttvnw.net/api/channel/hls/" + channel + ".m3u8?allow_source=true&sig=" + sig + "&token=" + System.Web.HttpUtility.UrlEncode(token) + MainM3U8AdditionalParams;
+                        }
+                        if (isFetchingM3U8)
+                        {
+                            if (!forceSkipAd || cycle > 0)
+                            {
+                                return url;
+                            }
+                        }
                         wc.Headers.Clear();
                         wc.Headers["accept"] = "application/x-mpegURL, application/vnd.apple.mpegurl, application/json, text/plain";
                         wc.Headers["host"] = "usher.ttvnw.net";
@@ -260,7 +295,7 @@ namespace TwitchAdUtils
                                     if (streamM3u8.Contains(AdSignifier))
                                     {
                                         Console.WriteLine("has ad " + DateTime.Now.TimeOfDay);
-                                        if (!UseOldAccessToken && ShouldNotifyAdWatched)
+                                        if (!UseOldAccessToken && (ShouldNotifyAdWatched || forceSkipAd))
                                         {
                                             NotifyWatchedAd(uniqueId, streamM3u8);
                                         }
@@ -291,20 +326,34 @@ namespace TwitchAdUtils
                     }
                 }
                 Thread.Sleep(LoopDelay);
+                cycle++;
             }
         }
         
         static Dictionary<string, string> ParseAttributes(string tag)
         {
+            string tagName;
+            return ParseAttributes(tag, out tagName);
+        }
+        
+        static Dictionary<string, string> ParseAttributes(string tag, out string tagName)
+        {
             // TODO: Improve this
             Dictionary<string, string> result = new Dictionary<string, string>();
-            string[] splitted = tag.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-            foreach (string str in splitted)
+            tagName = null;
+            int tagDataSplitIndex = tag.IndexOf(':');
+            if (tagDataSplitIndex > 0)
             {
-                int index = str.IndexOf('=');
-                if (index > 0)
+                tagName = tag.Substring(0, tagDataSplitIndex);
+                tag = tag.Substring(tagDataSplitIndex + 1);
+                string[] splitted = tag.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string str in splitted)
                 {
-                    result[str.Substring(0, index)] = str.Substring(index + 1).Trim('\"');
+                    int index = str.IndexOf('=');
+                    if (index > 0)
+                    {
+                        result[str.Substring(0, index)] = str.Substring(index + 1).Trim('\"');
+                    }
                 }
             }
             return result;
@@ -485,6 +534,455 @@ namespace TwitchAdUtils
             public static TType DeSerialize(string json)
             {
                 return TinyJson.JSONParser.FromJson<TType>(json);
+            }
+        }
+        
+        class TwitchTestServer
+        {
+            const string RecordDir = "recordings";
+            Dictionary<string, State> states = new Dictionary<string, State>();
+            class State
+            {
+                public bool IsReplay = false;
+                public string RecordingName = null;
+                public string RecordingPath = null;
+                public string ChannelName = null;
+                public string UrlChRecName { get { return ChannelName + "|" + RecordingName; } }
+                public string M3U8Normal = null;
+                public string M3U8Mini = null;
+                public string M3U8Alt = null;
+                public Dictionary<string, Dictionary<string, string>> M3U8Map = new Dictionary<string, Dictionary<string, string>>();
+                public Stopwatch Stopwatch = new Stopwatch();
+                
+                public State(string channelName, string name)
+                {
+                    ChannelName = channelName;
+                    RecordingName = name;
+                    RecordingPath = Path.GetFullPath(Path.Combine(RecordDir, name));
+                    try
+                    {
+                        if (!Directory.Exists(RecordingPath))
+                        {
+                            Directory.CreateDirectory(RecordingPath);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+                public void Clear()
+                {
+                    M3U8Map.Clear();
+                    Stopwatch.Restart();
+                    try
+                    {
+                        while (Directory.Exists(RecordingPath))
+                        {
+                            Directory.Delete(RecordingPath, true);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                    try
+                    {
+                        if (!Directory.Exists(RecordingPath))
+                        {
+                            Directory.CreateDirectory(RecordingPath);
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+                
+                public void Load()
+                {
+                    M3U8Map.Clear();
+                    Stopwatch.Restart();
+                    IsReplay = true;
+                }
+            }
+            
+            private Thread thread;
+            private HttpListener listener;
+            
+            public void Start(int port)
+            {
+                Stop();
+                
+                thread = new Thread(delegate()
+                {
+                    listener = new HttpListener();
+                    listener.Prefixes.Add("http://*:" + port + "/");
+                    listener.Start();
+                    while (listener != null)
+                    {
+                        try
+                        {
+                            HttpListenerContext context = listener.GetContext();
+                            Process(context);
+                        }
+                        catch
+                        {
+                        }
+                    }
+                });
+                thread.SetApartmentState(ApartmentState.STA);
+                thread.Start();
+            }
+            
+            public void Stop()
+            {
+                if (listener != null)
+                {
+                    try
+                    {
+                        listener.Stop();
+                    }
+                    catch
+                    {
+                    }
+                    listener = null;
+                }
+                if (thread != null)
+                {
+                    try
+                    {
+                        thread.Abort();
+                    }
+                    catch
+                    {
+                    }
+                    thread = null;
+                }
+            }
+            
+            private void Process(HttpListenerContext context)
+            {
+                try
+                {
+                    string url = context.Request.Url.OriginalString;
+                    //Console.WriteLine("req " + DateTime.Now.TimeOfDay + " - " + url);
+
+                    string response = string.Empty;
+                    string contentType = "text/html";
+
+                    if (url.Contains("favicon.ico"))
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                        context.Response.OutputStream.Close();
+                        return;
+                    }
+                    
+                    byte[] responseBuffer = null;
+                    if (context.Request.Url.Segments.Length == 1 && context.Request.Url.Segments[0] == "/")
+                    {
+                        response = "<html><script src='utils.js'></script></html>";
+                    }
+                    else if (context.Request.Url.Segments.Length == 2 && context.Request.Url.Segments[1] == "utils.js")
+                    {
+                        response = File.ReadAllText("utils.js");
+                    }
+                    else if (context.Request.Url.Segments.Length >= 3)
+                    {
+                        string[] reqTypeSplitted = context.Request.Url.Segments[1].Trim('/').Split('_');
+                        string reqType = reqTypeSplitted[0].ToLower();
+                        string reqStreamType = reqTypeSplitted.Length > 1 ? reqTypeSplitted[1] : null;
+                        string[] splitted = context.Request.Url.Segments[2].Trim('/').ToLower().Replace("%7c", "|").Split('|');
+                        string channelName = splitted[0];
+                        string recordingName = splitted[1];
+                        if (!string.IsNullOrEmpty(channelName) && !string.IsNullOrEmpty(recordingName))
+                        {
+                            State state;
+                            if (!states.TryGetValue(recordingName, out state))
+                            {
+                                states[recordingName] = state = new State(channelName, recordingName);
+                            }
+                            switch (reqType)
+                            {
+                                case "record-begin":
+                                    {
+                                        state.Clear();
+                                        string normal = RunImpl(RunnerMode.Normal, channelName, true);
+                                        if (!string.IsNullOrEmpty(normal))
+                                        {
+                                            string mini = RunImpl(RunnerMode.MiniNoAd, channelName, true);
+                                            if (!string.IsNullOrEmpty(mini))
+                                            {
+                                                string alt = RunImpl(RunnerMode.Proxy, channelName, true);
+                                                //string alt = RunImpl(RunnerMode.Normal, channelName, true, true);
+                                                state.M3U8Normal = normal;
+                                                state.M3U8Mini = mini;
+                                                state.M3U8Alt = alt;
+                                                response = "ok";
+                                            }
+                                        }                                        
+                                    }
+                                    break;
+                                case "replay-begin":
+                                    {
+                                        DirectoryInfo dir = new DirectoryInfo(Path.Combine(RecordDir, recordingName));
+                                        if (dir.Exists && dir.GetFiles().Length > 0)
+                                        {
+                                            state.Load();
+                                            response = "ok";
+                                        }
+                                    }
+                                    break;
+                                case "m3u8":
+                                    {
+                                        string type = reqTypeSplitted[1].ToLower();
+                                        string m3u8Url = null;
+                                        switch (type)
+                                        {
+                                            case "normal":
+                                            case "output":
+                                                m3u8Url = state.M3U8Normal;
+                                                break;
+                                            case "mini":
+                                                m3u8Url = state.M3U8Mini;
+                                                break;
+                                            case "alt":
+                                                m3u8Url = state.M3U8Alt;
+                                                break;
+                                        }
+                                        if (!string.IsNullOrEmpty(m3u8Url))
+                                        {
+                                            response = GetM3U8(state, m3u8Url, reqStreamType, true);
+                                        }
+                                    }
+                                    break;
+                                case "m3u8-sub":
+                                    {
+                                        string type = reqTypeSplitted[1].ToLower();
+                                        string m3u8Url = null;
+                                        if (!state.IsReplay)
+                                        {
+                                            m3u8Url = GetM3U8Url(state, reqStreamType);
+                                        }
+                                        if (!string.IsNullOrEmpty(m3u8Url) || state.IsReplay)
+                                        {
+                                            response = GetM3U8(state, m3u8Url, reqStreamType, false);
+                                        }
+                                    }
+                                    break;
+                                case "m3u8-seg":
+                                    {
+                                        // TODO: Load segment, return as binary file
+                                    }
+                                    break;
+                                default:
+                                    Console.WriteLine("Unhandled request '" + reqType + "'");
+                                    break;
+                            }
+                        }
+                    }
+                    
+                    if (responseBuffer == null)
+                    {
+                        responseBuffer = Encoding.UTF8.GetBytes(response == null ? string.Empty : response.ToString());
+                    }
+                    context.Response.ContentType = contentType;
+                    context.Response.ContentEncoding = Encoding.UTF8;
+                    context.Response.ContentLength64 = responseBuffer.Length;
+                    context.Response.OutputStream.Write(responseBuffer, 0, responseBuffer.Length);
+                    context.Response.OutputStream.Flush();
+                    context.Response.StatusCode = (int)HttpStatusCode.OK;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+                }
+                context.Response.OutputStream.Close();
+            }
+            
+            private string DownloadM3U8(string url)
+            {
+                try
+                {
+                    using (WebClient wc = new WebClient())
+                    {
+                        wc.Proxy = null;
+                        wc.Headers["accept"] = "application/x-mpegURL, application/vnd.apple.mpegurl, application/json, text/plain";
+                        wc.Headers["host"] = "usher.ttvnw.net";
+                        wc.Headers["cookie"] = "DNT=1;";
+                        wc.Headers["DNT"] = "1";
+                        wc.Headers["user-agent"] = UserAgent;
+                        return wc.DownloadString(url);
+                    }
+                }
+                catch (Exception e)
+                {
+                    //Console.WriteLine(url);
+                    Console.WriteLine(e);
+                    return null;
+                }
+            }
+            
+            private string GetM3U8Url(State state, string reqStreamType)
+            {
+                Dictionary<string, string> m3u8Map;
+                if (state.M3U8Map.TryGetValue(reqStreamType, out m3u8Map) && m3u8Map.Count > 0)
+                {
+                    string resUrl = null;
+                    int res = int.MaxValue;
+                    string backupUrl = null;
+                    foreach (KeyValuePair<string, string> mappedUrl in m3u8Map)
+                    {
+                        if (mappedUrl.Key.Contains("x"))
+                        {
+                            int val;
+                            if (int.TryParse(mappedUrl.Key.Split('x')[1], out val))
+                            {
+                                if (backupUrl == null)
+                                {
+                                    backupUrl = mappedUrl.Value;
+                                }
+                                if (val < res && val >= TargetResolution)
+                                {
+                                    res = val;
+                                    resUrl = mappedUrl.Value;
+                                }
+                            }
+                        }
+                    }
+                    if (string.IsNullOrEmpty(resUrl))
+                    {
+                        resUrl = backupUrl;
+                    }
+                    return resUrl;
+                }
+                return null;
+            }
+            
+            private string GetM3U8(State state, string url, string reqStreamType, bool isMain)
+            {
+                string m3u8 = null;
+                string backupUrl = null;
+                if (state.IsReplay)
+                {
+                    // TODO: Load replay m3u8
+                }
+                else
+                {
+                    m3u8 = DownloadM3U8(url);
+                    if (reqStreamType == "output")
+                    {
+                        backupUrl = GetM3U8Url(state, "mini");
+                    }
+                }
+                if (string.IsNullOrEmpty(m3u8))
+                {
+                    return null;
+                }
+                if (!state.M3U8Map.ContainsKey(reqStreamType))
+                {
+                    state.M3U8Map[reqStreamType] = new Dictionary<string, string>();
+                }
+                m3u8 = m3u8.Replace("\r", string.Empty);
+                string prevRes = null;
+                string[] lines = m3u8.Split('\n');
+                string mainM3U8Name = "m3u8-sub_" + reqStreamType;
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    string line = lines[i].Trim();
+                    if (line.StartsWith("#"))
+                    {
+                        string tagName;
+                        Dictionary<string, string> attr = ParseAttributes(line, out tagName);
+                        if (tagName == "#EXT-X-STREAM-INF")
+                        {
+                            attr.TryGetValue("RESOLUTION", out prevRes);
+                        }
+                    }
+                    else if (line.EndsWith(".m3u8"))
+                    {
+                        if (!string.IsNullOrEmpty(prevRes) && !state.M3U8Map[reqStreamType].ContainsKey(prevRes))
+                        {
+                            state.M3U8Map[reqStreamType][prevRes] = line;
+                        }
+                        lines[i] = "/" + mainM3U8Name + "/" + state.UrlChRecName;
+                    }
+                    else if (line.EndsWith(".ts"))
+                    {
+                        // TODO: Save seg
+                    }
+                }
+                if (!isMain && m3u8.Contains("stitched-ad") && !string.IsNullOrEmpty(backupUrl))
+                {
+                    string m3u8Backup = DownloadM3U8(backupUrl);
+                    if (!string.IsNullOrEmpty(m3u8Backup))
+                    {
+                        m3u8Backup = m3u8Backup.Replace("\r", string.Empty);
+                        string[] backupLines = m3u8Backup.Split('\n');
+                        Dictionary<string, string> segmentMap = new Dictionary<string, string>();
+                        Dictionary<long, string> segTimes = GetSegmentTimes(lines);
+                        Dictionary<long, string> backupSegTimes = GetSegmentTimes(backupLines);
+                        foreach (KeyValuePair<long, string> seg in segTimes)
+                        {
+                            //segmentMap[seg.Value] = backupSegTimes.Last().Value;
+                            long closestTime = long.MaxValue;
+                            long matchingBackupTime = long.MaxValue;
+                            foreach (KeyValuePair<long, string> backupSeg in backupSegTimes)
+                            {
+                                long timeDiff = Math.Abs(seg.Key - backupSeg.Key);
+                                if (timeDiff < closestTime)
+                                {
+                                    closestTime = timeDiff;
+                                    matchingBackupTime = backupSeg.Key;
+                                    segmentMap[seg.Value] = backupSeg.Value;
+                                }
+                            }
+                            if (closestTime != long.MaxValue)
+                            {
+                                backupSegTimes.Remove(matchingBackupTime);
+                            }
+                        }
+                        for (int i = 0; i < lines.Length; i++)
+                        {
+                            string line = lines[i];
+                            if (line.Contains("stitched-ad"))
+                            {
+                                line = "";
+                            }
+                            if (line.StartsWith("#EXTINF:") && !line.Contains(",live"))
+                            {
+                                lines[i] = line.Substring(0, line.IndexOf(',')) + ",live";
+                                string backupSegment = segmentMap[lines[i + 1]];
+                                lines[i + 1] = backupSegment != null ? backupSegment : "";
+                            }
+                        }
+                    }
+                }
+                if (isMain)
+                {
+                    File.WriteAllText(Path.Combine(state.RecordingPath, mainM3U8Name + "-original"), m3u8);
+                    File.WriteAllLines(Path.Combine(state.RecordingPath, mainM3U8Name), lines);
+                }
+                // TODO: Save m3u8
+                return string.Join(Environment.NewLine, lines);
+            }
+            
+            private Dictionary<long, string> GetSegmentTimes(string[] lines)
+            {
+                Dictionary<long, string> result = new Dictionary<long, string>();
+                long lastDate = 0;
+                for (int i = 0; i < lines.Length; i++)
+                {
+                    string line = lines[i];
+                    if (line.StartsWith("#EXT-X-PROGRAM-DATE-TIME:"))
+                    {
+                        lastDate = DateTime.Parse(line.Substring(line.IndexOf(":") + 1)).Ticks;
+                    }
+                    else if (line.StartsWith("http"))
+                    {
+                        result[lastDate] = line;
+                    }
+                }
+                return result;
             }
         }
     }
