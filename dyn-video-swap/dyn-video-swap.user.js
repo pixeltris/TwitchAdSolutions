@@ -15,6 +15,7 @@
         scope.OPT_MODE_MUTE_BLACK = false;
         scope.OPT_MODE_VIDEO_SWAP = true;
         scope.OPT_MODE_LOW_RES = false;
+        scope.OPT_MODE_EMBED = false;
         scope.OPT_MODE_STRIP_AD_SEGMENTS = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 2;// Larger values might increase load time. Lower values may increase ad chance.
@@ -31,6 +32,9 @@
         if (!scope.OPT_ACCESS_TOKEN_PLAYER_TYPE && scope.OPT_MODE_LOW_RES) {
             scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = 'thunderdome';//480p
             //scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = 'picture-by-picture';//360p
+        }
+        if (!scope.OPT_ACCESS_TOKEN_PLAYER_TYPE && scope.OPT_MODE_EMBED) {
+            scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = 'embed';
         }
         // These are only really for Worker scope...
         scope.StreamInfos = [];
@@ -631,12 +635,17 @@
             }
             return null;
         }
-        var reactRootNode = document.querySelector('#root')?._reactRootContainer?._internalRoot?.current;
+        var reactRootNode = null;
+        var rootNode = document.querySelector('#root');
+        if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
+            reactRootNode = rootNode._reactRootContainer._internalRoot.current;
+        }
         if (!reactRootNode) {
             console.log('Could not find react root');
             return;
         }
-        var player = findReactNode(reactRootNode, node => node.setPlayerActive && node.props?.mediaPlayerInstance)?.props?.mediaPlayerInstance;
+        var player = findReactNode(reactRootNode, node => node.setPlayerActive && node.props && node.props.mediaPlayerInstance);
+        player = player && player.props && player.props.mediaPlayerInstance ? player.props.mediaPlayerInstance : null;
         var playerState = findReactNode(reactRootNode, node => node.setSrc && node.setInitialPlaybackSettings);
         if (!player) {
             console.log('Could not find player');
@@ -649,10 +658,10 @@
         if (player.paused) {
             return;
         }
-        const sink = player.mediaSinkManager || player.core?.mediaSinkManager;
-        if (sink?.video?._ffz_compressor) {
+        const sink = player.mediaSinkManager || (player.core ? player.core.mediaSinkManager : null);
+        if (sink && sink.video && sink.video._ffz_compressor) {
             const video = sink.video;
-            const volume = video.volume ?? player.getVolume();
+            const volume = video.volume ? video.volume : player.getVolume();
             const muted = player.isMuted();
             const newVideo = document.createElement('video');
             newVideo.volume = muted ? 0 : volume;
