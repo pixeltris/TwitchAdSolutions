@@ -21,7 +21,7 @@
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 2;// Larger values might increase load time. Lower values may increase ad chance.
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = true;
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT_DELAY = 10000;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT_DELAY = 60000;
         scope.OPT_MODE_PROXY_M3U8 = '';
         scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'thunderdome';
         scope.OPT_INITIAL_M3U8_ATTEMPTS = 1;
