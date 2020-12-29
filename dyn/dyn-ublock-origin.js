@@ -32,6 +32,8 @@ twitch-videoad.js application/javascript
         scope.StreamInfos = [];
         scope.StreamInfosByUrl = [];
         scope.CurrentChannelNameFromM3U8 = null;
+        scope.LastAdUrl = null;
+        scope.LastAdTime = 0;
     }
     declareOptions(window);
     ////////////////////////////////////
@@ -138,10 +140,13 @@ twitch-videoad.js application/javascript
         // NOTE: midroll ads are intertwined with live segments, always display the banner on midroll ads
         if (haveAdTags && (!textStr.includes(LIVE_SIGNIFIER) || textStr.includes('MIDROLL'))) {
             postMessage({key:'UboShowAdBanner'});
-        } else {
+        } else if ((LastAdUrl && LastAdUrl == url) || LastAdTime < Date.now() - 10000) {
             postMessage({key:'UboHideAdBanner'});
+            LastAdTime = 0;
         }
         if (haveAdTags) {
+            LastAdUrl = url;
+            LastAdTime = Date.now();
             if (OPT_MODE_NOTIFY_ADS_WATCHED) {
                 console.log('Stripping ads (instead of skipping ads)');
             }
@@ -420,7 +425,7 @@ twitch-videoad.js application/javascript
             var streamM3u8Response = await realFetch(streamM3u8Url);
             var streamM3u8 = await streamM3u8Response.text();
             var res = await tryNotifyAdsWatchedM3U8(streamM3u8);
-            if (res) {
+            if (res == 1) {
                 console.log("no ad at req " + i);
             } else {
                 console.log('ad at req ' + i);
@@ -465,10 +470,12 @@ twitch-videoad.js application/javascript
                                     // NOTE: This code path is untested
                                     for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS; i++) {
                                         var cloned = response.clone();
-                                        var responseData = await cloned.json();
+                                        var responseStr = await cloned.text();
+                                        var responseData = JSON.parse(responseStr);
                                         if (responseData && responseData.sig && responseData.token) {
-                                            if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.sig, responseData.token) > 0) {
-                                                break;
+                                            if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.sig, responseData.token) == 1) {
+                                                resolve(new Response(responseStr));
+                                                return;
                                             }
                                         } else {
                                             console.log('malformed');
@@ -476,6 +483,7 @@ twitch-videoad.js application/javascript
                                             break;
                                         }
                                     }
+                                    resolve(response);
                                 } else {
                                     resolve(response);
                                 }
@@ -487,10 +495,12 @@ twitch-videoad.js application/javascript
                                 if (response.status === 200) {
                                     for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS; i++) {
                                         var cloned = response.clone();
-                                        var responseData = await cloned.json();
+                                        var responseStr = await cloned.text();
+                                        var responseData = JSON.parse(responseStr);
                                         if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
-                                            if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value) > 0) {
-                                                break;
+                                            if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value) == 1) {
+                                                resolve(new Response(responseStr));
+                                                return;
                                             }
                                         } else {
                                             console.log('malformed');
