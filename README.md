@@ -32,7 +32,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
   - Uses a proxy server (set to one controlled by @ChoosenEye) to fetch an ad-free stream.
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
-  - **The current proxy owner doesn't like the url being used by this project, an alternative host would be ideal.** (requires a web server hosted in a non-ad country, taking a channel name as the last url arg, and fetching the m3u8).
+  - **The current proxy owner doesn't like the url being used by this project, an alternative host would be ideal.** *(requires a web server hosted in a non-ad country, taking a channel name as the last url arg, and fetching the m3u8 - see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8))*.
 
 ## Applying a solution (uBlock Origin)
 
