@@ -29,9 +29,10 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
   - Ads are muted / blacked out for the duration of the ad.
   - You might see tiny bits of the ad.
 - proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))
-  - Uses a proxy server (set to one controlled by @lukix29) to fetch an ad-free stream.
+  - Uses a proxy server (set to one controlled by @ChoosenEye) to fetch an ad-free stream.
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
+  - **The current proxy owner doesn't like the url being used by this project, an alternative host would be ideal.** (requires a web server hosted in a non-ad country, taking a channel name as the last url arg, and fetching the m3u8).
 
 ## Applying a solution (uBlock Origin)
 
@@ -57,7 +58,8 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707 (UserScript + FrankerFaceZ(optional))
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code (UserScript + FrankerFaceZ(optional))
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
-- [Twitch AdBlock](https://chrome.google.com/webstore/detail/mipdalemhlhfenbikcloloheedmmecme) - [code](https://robwu.nl/crxviewer/?crx=mipdalemhlhfenbikcloloheedmmecme&qf=js/background.js) (chrome extension - uses a proxy server to fetch an ad-free stream)
+- [Twitch AdBlock](https://chrome.google.com/webstore/detail/mipdalemhlhfenbikcloloheedmmecme) - [code](https://robwu.nl/crxviewer/?crx=mipdalemhlhfenbikcloloheedmmecme&qf=js/background.js) (extension - uses a proxy server to fetch an ad-free stream)
+- [Twitch Video Ad Blocker](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/) - [code](https://robwu.nl/crxviewer/?crx=https%3A%2F%2Faddons.mozilla.org%2Fen-GB%2Ffirefox%2Faddon%2Ftwitch-video-ad-blocker%2F) (Firefox extension - uses a proxy server to fetch an ad-free stream (proxied url may leak your login id / device id))
 
 ---
 
