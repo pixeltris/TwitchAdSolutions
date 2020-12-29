@@ -87,7 +87,7 @@ twitch-videoad.js application/javascript
                 }
             }
             function getAdDiv() {
-                var msg = 'uBlock Origin is waiting for ads to finish...';
+                var msg = 'Waiting for ads to finish...';
                 var playerRootDiv = document.querySelector('.video-player');
                 var adDiv = null;
                 if (playerRootDiv != null) {
@@ -135,7 +135,8 @@ twitch-videoad.js application/javascript
         if (!OPT_MODE_STRIP_AD_SEGMENTS) {
             return textStr;
         }
-        if (haveAdTags && !textStr.includes(LIVE_SIGNIFIER)) {
+        // NOTE: midroll ads are intertwined with live segments, always display the banner on midroll ads
+        if (haveAdTags && (!textStr.includes(LIVE_SIGNIFIER) || textStr.includes('MIDROLL'))) {
             postMessage({key:'UboShowAdBanner'});
         } else {
             postMessage({key:'UboHideAdBanner'});
