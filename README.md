@@ -24,6 +24,9 @@ If you don't trust third parties then `dyn-skip` / `dyn-skip-midroll` are decent
 - dyn-skip-midroll ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll.user.js))
   - The same as `dyn-skip`, but also skips midroll ads (experimental/untested).
   - This requires the script to work perfectly, otherwise the player will hit a reload loop.
+  - *From testing midroll ads result in a reload loop, possibly try `dyn-skip-midroll-alt` instead.*
+- dyn-skip-midroll-alt ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt.user.js))
+  - A mix of `dyn-skip-midroll` / `dyn` to avoid player reload spam during midroll ads (player reloads occur every 10 seconds, low resolution stream plays when nothing else is available - might be a little glitchy but better than full reload spam).
 - dyn-video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap.user.js))
   - Ads are replaced by a low resolution stream for the duration of the ad.
   - Similar to `dyn`, but skips closer to 20 seconds when switching to the live stream.

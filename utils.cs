@@ -21,6 +21,7 @@ namespace TwitchAdUtils
         static bool UseOldAccessToken = false;
         static bool UseAccessTokenTemplate = false;
         static bool ShouldNotifyAdWatched = true;
+        static bool ShouldNotifyAdWatchedMin = true;
         static string PlayerTypeNormal = "site";//embed
         static string PlayerTypeMiniNoAd = "picture-by-picture";//"thunderdome";
         static string Platform = "web";
@@ -295,14 +296,15 @@ namespace TwitchAdUtils
                                     if (streamM3u8.Contains(AdSignifier))
                                     {
                                         Console.WriteLine("has ad " + DateTime.Now.TimeOfDay);
-                                        if (!UseOldAccessToken && (ShouldNotifyAdWatched || forceSkipAd))
-                                        {
-                                            NotifyWatchedAd(uniqueId, streamM3u8);
-                                        }
                                     }
                                     else
                                     {
                                         Console.WriteLine("no ad " + DateTime.Now.TimeOfDay);
+                                    }
+                                    if ((streamM3u8.Contains(AdSignifier) || forceSkipAd) &&
+                                        (!UseOldAccessToken && (ShouldNotifyAdWatched || forceSkipAd)))
+                                    {
+                                        NotifyWatchedAd(uniqueId, streamM3u8);
                                     }
                                 }
                                 else
@@ -427,16 +429,23 @@ namespace TwitchAdUtils
                         wc.Headers["origin"] = "https://www.twitch.tv";
                         wc.Headers["referer"] = "https://www.twitch.tv/";
                         wc.Headers["user-agent"] = UserAgent;
-                        int totalAds = int.Parse(vals["TARG_total_ads"]);
-                        for (int adPos = 0; adPos < totalAds; adPos++)
+                        if (ShouldNotifyAdWatchedMin)
                         {
-                            vals["TARG_ad_position"] = adPos.ToString();
-                            SendGqlAdEvent(wc, "video_ad_impression", true, 0, adPos, vals);
-                            for (int quartile = 1; quartile <= 4; quartile++)
+                            SendGqlAdEvent(wc, "video_ad_pod_complete", false, 0, 0, vals);
+                        }
+                        else
+                        {
+                            int totalAds = int.Parse(vals["TARG_total_ads"]);
+                            for (int adPos = 0; adPos < totalAds; adPos++)
                             {
-                                SendGqlAdEvent(wc, "video_ad_quartile_complete", true, quartile, adPos, vals);
+                                vals["TARG_ad_position"] = adPos.ToString();
+                                SendGqlAdEvent(wc, "video_ad_impression", true, 0, adPos, vals);
+                                for (int quartile = 1; quartile <= 4; quartile++)
+                                {
+                                    SendGqlAdEvent(wc, "video_ad_quartile_complete", true, quartile, adPos, vals);
+                                }
+                                SendGqlAdEvent(wc, "video_ad_pod_complete", false, 0, adPos, vals);
                             }
-                            SendGqlAdEvent(wc, "video_ad_pod_complete", false, 0, adPos, vals);
                         }
                     }
                     break;
@@ -711,8 +720,8 @@ namespace TwitchAdUtils
                                             string mini = RunImpl(RunnerMode.MiniNoAd, channelName, true);
                                             if (!string.IsNullOrEmpty(mini))
                                             {
-                                                string alt = RunImpl(RunnerMode.Proxy, channelName, true);
-                                                //string alt = RunImpl(RunnerMode.Normal, channelName, true, true);
+                                                //string alt = RunImpl(RunnerMode.Proxy, channelName, true);
+                                                string alt = RunImpl(RunnerMode.Normal, channelName, true, true);
                                                 state.M3U8Normal = normal;
                                                 state.M3U8Mini = mini;
                                                 state.M3U8Alt = alt;
@@ -951,7 +960,8 @@ namespace TwitchAdUtils
                             if (line.StartsWith("#EXTINF:") && !line.Contains(",live"))
                             {
                                 lines[i] = line.Substring(0, line.IndexOf(',')) + ",live";
-                                string backupSegment = segmentMap[lines[i + 1]];
+                                string backupSegment;
+                                segmentMap.TryGetValue(lines[i + 1], out backupSegment);
                                 lines[i + 1] = backupSegment != null ? backupSegment : "";
                             }
                         }
