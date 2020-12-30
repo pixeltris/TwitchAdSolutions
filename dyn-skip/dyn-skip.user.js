@@ -84,6 +84,7 @@
             this.onmessage = function(e) {
                 if (e.data.key == 'UboShowAdBanner') {
                     if (adDiv == null) { adDiv = getAdDiv(); }
+                    adDiv.P.textContent = 'Waiting for' + (e.data.isMidroll ? ' midroll' : '') + ' ads to finish...';
                     adDiv.style.display = 'block';
                 }
                 else if (e.data.key == 'UboHideAdBanner') {
@@ -98,7 +99,6 @@
                 }
             }
             function getAdDiv() {
-                var msg = 'Waiting for ads to finish...';
                 var playerRootDiv = document.querySelector('.video-player');
                 var adDiv = null;
                 if (playerRootDiv != null) {
@@ -106,8 +106,9 @@
                     if (adDiv == null) {
                         adDiv = document.createElement('div');
                         adDiv.className = 'ubo-overlay';
-                        adDiv.innerHTML = '<div class="player-ad-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 10px;"><p>' + msg + '</p></div>';
+                        adDiv.innerHTML = '<div class="player-ad-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 10px;"><p></p></div>';
                         adDiv.style.display = 'none';
+                        adDiv.P = adDiv.querySelector('p');
                         playerRootDiv.appendChild(adDiv);
                     }
                 }
@@ -148,7 +149,7 @@
         }
         // NOTE: midroll ads are intertwined with live segments, always display the banner on midroll ads
         if (haveAdTags && (!textStr.includes(LIVE_SIGNIFIER) || textStr.includes('MIDROLL'))) {
-            postMessage({key:'UboShowAdBanner'});
+            postMessage({key:'UboShowAdBanner',isMidroll:textStr.includes('MIDROLL')});
         } else if ((LastAdUrl && LastAdUrl == url) || LastAdTime < Date.now() - 10000) {
             postMessage({key:'UboHideAdBanner'});
             LastAdTime = 0;
