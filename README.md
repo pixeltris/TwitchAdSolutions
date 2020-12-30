@@ -6,9 +6,9 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 M3U8 proxies (or full proxies) are currently the most reliable way of avoiding ads (assuming you trust the third party). More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
 
-- `Twitch AdBlock` by ChoosenEye - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/mipdalemhlhfenbikcloloheedmmecme) / [firefox](https://addons.mozilla.org/de/firefox/addon/twitch-adblock/)
-- `Twitch Video Ad Blocker` by squizc - [chrome](https://chrome.google.com/webstore/detail/ttv-intrusive-ad-blocker/gggloiaahekkkndacnpecpgafnehmlja) / [firefox](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/) *(proxied url includes your user id / a unique id used for gql requests)*
-- `proxy-m3u8` - see below (currently uses the proxy server by ChoosenEye)
+- `Twitch AdBlock` - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/mipdalemhlhfenbikcloloheedmmecme) / [firefox](https://addons.mozilla.org/de/firefox/addon/twitch-adblock/)
+- `Twitch Video Ad Blocker` - [chrome](https://chrome.google.com/webstore/detail/ttv-intrusive-ad-blocker/gggloiaahekkkndacnpecpgafnehmlja) / [firefox](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/) *(proxied url includes your user id / a unique id used for gql requests)*
+- `proxy-m3u8` - see below (currently uses the proxy server used in `Twitch AdBlock`)
 
 If you don't trust third parties then `dyn-skip` / `dyn-skip-midroll-alt` are decent. `ttv-tools` (firefox) also has nice features.
 
@@ -40,7 +40,7 @@ If you don't trust third parties then `dyn-skip` / `dyn-skip-midroll-alt` are de
   - Ads are muted / blacked out for the duration of the ad.
   - You might see tiny bits of the ad.
 - proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))
-  - Uses a proxy server (set to one controlled by ChoosenEye) to fetch an ad-free stream.
+  - Uses a proxy server to fetch an ad-free stream.
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
   - **The current proxy owner doesn't like the url being used by this project, an alternative host would be ideal.** *(requires a web server hosted in a non-ad country, taking a channel name as the last url arg, and fetching the m3u8 - see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8))*.
