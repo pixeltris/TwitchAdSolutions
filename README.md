@@ -7,7 +7,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 M3U8 proxies (or full proxies) are currently the most reliable way of avoiding ads (assuming you trust the third party). More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
 
 - `Twitch Video Ad Blocker` - [chrome](https://chrome.google.com/webstore/detail/ttv-intrusive-ad-blocker/gggloiaahekkkndacnpecpgafnehmlja) / [firefox](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/) *(proxied url includes your user id / a unique id used for gql requests)*
-- `proxy-m3u8` - see below (currently uses the proxy server used in `Twitch Video Ad Blocker` - author asks for donations to cover costs (see links above))
+- `proxy-m3u8` - see below (uses `Twitch Video Ad Blocker` proxy url - host asks for donations to cover costs)
 
 If you don't trust third parties then:
 
@@ -26,7 +26,7 @@ If you don't trust third parties then:
 - dyn-skip-midroll-alt ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt.user.js))
   - A mix of `dyn-skip` / `dyn`. During midrolls this plays a low resolution stream instead of nothing - might be a little glitchy but should always play *something*.
   - *If you see a `Waiting for ads to finish` banner without `midroll` in the banner text, you should be able to just refresh the page to get a regular stream.*
-- dyn-skip-midroll ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll.user.js)) *(not recommended)*
+- dyn-skip-midroll ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll.user.js)) **(not recommended)**
   - The same as `dyn-skip`, but *attempts* to fully skip midroll ads *(I'm not sure if this has ever actually worked - infinite reload)*.
   - **This requires the script to work perfectly, otherwise the player will hit a reload loop.**
 - dyn-video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap.user.js))
@@ -74,7 +74,6 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707 (UserScript + FrankerFaceZ(optional))
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code (UserScript + FrankerFaceZ(optional))
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
-- [Twitch AdBlock](https://chrome.google.com/webstore/detail/mipdalemhlhfenbikcloloheedmmecme) - [code](https://robwu.nl/crxviewer/?crx=mipdalemhlhfenbikcloloheedmmecme&qf=js/background.js) (extension - uses a proxy server to fetch an ad-free stream)
 - [Twitch Video Ad Blocker](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/) - [code](https://robwu.nl/crxviewer/?crx=https%3A%2F%2Faddons.mozilla.org%2Fen-GB%2Ffirefox%2Faddon%2Ftwitch-video-ad-blocker%2F&qf=js/background.js) (extension - uses a proxy server to fetch an ad-free stream *(proxied url includes your user id / a unique id used for gql requests)*)
 
 ---
