@@ -6,8 +6,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 M3U8 proxies (or full proxies) are currently the most reliable way of avoiding ads (assuming you trust the third party). More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
 
-- `Twitch Video Ad Blocker` - [chrome](https://chrome.google.com/webstore/detail/ttv-intrusive-ad-blocker/gggloiaahekkkndacnpecpgafnehmlja) / [firefox](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/) *(proxied url includes your user id / a unique id used for gql requests)*
-- `proxy-m3u8` - see below (uses `Twitch Video Ad Blocker` proxy url - host asks for donations to cover costs)
+- `Twitch Video Ad Blocker` - [chrome](https://chrome.google.com/webstore/detail/ttv-intrusive-ad-blocker/gggloiaahekkkndacnpecpgafnehmlja) / [firefox](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/)
 
 If you don't trust third parties then:
 
@@ -48,6 +47,7 @@ If you don't trust third parties then:
 - proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))
   - Uses a proxy server to fetch an ad-free stream.
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
+  - Uses proxy from `Twitch Video Ad Blocker` -  host asks for donations to cover costs.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
 
 ## Applying a solution (uBlock Origin)
@@ -66,6 +66,7 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 
 ## Other solutions / projects
 
+- https://github.com/ttvintrusiveadblocker/ttv-intrusive-blocker (extension)
 - https://github.com/odensc/ttv-ublock (extension - purple screen may display every 10-15 mins)
 - https://github.com/Nerixyz/ttv-tools (Firefox extension)
 - https://github.com/LeonHeidelbach/ttv_adEraser (extension)
@@ -74,7 +75,6 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707 (UserScript + FrankerFaceZ(optional))
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code (UserScript + FrankerFaceZ(optional))
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
-- [Twitch Video Ad Blocker](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/) - [code](https://robwu.nl/crxviewer/?crx=https%3A%2F%2Faddons.mozilla.org%2Fen-GB%2Ffirefox%2Faddon%2Ftwitch-video-ad-blocker%2F&qf=js/background.js) (extension - uses a proxy server to fetch an ad-free stream *(proxied url includes your user id / a unique id used for gql requests)*)
 
 ---
 
