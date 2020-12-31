@@ -6,11 +6,14 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 M3U8 proxies (or full proxies) are currently the most reliable way of avoiding ads (assuming you trust the third party). More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
 
-- `Twitch AdBlock` - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/mipdalemhlhfenbikcloloheedmmecme) / [firefox](https://addons.mozilla.org/de/firefox/addon/twitch-adblock/)
 - `Twitch Video Ad Blocker` - [chrome](https://chrome.google.com/webstore/detail/ttv-intrusive-ad-blocker/gggloiaahekkkndacnpecpgafnehmlja) / [firefox](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/) *(proxied url includes your user id / a unique id used for gql requests)*
-- `proxy-m3u8` - see below (currently uses the proxy server used in `Twitch AdBlock`)
+- `proxy-m3u8` - see below (currently uses the proxy server used in `Twitch Video Ad Blocker` - author asks for donations to cover costs (see links above))
 
-If you don't trust third parties then `dyn-skip` / `dyn-skip-midroll-alt` are decent. `ttv-tools` (firefox) also has nice features.
+If you don't trust third parties then:
+
+- `dyn-skip` / `dyn-skip-midroll-alt` are decent.
+- `ttv-tools` (firefox) has nice features.
+- `Alternate Player for Twitch.tv` consistently updates with new ad-blocking methods.
 
 ## Current solutions
 
@@ -19,12 +22,12 @@ If you don't trust third parties then `dyn-skip` / `dyn-skip-midroll-alt` are de
 - dyn-skip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip.user.js))
   - Notifies Twitch that ads were watched before requesting the main live stream.
   - Falls back to mute-black if this fails (use an alternative solution if it always fails for you, as it adds additional load).
-  - *Midroll ads are muted/blacked out. See `dyn-skip-midroll-alt` for a an alternative solution.*
+  - *Midroll ads are muted/blacked out. See `dyn-skip-midroll-alt` for an alternative solution.*
 - dyn-skip-midroll-alt ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt.user.js))
   - A mix of `dyn-skip` / `dyn`. During midrolls this plays a low resolution stream instead of nothing - might be a little glitchy but should always play *something*.
   - *If you see a `Waiting for ads to finish` banner without `midroll` in the banner text, you should be able to just refresh the page to get a regular stream.*
-- dyn-skip-midroll ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll.user.js))
-  - The same as `dyn-skip`, but *attempts* to fully skip midroll ads (I'm not sure if this has ever actually worked).
+- dyn-skip-midroll ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll.user.js)) *(not recommended)*
+  - The same as `dyn-skip`, but *attempts* to fully skip midroll ads *(I'm not sure if this has ever actually worked - infinite reload)*.
   - **This requires the script to work perfectly, otherwise the player will hit a reload loop.**
 - dyn-video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap.user.js))
   - Ads are replaced by a low resolution stream for the duration of the ad.
@@ -46,7 +49,6 @@ If you don't trust third parties then `dyn-skip` / `dyn-skip-midroll-alt` are de
   - Uses a proxy server to fetch an ad-free stream.
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
-  - **The current proxy owner doesn't like the url being used by this project, an alternative host would be ideal.** *(requires a web server hosted in a non-ad country, taking a channel name as the last url arg, and fetching the m3u8 - see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8))*.
 
 ## Applying a solution (uBlock Origin)
 
