@@ -22,13 +22,14 @@ namespace TwitchAdUtils
         static bool UseAccessTokenTemplate = false;
         static bool ShouldNotifyAdWatched = true;
         static bool ShouldNotifyAdWatchedMin = true;
-        static string PlayerTypeNormal = "site";//embed
+        static bool ShouldDenyAd = false;
+        static string PlayerTypeNormal = "site";//embed squad_secondary squad_primary
         static string PlayerTypeMiniNoAd = "picture-by-picture";//"thunderdome";
         static string Platform = "web";
         static string PlayerBackend = "mediaplayer";
         static string MainM3U8AdditionalParams = "";
         static string AdSignifier = "stitched-ad";
-        static string ProxyUrl = "http://choosen.dev/stream/twitch/";
+        static string ProxyUrl = "";
         static int TargetResolution = 480;
         static TimeSpan LoopDelay = TimeSpan.FromSeconds(1);
         
@@ -115,7 +116,7 @@ namespace TwitchAdUtils
                             for (int i = 0; i < lines.Length; i++)
                             {
                                 string line = lines[i];
-                                if (line.Trim().StartsWith("declareOptions("))
+                                if (line.Trim().StartsWith("// Modify options based on mode"))
                                 {
                                     modifiedOptions = true;
                                 }
@@ -290,26 +291,42 @@ namespace TwitchAdUtils
                             string streamM3u8Url = lines.FirstOrDefault(x => x.EndsWith(".m3u8"));
                             if (!string.IsNullOrEmpty(streamM3u8Url))
                             {
-                                string streamM3u8 = wc.DownloadString(streamM3u8Url);
-                                if (!string.IsNullOrEmpty(streamM3u8Url))
+                                bool foundAd = true;
+                                while (foundAd)
                                 {
-                                    if (streamM3u8.Contains(AdSignifier))
+                                    string streamM3u8 = wc.DownloadString(streamM3u8Url);
+                                    if (!string.IsNullOrEmpty(streamM3u8Url))
                                     {
-                                        Console.WriteLine("has ad " + DateTime.Now.TimeOfDay);
+                                        if (streamM3u8.Contains(AdSignifier))
+                                        {
+                                            Console.WriteLine("has ad " + DateTime.Now.TimeOfDay);
+                                            if (ShouldDenyAd)
+                                            {
+                                                DeclineAd(uniqueId, streamM3u8);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            Console.WriteLine("no ad " + DateTime.Now.TimeOfDay);
+                                        }
+                                        if ((streamM3u8.Contains(AdSignifier) || forceSkipAd) &&
+                                            (!UseOldAccessToken && (ShouldNotifyAdWatched || forceSkipAd)))
+                                        {
+                                            NotifyWatchedAd(uniqueId, streamM3u8);
+                                        }
                                     }
                                     else
                                     {
-                                        Console.WriteLine("no ad " + DateTime.Now.TimeOfDay);
+                                        Console.WriteLine("Failed to fetch streamM3u8Url");
                                     }
-                                    if ((streamM3u8.Contains(AdSignifier) || forceSkipAd) &&
-                                        (!UseOldAccessToken && (ShouldNotifyAdWatched || forceSkipAd)))
+                                    if (!ShouldDenyAd)
                                     {
-                                        NotifyWatchedAd(uniqueId, streamM3u8);
+                                        break;
                                     }
-                                }
-                                else
-                                {
-                                    Console.WriteLine("Failed to fetch streamM3u8Url");
+                                    else
+                                    {
+                                        Thread.Sleep(LoopDelay);
+                                    }
                                 }
                             }
                             else
@@ -369,6 +386,41 @@ namespace TwitchAdUtils
                 return result;
             }
             return defaultValue;
+        }
+        
+        static void DeclineAd(string uniqueId, string streamM3u8)
+        {
+            string[] lines = streamM3u8.Split('\n');
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Contains(AdSignifier))
+                {
+                    Dictionary<string, string> attr = ParseAttributes(lines[i]);
+                    Dictionary<string, string> vals = new Dictionary<string, string>();
+                    vals["TARG_adSessionID"] = GetOrDefault(attr, "X-TV-TWITCH-AD-AD-SESSION-ID");
+                    string str = @"[{""operationName"":""VideoAdRequestDecline"",""variables"":{""context"":{""adSessionID"":""TARG_adSessionID"",""clientContext"":""{\""isAudioOnly\"":false,\""isMiniTheater\"":false,\""isPIP\"":true,\""isUsingExternalPlayback\"":false}"",""isAudioOnly"":false,""isMiniTheater"":false,""isPIP"":false,""isUsingExternalPlayback"":false,""duration"":30,""isVLM"":false,""rollType"":""PREROLL""}},""extensions"":{""persistedQuery"":{""version"":1,""sha256Hash"":""XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX""}}}]";
+                    foreach (KeyValuePair<string, string> val in vals)
+                    {
+                        str = str.Replace(val.Key, val.Value);
+                    }
+                    using (WebClient wc = new WebClient())
+                    {
+                        wc.Proxy = null;
+                        wc.Headers["Client-Id"] = ClientID;
+                        wc.Headers["X-Device-Id"] = uniqueId;
+                        wc.Headers["accept"] = "*/*";
+                        wc.Headers["accept-encoding"] = "gzip, deflate, br";
+                        wc.Headers["accept-language"] = "en-us";
+                        wc.Headers["content-type"] = "text/plain; charset=UTF-8";
+                        wc.Headers["origin"] = "https://www.twitch.tv";
+                        wc.Headers["referer"] = "https://www.twitch.tv/";
+                        wc.Headers["user-agent"] = UserAgent;
+                        string st2 = wc.UploadString("https://gql.twitch.tv/gql", str);
+                        Console.WriteLine(st2);
+                    }
+                    return;
+                }
+            }
         }
         
         static void SendGqlAdEvent(WebClient wc, string eventName, bool includeAdInfo, int adQuartile, int adPos, Dictionary<string, string> vals)
