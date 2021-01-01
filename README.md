@@ -11,8 +11,9 @@ M3U8 proxies (or full proxies) are currently the most reliable way of avoiding a
 If you don't trust third parties then:
 
 - `dyn-skip` / `dyn-skip-midroll-alt` are decent.
-- `ttv-tools` (firefox) has nice features.
 - `Alternate Player for Twitch.tv` consistently updates with new ad-blocking methods.
+- `ttv_adEraser` somewhat fixes the purple screen issue of `ttv-ublock`.
+- `ttv-tools` (firefox) has nice features.
 
 ## Current solutions
 
@@ -52,17 +53,14 @@ If you don't trust third parties then:
 
 ## Applying a solution (uBlock Origin)
 
-uBlock Origin solutions are single files, suffixed by `ublock-origin.js` e.g. `low-res-ublock-origin.js`.
-
 - Navigate to the uBlock Origin Dashboard (the extension options)
 - Under the `My filters` tab add `twitch.tv##+js(twitch-videoad)`.
 - Under the `Settings` tab, enable `I am an advanced user`, then click the cog that appears. Modify the value of `userResourcesLocation` from `unset` to the full url of the solution you wish to use (if a url is already in use, add a space after the existing url). e.g. `userResourcesLocation https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/dyn/dyn-ublock-origin.js` 
+- To ensure uBlock Origin loads the script I recommend that you disable/enable the uBlock Origin extension (or restart your browser).
 
 ## Applying a solution (userscript)
 
-Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. `low-res.user.js`
-
-- Viewing one of the userscript files should prompt the given script to be added
+- Viewing one of the userscript files should prompt the given script to be added.
 
 ## Other solutions / projects
 
@@ -82,6 +80,10 @@ Tampermonkey / Greasemonkey can be used on the files suffixed by `user.js` e.g. 
 - https://github.com/nopbreak/TwitchMod (android app)
 - https://twitchls.com/ (external site - purple screen may display every 10-15 mins)
 - [Use a VPN targeting a region without ads](https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/)
+
+---
+
+For a more detailed description of the above refer to [this](other-solutions.md).
 
 ## NOTE/TODO
 
