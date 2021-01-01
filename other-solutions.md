@@ -7,7 +7,7 @@ Web browser extensions / scripts:
   - Twitch detects this and may display a purple screen every 10-15 mins asking the user to remove ad blockers.
 - https://github.com/Nerixyz/ttv-tools
   - Notifies Twitch that ads were watched and then reloads the player.
-  - Can replace ad segments with a customm video (instead of ad skipping).
+  - Can replace ad segments with a custom video (instead of ad skipping).
   - Can keep stream at lowest latency (speeds up stream if too far behind).
 - https://github.com/LeonHeidelbach/ttv_adEraser
   - Modifies DOM to switch between the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
@@ -29,4 +29,4 @@ Applications / third party websites:
 - https://twitchls.com/
   - Uses the `embed` player. Purple screen may display every 10-15 mins.
 - https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/
-  - Some countries don't get ads. A simple VPN/VPS could be used to block ads by proxying the m3u8 without having to run a VPS on your all your traffic (just the initial m3u8).
+  - Some countries don't get ads. A simple VPN/VPS could be used to block ads by proxying the m3u8 without having to proxy all your traffic (just the initial m3u8).
