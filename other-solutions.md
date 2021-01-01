@@ -1,32 +1,32 @@
 Web browser extensions / scripts:
 
 - https://github.com/ttvintrusiveadblocker/ttv-intrusive-blocker
- - Uses a proxy on the main m3u8 file to get a stream without ads (no prerolls / midrolls).
+  - Uses a proxy on the main m3u8 file to get a stream without ads (no prerolls / midrolls).
 - https://github.com/odensc/ttv-ublock
- - Simulates `embed` Twitch player at a network level (doesn't modify DOM).
- - Twitch detects this and may display a purple screen every 10-15 mins asking the user to remove ad blockers.
+  - Simulates `embed` Twitch player at a network level (doesn't modify DOM).
+  - Twitch detects this and may display a purple screen every 10-15 mins asking the user to remove ad blockers.
 - https://github.com/Nerixyz/ttv-tools
- - Notifies Twitch that ads were watched and then reloads the player.
- - Can replace ad segments with a customm video (instead of ad skipping).
- - Can keep stream at lowest latency (speeds up stream if too far behind).
+  - Notifies Twitch that ads were watched and then reloads the player.
+  - Can replace ad segments with a customm video (instead of ad skipping).
+  - Can keep stream at lowest latency (speeds up stream if too far behind).
 - https://github.com/LeonHeidelbach/ttv_adEraser
- - Modifies DOM to switch between the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
+  - Modifies DOM to switch between the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
 - https://github.com/instance01/Twitch-HLS-AdBlock
- - Removes ad segments. May result in m3u8 being requested quickly in succession if all segments are removed.
+  - Removes ad segments. May result in m3u8 being requested quickly in succession if all segments are removed.
 - https://github.com/Wilkolicious/twitchAdSkip
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707/
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code
- - Reloads the player (or page) when it detects the ad banner in DOM.
+  - Reloads the player (or page) when it detects the ad banner in DOM.
 - `Alternate Player for Twitch.tv`
- - Notifies Twitch that ads were watched before loading the main stream (prerolls).
- - Removes ad segments which cannot be skipped (midrolls). The player will freeze on the last live frame until no more ads.
+  - Notifies Twitch that ads were watched before loading the main stream (prerolls).
+  - Removes ad segments which cannot be skipped (midrolls). The player will freeze on the last live frame until no more ads.
 
 Applications / third party websites:
 - https://github.com/streamlink/streamlink
- - Removes ad segments (I assume this will freeze on the last live frame until no more ads).
+  - Removes ad segments (I assume this will freeze on the last live frame until no more ads).
 - https://github.com/nopbreak/TwitchMod
- - Unsure how this one blocks ads, but it claims that it can. As this is a mod of the official Twitch app (which isn't obfuscated) they might have insight into better ad blocking methods.
+  - Unsure how this one blocks ads, but it claims that it can. As this is a mod of the official Twitch app (which isn't obfuscated) they might have insight into better ad blocking methods.
 - https://twitchls.com/
- - Uses the `embed` player. Purple screen may display every 10-15 mins.
+  - Uses the `embed` player. Purple screen may display every 10-15 mins.
 - https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/
- - Some countries don't get ads. A simple VPN/VPS could be used to block ads by proxying the m3u8 without having to run a VPS on your all your traffic (just the initial m3u8).
+  - Some countries don't get ads. A simple VPN/VPS could be used to block ads by proxying the m3u8 without having to run a VPS on your all your traffic (just the initial m3u8).

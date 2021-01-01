@@ -64,6 +64,8 @@ If you don't trust third parties then:
 
 ## Other solutions / projects
 
+For a more detailed description of the following please refer to [this](other-solutions.md).
+
 - https://github.com/ttvintrusiveadblocker/ttv-intrusive-blocker (extension)
 - https://github.com/odensc/ttv-ublock (extension - purple screen may display every 10-15 mins)
 - https://github.com/Nerixyz/ttv-tools (Firefox extension)
@@ -80,10 +82,6 @@ If you don't trust third parties then:
 - https://github.com/nopbreak/TwitchMod (android app)
 - https://twitchls.com/ (external site - purple screen may display every 10-15 mins)
 - [Use a VPN targeting a region without ads](https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/)
-
----
-
-For a more detailed description of the above refer to [this](other-solutions.md).
 
 ## NOTE/TODO
 
