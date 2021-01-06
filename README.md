@@ -65,7 +65,6 @@ Alternatively:
 
 For a more detailed description of the following please refer to [this](other-solutions.md).
 
-- https://github.com/ttvintrusiveadblocker/ttv-intrusive-blocker (extension)
 - https://github.com/odensc/ttv-ublock (extension - purple screen may display every 10-15 mins)
 - https://github.com/Nerixyz/ttv-tools (Firefox extension)
 - https://github.com/LeonHeidelbach/ttv_adEraser (extension)

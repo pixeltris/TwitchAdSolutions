@@ -1,7 +1,5 @@
 Web browser extensions / scripts:
 
-- https://github.com/ttvintrusiveadblocker/ttv-intrusive-blocker
-  - Uses a proxy on the main m3u8 file to get a stream without ads (no prerolls / midrolls).
 - https://github.com/odensc/ttv-ublock
   - Simulates `embed` Twitch player at a network level (doesn't modify DOM).
   - Twitch detects this and may display a purple screen every 10-15 mins asking the user to remove ad blockers.
