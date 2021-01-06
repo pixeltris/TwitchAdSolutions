@@ -4,11 +4,11 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 ## Recommendations
 
-M3U8 proxies (or full proxies) are currently the most reliable way of avoiding ads (assuming you trust the third party). More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
+M3U8 proxies (or full proxies / VPNs) are currently the most reliable way of avoiding ads. More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
 
-- `Twitch Video Ad Blocker` - [chrome](https://chrome.google.com/webstore/detail/ttv-intrusive-ad-blocker/gggloiaahekkkndacnpecpgafnehmlja) / [firefox](https://addons.mozilla.org/en-GB/firefox/addon/twitch-video-ad-blocker/)
+- *There currently aren't any public M3U8 proxies...*
 
-If you don't trust third parties then:
+Alternatively:
 
 - `dyn-skip` / `dyn-skip-midroll-alt` are decent.
 - `Alternate Player for Twitch.tv` consistently updates with new ad-blocking methods.
@@ -45,10 +45,9 @@ If you don't trust third parties then:
 - mute-black ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black.user.js))
   - Ads are muted / blacked out for the duration of the ad.
   - You might see tiny bits of the ad.
-- proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))
+- ~~proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))~~ **(proxy currently points to a dead url)**
   - Uses a proxy server to fetch an ad-free stream.
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
-  - Uses proxy from `Twitch Video Ad Blocker` -  host asks for donations to cover costs.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
 
 ## Applying a solution (uBlock Origin)
