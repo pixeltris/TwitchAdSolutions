@@ -17,9 +17,11 @@ twitch-videoad.js application/javascript
         scope.OPT_MODE_PROXY_M3U8_OBFUSCATED = true;
         scope.OPT_MODE_PROXY_M3U8_FULL_URL = false;
         scope.OPT_MODE_PROXY_M3U8_PARTIAL_URL = true;
-        scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'thunderdome';
+        scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'picture-by-picture';
+        scope.OPT_BACKUP_PLAYER_TYPE = 'picture-by-picture';
         scope.OPT_INITIAL_M3U8_ATTEMPTS = 1;
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = '';
+        scope.OPT_ACCESS_TOKEN_TEMPLATE = true;
         scope.AD_SIGNIFIER = 'stitched-ad';
         scope.LIVE_SIGNIFIER = ',live';
         scope.CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
@@ -45,6 +47,8 @@ twitch-videoad.js application/javascript
         scope.CurrentChannelNameFromM3U8 = null;
         scope.LastAdUrl = null;
         scope.LastAdTime = 0;
+        // Need this in both scopes. Window scope needs to update this to worker scope.
+        scope.gql_device_id = null;
     }
     declareOptions(window);
     ////////////////////////////////////
@@ -57,7 +61,6 @@ twitch-videoad.js application/javascript
     var foundAdBanner = false;// Is the ad banner visible (top left of screen)
     ////////////////////////////////////
     var notifyAdsWatchedReloadNextTime = 0;
-    var gql_device_id = null;
     var twitchMainWorker = null;
     const oldWorker = window.Worker;
     window.Worker = class Worker extends oldWorker {
@@ -76,7 +79,14 @@ twitch-videoad.js application/javascript
                 ${getSegmentTimes.toString()}
                 ${hookWorkerFetch.toString()}
                 ${declareOptions.toString()}
+                ${getAccessToken.toString()}
+                ${gqlRequest.toString()}
                 declareOptions(self);
+                self.addEventListener('message', function(e) {
+                    if (e.data.key == 'UboUpdateDeviceId') {
+                        gql_device_id = e.data.value;
+                    }
+                });
                 hookWorkerFetch();
                 importScripts('${jsURL}');
             `
@@ -170,12 +180,12 @@ twitch-videoad.js application/javascript
             if (!streamInfo.BackupFailed && streamInfo.BackupUrl == null) {
                 // NOTE: We currently don't fetch the oauth_token. You wont be able to access private streams like this.
                 streamInfo.BackupFailed = true;
-                var accessTokenResponse = await realFetch('https://api.twitch.tv/api/channels/' + streamInfo.ChannelName + '/access_token?oauth_token=undefined&need_https=true&platform=web&player_type=picture-by-picture&player_backend=mediaplayer', {headers:{'client-id':CLIENT_ID}});
+                var accessTokenResponse = await getAccessToken(streamInfo.ChannelName, OPT_BACKUP_PLAYER_TYPE);
                 if (accessTokenResponse.status === 200) {
-                    var accessToken = JSON.parse(await accessTokenResponse.text());
+                    var accessToken = await accessTokenResponse.json();
                     var urlInfo = new URL('https://usher.ttvnw.net/api/channel/hls/' + streamInfo.ChannelName + '.m3u8' + streamInfo.RootM3U8Params);
-                    urlInfo.searchParams.set('sig', accessToken.sig);
-                    urlInfo.searchParams.set('token', accessToken.token);
+                    urlInfo.searchParams.set('sig', accessToken.data.streamPlaybackAccessToken.signature);
+                    urlInfo.searchParams.set('token', accessToken.data.streamPlaybackAccessToken.value);
                     var encodingsM3u8Response = await realFetch(urlInfo.href);
                     if (encodingsM3u8Response.status === 200) {
                         // TODO: Maybe look for the most optimal m3u8
@@ -363,6 +373,41 @@ twitch-videoad.js application/javascript
             },
         }];
     }
+    function getAccessToken(channelName, playerType) {
+        var body = null;
+        if (OPT_ACCESS_TOKEN_TEMPLATE) {
+            var templateQuery = 'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature    __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}';
+            body = {
+                operationName: 'PlaybackAccessToken_Template',
+                query: templateQuery,
+                variables: {
+                    'isLive': true,
+                    'login': channelName,
+                    'isVod': false,
+                    'vodID': '',
+                    'playerType': playerType
+                }
+            };
+        } else {
+            body = {
+                operationName: 'PlaybackAccessToken',
+                variables: {
+                    isLive: true,
+                    login: channelName,
+                    isVod: false,
+                    vodID: '',
+                    playerType: playerType
+                },
+                extensions: {
+                    persistedQuery: {
+                        version: 1,
+                        sha256Hash: '0828119ded1c13477966434e15800ff57ddacf13ba1911c129dc2200705b0712',
+                    }
+                }
+            };
+        }
+        return gqlRequest(body);
+    }
     function gqlRequest(body) {
         return fetch('https://gql.twitch.tv/gql', {
             method: 'POST',
@@ -488,6 +533,12 @@ twitch-videoad.js application/javascript
                     if (typeof deviceId === 'string') {
                         gql_device_id = deviceId;
                     }
+                    if (gql_device_id && twitchMainWorker) {
+                        twitchMainWorker.postMessage({
+                            key: 'UboUpdateDeviceId',
+                            value: gql_device_id
+                        });
+                    }
                     if (OPT_MODE_NOTIFY_ADS_WATCHED) {
                         var tok = null, sig = null;
                         if (url.includes('/access_token')) {
@@ -594,12 +645,12 @@ twitch-videoad.js application/javascript
                         // Create new video stream TODO: Do this with callbacks
                         var channelName = window.location.pathname.substr(1);// TODO: Better way of determining the channel name
                         var tempM3u8Url = null;
-                        var accessTokenResponse = await fetch('https://api.twitch.tv/api/channels/' + channelName + '/access_token?oauth_token=undefined&need_https=true&platform=web&player_type=' + OPT_VIDEO_SWAP_PLAYER_TYPE + '&player_backend=mediaplayer', {headers:{'client-id':CLIENT_ID}});
+                        var accessTokenResponse = await getAccessToken(channelName, OPT_VIDEO_SWAP_PLAYER_TYPE);
                         if (accessTokenResponse.status === 200) {
-                            var accessToken = JSON.parse(await accessTokenResponse.text());
+                            var accessToken = await accessTokenResponse.json();
                             var urlInfo = new URL('https://usher.ttvnw.net/api/channel/hls/' + channelName + '.m3u8?allow_source=true');
-                            urlInfo.searchParams.set('sig', accessToken.sig);
-                            urlInfo.searchParams.set('token', accessToken.token);
+                            urlInfo.searchParams.set('sig', accessToken.data.streamPlaybackAccessToken.signature);
+                            urlInfo.searchParams.set('token', accessToken.data.streamPlaybackAccessToken.value);
                             var encodingsM3u8Response = await fetch(urlInfo.href);
                             if (encodingsM3u8Response.status === 200) {
                                 // TODO: Maybe look for the most optimal m3u8
