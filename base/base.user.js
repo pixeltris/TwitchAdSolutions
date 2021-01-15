@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.0
+// @version      1.1
 // @description  Multiple solutions for blocking Twitch ads
 // @author       pixeltris
 // @match        *://*.twitch.tv/*

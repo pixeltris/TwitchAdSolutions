@@ -1,8 +1,10 @@
 // ==UserScript==
 // @name         TwitchAdSolutions
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.0
-// @description  Multiple solutions for blocking Twitch ads
+// @version      1.1
+// @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt.user.js
+// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt.user.js
+// @description  Multiple solutions for blocking Twitch ads (dyn-skip-midroll-alt)
 // @author       pixeltris
 // @match        *://*.twitch.tv/*
 // @run-at       document-start

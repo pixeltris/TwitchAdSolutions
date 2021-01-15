@@ -14,7 +14,7 @@ namespace TwitchAdUtils
 {
     class Program
     {
-        static string ClientID = "kimne78kx3ncx6brgo4mv6wki5h1ko";
+        static string ClientID = "kimne78kx3ncx6brgo4mv6wki5h1ko";//ilfexgv3nnljz3isbm257gzwrzr7bi - Xtra for Twitch
         static string UserAgentChrome = "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36";
         static string UserAgentFirefox = "Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:84.0) Gecko/20100101 Firefox/84.0";
         static string UserAgent = UserAgentChrome;
@@ -116,9 +116,17 @@ namespace TwitchAdUtils
                             for (int i = 0; i < lines.Length; i++)
                             {
                                 string line = lines[i];
-                                if (line.Trim().StartsWith("// Modify options based on mode"))
+                                string lineTrimmed = line.Trim();
+                                if (lineTrimmed.StartsWith("// Modify options based on mode"))
                                 {
                                     modifiedOptions = true;
+                                }
+                                if (lineTrimmed.StartsWith("// @description"))
+                                {
+                                    string url = "https://github.com/pixeltris/TwitchAdSolutions/raw/master/" + dirInfo.Name + "/" + dirInfo.Name + suffixUserscript;
+                                    sbUserscript.AppendLine("// @updateURL    " + url);
+                                    sbUserscript.AppendLine("// @downloadURL  " + url);
+                                    line = line += " (" + dirInfo.Name + ")";
                                 }
                                 if (!modifiedOptions)
                                 {
@@ -131,7 +139,7 @@ namespace TwitchAdUtils
                                             foundUserScriptEnd = true;
                                         }
                                     }
-                                    else if (line.Trim().StartsWith("'use strict'"))
+                                    else if (lineTrimmed.StartsWith("'use strict'"))
                                     {
                                         sbUserscript.AppendLine(line);
                                         sbUblock.AppendLine("    if ( /(^|\\.)twitch\\.tv$/.test(document.location.hostname) === false ) { return; }");
@@ -302,7 +310,8 @@ namespace TwitchAdUtils
                                             Console.WriteLine("has ad " + DateTime.Now.TimeOfDay);
                                             if (ShouldDenyAd)
                                             {
-                                                DeclineAd(uniqueId, streamM3u8);
+                                                DeclineAd(uniqueId, streamM3u8, sig, token, true);
+                                                DeclineAd(uniqueId, streamM3u8, sig, token, false);
                                             }
                                         }
                                         else
@@ -388,7 +397,7 @@ namespace TwitchAdUtils
             return defaultValue;
         }
         
-        static void DeclineAd(string uniqueId, string streamM3u8)
+        static void DeclineAd(string uniqueId, string streamM3u8, string sig, string token, bool first)
         {
             string[] lines = streamM3u8.Split('\n');
             for (int i = 0; i < lines.Length; i++)
@@ -398,11 +407,23 @@ namespace TwitchAdUtils
                     Dictionary<string, string> attr = ParseAttributes(lines[i]);
                     Dictionary<string, string> vals = new Dictionary<string, string>();
                     vals["TARG_adSessionID"] = GetOrDefault(attr, "X-TV-TWITCH-AD-AD-SESSION-ID");
-                    string str = @"[{""operationName"":""VideoAdRequestDecline"",""variables"":{""context"":{""adSessionID"":""TARG_adSessionID"",""clientContext"":""{\""isAudioOnly\"":false,\""isMiniTheater\"":false,\""isPIP\"":true,\""isUsingExternalPlayback\"":false}"",""isAudioOnly"":false,""isMiniTheater"":false,""isPIP"":false,""isUsingExternalPlayback"":false,""duration"":30,""isVLM"":false,""rollType"":""PREROLL""}},""extensions"":{""persistedQuery"":{""version"":1,""sha256Hash"":""XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX""}}}]";
+                    vals["TARG_sig"] = sig;
+                    vals["TARG_token"] = token.Replace("\"", "\\\"");
+                    string str = null;
+                    //string str = @"[{""operationName"":""VideoAdRequestDecline"",""variables"":{""context"":{""adSessionID"":""TARG_adSessionID"",""clientContext"":""{\""isAudioOnly\"":false,\""isMiniTheater\"":false,\""isPIP\"":true,\""isUsingExternalPlayback\"":false}"",""isAudioOnly"":false,""isMiniTheater"":false,""isPIP"":false,""isUsingExternalPlayback"":false,""duration"":30,""isVLM"":false,""rollType"":""PREROLL""}},""extensions"":{""persistedQuery"":{""version"":1,""sha256Hash"":""6f5d9fdc36a3c879cca7debdbe21c62d5cac4ad5b30b635263eff68335b96a71""}}}]";
+                    if (first)
+                        str = @"[{""operationName"":""VideoAdRequestDecline"",""variables"":{""context"":{""adSessionID"":""TARG_adSessionID"",""clientContext"":{""isAudioOnly"":false,""isMiniTheater"":false,""isPIP"":false,""isUsingExternalPlayback"":false},""duration"":30,""playerContext"":{""contentType"":""LIVE"",""isAutoPlay"":true,""nauthSig"":""TARG_sig"",""nauthToken"":""TARG_token""},""rollType"":""PREROLL"",""isVLM"":false,""commercialID"":""""}},""extensions"":{""persistedQuery"":{""version"":1,""sha256Hash"":""6f5d9fdc36a3c879cca7debdbe21c62d5cac4ad5b30b635263eff68335b96a71""}}}]";
+                    else
+                    {
+                        vals["TARG_ad_session_id"] = GetOrDefault(attr, "X-TV-TWITCH-AD-AD-SESSION-ID");
+                        vals["TARG_radToken"] = GetOrDefault(attr, "X-TV-TWITCH-AD-RADS-TOKEN");
+                        str = @"[{""operationName"":""ClientSideAdEventHandling_RecordAdEvent"",""variables"":{""input"":{""eventName"":""video_ad_request_declined"",""eventPayload"":""{\""reason_channeladfree\"":false,\""reason_channelsub\"":false,\""reason_vod_ads_disabled\"":false,\""reason_bounty\"":false,\""reason_vod_midroll\"":false,\""reason_stream_broadcaster\"":false,\""reason_embed_promo\"":false,\""reason_p4m\"":false,\""reason_lt\"":false,\""reason_raid\"":false,\""reason_midroll_during_preroll\"":false,\""reason_ratelimit\"":false,\""reason_short_vod\"":false,\""reason_turbo\"":false,\""reason_vod_creator\"":false,\""reason_wp\"":false,\""reason_zagd\"":false,\""reason_zagu\"":false,\""reason_midlimit\"":false,\""reason_amazon_product_page\"":false,\""reason_animated_thumbnails\"":false,\""reason_creative_player\"":false,\""reason_dashboard\"":false,\""reason_facebook\"":false,\""reason_frontpage\"":false,\""reason_highlighter\"":false,\""reason_onboarding\"":false,\""reason_pbyp\"":false,\""reason_squad_stream_secondary_player\"":false,\""reason_thunderdome\"":true,\""reason_embed\"":false,\""twitch_correlator\"":\""\"",\""ad_session_id\"":\""TARG_ad_session_id\"",\""roll_type\"":\""preroll\"",\""time_break\"":30}"",""radToken"":""TARG_radToken""}},""extensions"":{""persistedQuery"":{""version"":1,""sha256Hash"":""7e6c69e6eb59f8ccb97ab73686f3d8b7d85a72a0298745ccd8bfc68e4054ca5b""}}}]";
+                    }
                     foreach (KeyValuePair<string, string> val in vals)
                     {
                         str = str.Replace(val.Key, val.Value);
                     }
+                    //Console.WriteLine(str);
                     using (WebClient wc = new WebClient())
                     {
                         wc.Proxy = null;
