@@ -15,12 +15,11 @@ Web browser extensions / scripts:
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707/
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code
   - Reloads the player (or page) when it detects the ad banner in DOM.
-- [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf)
+- [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js)
   - Notifies Twitch that ads were watched before loading the main stream (prerolls).
   - Removes ad segments which cannot be skipped (midrolls). The player will freeze on the last live frame until no more ads.
-- [Twitch AdBlock](https://addons.mozilla.org/en-GB/firefox/addon/twitch-adblock/)
+- [Twitch AdBlock](https://addons.mozilla.org/en-GB/firefox/addon/twitch-adblock/) - [code](https://robwu.nl/crxviewer/?crx=https%3A%2F%2Faddons.mozilla.org%2Fen-GB%2Ffirefox%2Faddon%2Ftwitch-adblock%2F&qf=js/background.js)
   - Uses a proxy on the main m3u8 file to get a stream without ads (no prerolls / midrolls).
-  - You can view the code of the extension [here](https://robwu.nl/crxviewer/?crx=https%3A%2F%2Faddons.mozilla.org%2Fen-GB%2Ffirefox%2Faddon%2Ftwitch-adblock%2F&qf=js/background.js)
 
 Applications / third party websites:
 - https://github.com/streamlink/streamlink
