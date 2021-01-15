@@ -5,7 +5,7 @@
 // @description  Avoids Twitch ads by using a lower resolution live stream without ads
 // @author       pixeltris
 // @match        *://*.twitch.tv/*
-// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-userscript.js
+// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
