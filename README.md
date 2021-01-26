@@ -10,25 +10,19 @@ M3U8 proxies (or full proxies / VPNs) are currently the most reliable way of avo
 
 Alternatively:
 
-- `dyn-skip` / `dyn-skip-midroll-alt` are decent.
+- `dyn-skip-midroll-alt` is ok-ish.
 - `Alternate Player for Twitch.tv` consistently updates with new ad-blocking methods.
 - `ttv_adEraser` somewhat fixes the purple screen issue of `ttv-ublock`.
 - `ttv-tools` (firefox) has nice features.
 
 ## Current solutions
 
-*These solutions generally aren't compatible with other Twitch ad blockers. e.g. `ttv-ublock` will break `dyn-skip` (and others).*
+*These solutions generally aren't compatible with other Twitch ad blockers. e.g. `ttv-ublock` will break some of these.*
 
-- dyn-skip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip.user.js))
-  - Notifies Twitch that ads were watched before requesting the main live stream.
-  - Falls back to mute-black if this fails (use an alternative solution if it always fails for you, as it adds additional load).
-  - *Midroll ads are muted/blacked out. See `dyn-skip-midroll-alt` for an alternative solution.*
 - dyn-skip-midroll-alt ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt.user.js))
-  - A mix of `dyn-skip` / `dyn`. During midrolls this plays a low resolution stream instead of nothing - might be a little glitchy but should always play *something*.
-  - *If you see a `Waiting for ads to finish` banner without `midroll` in the banner text, you should be able to just refresh the page to get a regular stream.*
+  - Notifies that ads were watched. Whilst Twitch processes this, the stream will play a low resolution stream (`dyn`).
 - dyn-skip-midroll ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll.user.js)) **(not recommended)**
-  - The same as `dyn-skip`, but *attempts* to fully skip midroll ads *(I'm not sure if this has ever actually worked - infinite reload)*.
-  - **This requires the script to work perfectly, otherwise the player will hit a reload loop.**
+  - Notifies that ads were watched, then reloads the player. Repeats this until no ads **(which may never happen)**.
 - dyn-video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap.user.js))
   - Ads are replaced by a low resolution stream for the duration of the ad.
   - Similar to `dyn`, but skips closer to 20 seconds when switching to the live stream.
