@@ -10,7 +10,7 @@ M3U8 proxies (or full proxies / VPNs) are currently the most reliable way of avo
 
 Alternatively:
 
-- `dyn-skip-midroll-alt` is ok-ish.
+- `notify-strip` is ok-ish.
 - `Alternate Player for Twitch.tv` consistently updates with new ad-blocking methods.
 - `ttv_adEraser` somewhat fixes the purple screen issue of `ttv-ublock`.
 - `ttv-tools` (firefox) has nice features.
