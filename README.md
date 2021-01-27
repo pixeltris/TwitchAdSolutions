@@ -23,12 +23,13 @@ Alternatively:
 
 - notify-strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js))
   - Similar to `strip`, but notifies Twitch that ads were "watched" (reduces preroll ad frequency).
-  - The `strip` variant used here should't have looping issues on preroll ads, but may suffer more issues on midroll ads.
+  - The `strip` variant used here shouldn't have looping issues on preroll ads, but may suffer more issues on midroll ads.
 - notify-strip-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload.user.js))
   - Adds a reload step to `notify-strip` which may reduce issues transitioning away from the low resolution stream.
 - notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js))
   - Notifies that ads were watched, then reloads the player.
   - Repeats this until no ads **(which may never happen ~ infinite reload)**.
+  - You should expect 3-10 (give or take) player reloads. Once successful you shouldn't see preroll ads for a while on any stream (20+ minutes?).
 - strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip.user.js))
   - Ad segments are replaced by low resolution stream segments (on a m3u8 level).
   - Skips 2-3 seconds when switching to the live stream.
@@ -45,7 +46,7 @@ Alternatively:
   - Similar to `strip`, but skips closer to 20 seconds when switching to the live stream (TODO: low latency support).
   - You might see tiny bits of the ad.
   - Audio controls wont work whilst the ad is playing.
-  - *There are Various UX/UI issues with this script which need to be addressed.*
+  - *There are various UX/UI issues with this script which need to be addressed.*
 - ~~proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))~~ **(proxy currently points to a dead url)**
   - Uses a proxy server to fetch an ad-free stream.
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
