@@ -19,14 +19,14 @@ Alternatively:
 
 *These solutions generally aren't compatible with other Twitch ad blockers. e.g. `ttv-ublock` will break some of these.*
 
-**If you want a perfect solution, please use `Twitch AdBlock`.**
+**If you want a perfect solution, please use** `Twitch AdBlock`.
 
 - notify-strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js))
   - Similar to `strip`, but notifies Twitch that ads were "watched" (reduces preroll ad frequency).
   - The `strip` variant used here should't have looping issues on preroll ads, but may suffer more issues on midroll ads.
-- notify-strip-reload
+- notify-strip-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload.user.js))
   - Adds a reload step to `notify-strip` which may reduce issues transitioning away from the low resolution stream.
-- notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload.user.js))
+- notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js))
   - Notifies that ads were watched, then reloads the player.
   - Repeats this until no ads **(which may never happen ~ infinite reload)**.
 - strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip.user.js))
@@ -51,7 +51,7 @@ Alternatively:
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
 
-*A number of changes were made on 27th Jan 2021, including name changes and removal of scripts. Deprecated scripts will be removed from master branch on 1st March 2021. Obtain a permalink if you want to keep using any of the following:*
+*The following renamed/deprecated scripts will be removed from the master branch on `1st March 2021`:*
 
 - `dyn` renamed to `strip` as this better reflects the functionality (strips ad segments).
 - `dyn-skip` removed as it no longer works.
