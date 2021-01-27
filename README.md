@@ -19,16 +19,17 @@ Alternatively:
 
 *These solutions generally aren't compatible with other Twitch ad blockers. e.g. `ttv-ublock` will break some of these.*
 
-- dyn-skip-midroll-alt ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll-alt/dyn-skip-midroll-alt.user.js))
-  - Notifies that ads were watched. Whilst Twitch processes this, the stream will play a low resolution stream (`dyn`).
-- dyn-skip-midroll ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip-midroll/dyn-skip-midroll.user.js)) **(not recommended)**
-  - Notifies that ads were watched, then reloads the player. Repeats this until no ads **(which may never happen)**.
-- dyn-video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-video-swap/dyn-video-swap.user.js))
-  - Ads are replaced by a low resolution stream for the duration of the ad.
-  - Similar to `dyn`, but skips closer to 20 seconds when switching to the live stream.
-  - You might see tiny bits of the ad.
-  - Audio controls wont work whilst the ad is playing.
-- dyn ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn/dyn-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn/dyn.user.js))
+**If you want a perfect solution, please use `Twitch AdBlock`.**
+
+- notify-strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js))
+  - Similar to `strip`, but notifies Twitch that ads were "watched" (reduces preroll ad frequency).
+  - The `strip` variant used here should't have looping issues on preroll ads, but may suffer more issues on midroll ads.
+- notify-strip-reload
+  - Adds a reload step to `notify-strip` which may reduce issues transitioning away from the low resolution stream.
+- notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload.user.js))
+  - Notifies that ads were watched, then reloads the player.
+  - Repeats this until no ads **(which may never happen ~ infinite reload)**.
+- strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip.user.js))
   - Ad segments are replaced by low resolution stream segments (on a m3u8 level).
   - Skips 2-3 seconds when switching to the live stream.
   - Stuttering and looping of segments often occur (during the ad segments).
@@ -39,10 +40,24 @@ Alternatively:
 - mute-black ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black.user.js))
   - Ads are muted / blacked out for the duration of the ad.
   - You might see tiny bits of the ad.
+- video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap/video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap/video-swap.user.js))
+  - Ads are replaced by a low resolution stream for the duration of the ad.
+  - Similar to `strip`, but skips closer to 20 seconds when switching to the live stream (TODO: low latency support).
+  - You might see tiny bits of the ad.
+  - Audio controls wont work whilst the ad is playing.
+  - *There are Various UX/UI issues with this script which need to be addressed.*
 - ~~proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))~~ **(proxy currently points to a dead url)**
   - Uses a proxy server to fetch an ad-free stream.
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
+
+*A number of changes were made on 27th Jan 2021, including name changes and removal of scripts. Deprecated scripts will be removed from master branch on 1st March 2021. Obtain a permalink if you want to keep using any of the following:*
+
+- `dyn` renamed to `strip` as this better reflects the functionality (strips ad segments).
+- `dyn-skip` removed as it no longer works.
+- `dyn-skip-midroll` renamed to `notify-reload` as the original name has lost its meaning.
+- `dyn-skip-midroll-alt` renamed to `notify-strip` as the original name has lost its meaning.
+- `dyn-video-swap` renamed to `video-swap`.
 
 ## Applying a solution (uBlock Origin)
 

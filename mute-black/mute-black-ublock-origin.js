@@ -7,9 +7,15 @@ twitch-videoad.js application/javascript
         scope.OPT_MODE_VIDEO_SWAP = false;
         scope.OPT_MODE_LOW_RES = false;
         scope.OPT_MODE_EMBED = false;
-        scope.OPT_MODE_STRIP_AD_SEGMENTS = false;
+        scope.OPT_MODE_STRIP_AD_SEGMENTS = false;// The default implementation attempts to match segment times (TODO: needs improvements - looping issues - cache matched segments and don't repeat any)
+        scope.OPT_MODE_STRIP_AD_SEGMENTS_NEWEST = false;// Matches segments ordered by newest
+        scope.OPT_MODE_STRIP_AD_SEGMENTS_NEWEST_WITH_PREFETCH = false;// This will result in a very close match, but often a repeat of a second or so. May be preferred if you dislike the regular 2-3 jump.
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = false;
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 2;// Larger values might increase load time. Lower values may increase ad chance.
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 1;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST = false;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_AND_RELOAD = false;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_EXPECTED_DURATION = 10000;// In milliseconds
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_ASYNC_TOK = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT_DELAY = 0;
@@ -19,6 +25,7 @@ twitch-videoad.js application/javascript
         scope.OPT_MODE_PROXY_M3U8_PARTIAL_URL = false;
         scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'picture-by-picture';
         scope.OPT_BACKUP_PLAYER_TYPE = 'picture-by-picture';
+        scope.OPT_REGULAR_PLAYER_TYPE = 'site';
         scope.OPT_INITIAL_M3U8_ATTEMPTS = 1;
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = '';
         scope.OPT_ACCESS_TOKEN_TEMPLATE = true;
@@ -77,10 +84,14 @@ twitch-videoad.js application/javascript
             var newBlobStr = `
                 ${processM3U8.toString()}
                 ${getSegmentTimes.toString()}
+                ${getSegmentUrls.toString()}
                 ${hookWorkerFetch.toString()}
                 ${declareOptions.toString()}
                 ${getAccessToken.toString()}
                 ${gqlRequest.toString()}
+                ${makeGraphQlPacket.toString()}
+                ${tryNotifyAdsWatchedM3U8.toString()}
+                ${parseAttributes.toString()}
                 declareOptions(self);
                 self.addEventListener('message', function(e) {
                     if (e.data.key == 'UboUpdateDeviceId') {
@@ -105,9 +116,13 @@ twitch-videoad.js application/javascript
                 }
                 else if (e.data.key == 'UboFoundAdSegment') {
                     onFoundAd(e.data.hasLiveSeg, e.data.streamM3u8);
-                } else if (e.data.key == 'UboChannelNameM3U8Changed') {
+                }
+                else if (e.data.key == 'UboChannelNameM3U8Changed') {
                     //console.log('M3U8 channel name changed to ' + e.data.value);
                     notifyAdsWatchedReloadNextTime = 0;
+                }
+                else if (e.data.key == 'UboReloadPlayer') {
+                    reloadTwitchPlayer();
                 }
             }
             function getAdDiv() {
@@ -147,9 +162,49 @@ twitch-videoad.js application/javascript
         }
         return result;
     }
+    function getSegmentUrls(lines, includePrefetch) {
+        var result = [];
+        for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            if (line.startsWith('http')) {
+                result.push(line);
+            } else if (includePrefetch && line.startsWith('#EXT-X-TWITCH-PREFETCH:')) {
+                result.push(line.substring(line.indexOf(':') + 1));
+            }
+        }
+        return result;
+    }
     async function processM3U8(url, textStr, realFetch) {
         var haveAdTags = textStr.includes(AD_SIGNIFIER);
         if (haveAdTags) {
+            var si = StreamInfosByUrl[url];
+            if (OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST && si != null && !si.NotifyObservedNoAds) {
+                // We only really know it's fully processed when we no loger see ads
+                // NOTE: We probably shouldn't keep sending these requests. Possibly start sending them after expected ad duration?
+                var noAds = false;
+                var encodingsM3u8Response = await realFetch(si.RootM3U8Url);
+                if (encodingsM3u8Response.status === 200) {
+                    var encodingsM3u8 = await encodingsM3u8Response.text();
+                    var streamM3u8Url = encodingsM3u8.match(/^https:.*\.m3u8$/m)[0];
+                    var streamM3u8Response = await realFetch(streamM3u8Url);
+                    if (streamM3u8Response.status == 200) {
+                        noAds = (await tryNotifyAdsWatchedM3U8(await streamM3u8Response.text())) == 1;
+                        console.log('Notify ad watched. Response has ads: ' + !noAds);
+                    }
+                }
+                if (si.NotifyFirstTime == 0) {
+                    si.NotifyFirstTime = Date.now();
+                }
+                if (noAds && !si.NotifyObservedNoAds && Date.now() >= si.NotifyFirstTime + OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_EXPECTED_DURATION) {
+                    si.NotifyObservedNoAds = true;
+                }
+                if (noAds && OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_AND_RELOAD && Date.now() >= si.NotifyFirstTime + OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_EXPECTED_DURATION) {
+                    console.log('Reload player');
+                    postMessage({key:'UboHideAdBanner'});
+                    postMessage({key:'UboReloadPlayer'});
+                    return "";
+                }
+            }
             postMessage({
                 key: 'UboFoundAdSegment',
                 hasLiveSeg: textStr.includes(LIVE_SIGNIFIER),
@@ -169,9 +224,9 @@ twitch-videoad.js application/javascript
         if (haveAdTags) {
             LastAdUrl = url;
             LastAdTime = Date.now();
-            if (OPT_MODE_NOTIFY_ADS_WATCHED) {
+            /*if (OPT_MODE_NOTIFY_ADS_WATCHED) {
                 console.log('Stripping ads (instead of skipping ads)');
-            }
+            }*/
             var streamInfo = StreamInfosByUrl[url];
             if (streamInfo == null) {
                 console.log('Unknown stream url! ' + url);
@@ -217,37 +272,68 @@ twitch-videoad.js application/javascript
                 }
             }
             var lines = textStr.replace('\r', '').split('\n');
-            var segmentMap = [];
-            if (backupM3u8 != null) {
-                var backupLines = backupM3u8.replace('\r', '').split('\n');
-                var segTimes = getSegmentTimes(lines);
-                var backupSegTimes = getSegmentTimes(backupLines);
-                for (const [segTime, segUrl] of Object.entries(segTimes)) {
-                    //segmentMap[segUrl] = Object.values(backupSegTimes)[Object.keys(backupSegTimes).length-1];
-                    var closestTime = Number.MAX_VALUE;
-                    var matchingBackupTime = Number.MAX_VALUE;
-                    for (const [backupSegTime, backupSegUrl] of Object.entries(backupSegTimes)) {
-                        var timeDiff = Math.abs(segTime - backupSegTime);
-                        if (timeDiff < closestTime) {
-                            closestTime = timeDiff;
-                            matchingBackupTime = backupSegTime;
-                            segmentMap[segUrl] = backupSegUrl;
+            if (OPT_MODE_STRIP_AD_SEGMENTS_NEWEST) {
+                if (backupM3u8 != null) {
+                    var backupLines = backupM3u8.replace('\r', '').split('\n');
+                    var segUrls = getSegmentUrls(lines, false);
+                    var backupSegUrls = getSegmentUrls(backupLines, OPT_MODE_STRIP_AD_SEGMENTS_NEWEST_WITH_PREFETCH);
+                    for (var i = segUrls.length - 1, j = backupSegUrls.length - 1; i >= 0 && j >= 0; i--, j--) {
+                        if (streamInfo.SegmentMap[segUrls[i]] == null) {
+                            streamInfo.SegmentMap[segUrls[i]] = backupSegUrls[j];
                         }
                     }
-                    if (closestTime != Number.MAX_VALUE) {
-                        backupSegTimes.splice(backupSegTimes.indexOf(matchingBackupTime), 1);
+                }
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    if (line == null) {
+                        continue;
+                    }
+                    if (line.includes('stitched-ad')) {
+                        lines[i] = '';
+                    }
+                    if (line.startsWith('#EXTINF:') && !line.includes(',live')) {
+                        var newSegUrl = streamInfo.SegmentMap[lines[i + 1]];
+                        //lines[i] = line.substring(0, line.indexOf(',')) + ',live';
+                        lines[i + 1] = newSegUrl != null ? newSegUrl : '';
+                    }
+                    /*if (line.startsWith('#EXT-X-TWITCH-PREFETCH')) {
+                        // TODO
+                        lines[i] = '';
+                    }*/
+                }
+            } else {
+                var segmentMap = [];
+                if (backupM3u8 != null) {
+                    var backupLines = backupM3u8.replace('\r', '').split('\n');
+                    var segTimes = getSegmentTimes(lines);
+                    var backupSegTimes = getSegmentTimes(backupLines);
+                    for (const [segTime, segUrl] of Object.entries(segTimes)) {
+                        //segmentMap[segUrl] = Object.values(backupSegTimes)[Object.keys(backupSegTimes).length-1];
+                        var closestTime = Number.MAX_VALUE;
+                        var matchingBackupTime = Number.MAX_VALUE;
+                        for (const [backupSegTime, backupSegUrl] of Object.entries(backupSegTimes)) {
+                            var timeDiff = Math.abs(segTime - backupSegTime);
+                            if (timeDiff < closestTime) {
+                                closestTime = timeDiff;
+                                matchingBackupTime = backupSegTime;
+                                segmentMap[segUrl] = backupSegUrl;
+                            }
+                        }
+                        if (closestTime != Number.MAX_VALUE) {
+                            backupSegTimes.splice(backupSegTimes.indexOf(matchingBackupTime), 1);
+                        }
                     }
                 }
-            }
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                if (line.includes('stitched-ad')) {
-                    lines[i] = '';
-                }
-                if (line.startsWith('#EXTINF:') && !line.includes(',live')) {
-                    lines[i] = line.substring(0, line.indexOf(',')) + ',live';
-                    var backupSegment = segmentMap[lines[i + 1]];
-                    lines[i + 1] = backupSegment != null ? backupSegment : ''
+                for (var i = 0; i < lines.length; i++) {
+                    var line = lines[i];
+                    if (line.includes('stitched-ad')) {
+                        lines[i] = '';
+                    }
+                    if (line.startsWith('#EXTINF:') && !line.includes(',live')) {
+                        lines[i] = line.substring(0, line.indexOf(',')) + ',live';
+                        var backupSegment = segmentMap[lines[i + 1]];
+                        lines[i + 1] = backupSegment != null ? backupSegment : ''
+                    }
                 }
             }
             textStr = lines.join('\n');
@@ -328,9 +414,13 @@ twitch-videoad.js application/javascript
                                         // This might potentially backfire... maybe just add the new urls
                                         streamInfo.ChannelName = channelName;
                                         streamInfo.Urls = [];
+                                        streamInfo.RootM3U8Url = url;
                                         streamInfo.RootM3U8Params = (new URL(url)).search;
                                         streamInfo.BackupUrl = null;
                                         streamInfo.BackupFailed = false;
+                                        streamInfo.SegmentMap = [];
+                                        streamInfo.NotifyFirstTime = 0;
+                                        streamInfo.NotifyObservedNoAds = false;
                                         var lines = encodingsM3u8.replace('\r', '').split('\n');
                                         for (var i = 0; i < lines.length; i++) {
                                             if (!lines[i].startsWith('#') && lines[i].includes('.m3u8')) {
@@ -373,7 +463,7 @@ twitch-videoad.js application/javascript
             },
         }];
     }
-    function getAccessToken(channelName, playerType) {
+    function getAccessToken(channelName, playerType, realFetch) {
         var body = null;
         if (OPT_ACCESS_TOKEN_TEMPLATE) {
             var templateQuery = 'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature    __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}';
@@ -406,10 +496,11 @@ twitch-videoad.js application/javascript
                 }
             };
         }
-        return gqlRequest(body);
+        return gqlRequest(body, realFetch);
     }
-    function gqlRequest(body) {
-        return fetch('https://gql.twitch.tv/gql', {
+    function gqlRequest(body, realFetch) {
+        var fetchFunc = realFetch ? realFetch : fetch;
+        return fetchFunc('https://gql.twitch.tv/gql', {
             method: 'POST',
             body: JSON.stringify(body),
             headers: {
@@ -497,10 +588,12 @@ twitch-videoad.js application/javascript
             var streamM3u8Response = await realFetch(streamM3u8Url);
             var streamM3u8 = await streamM3u8Response.text();
             var res = await tryNotifyAdsWatchedM3U8(streamM3u8);
-            if (res == 1) {
-                console.log("no ad at req " + i);
-            } else {
-                console.log('ad at req ' + i);
+            if (i >= 0) {
+                if (res == 1) {
+                    console.log("no ad at req " + i);
+                } else {
+                    console.log('ad at req ' + i);
+                }
             }
             return res;
         } else {
@@ -541,52 +634,77 @@ twitch-videoad.js application/javascript
                     }
                     if (OPT_MODE_NOTIFY_ADS_WATCHED) {
                         var tok = null, sig = null;
-                        if (url.includes('/access_token')) {
+                        if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
                             return new Promise(async function(resolve, reject) {
                                 var response = await realFetch(url, init);
                                 if (response.status === 200) {
-                                    // NOTE: This code path is untested
-                                    for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS; i++) {
-                                        var cloned = response.clone();
-                                        var responseStr = await cloned.text();
-                                        var responseData = JSON.parse(responseStr);
-                                        if (responseData && responseData.sig && responseData.token) {
-                                            if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.sig, responseData.token) == 1) {
-                                                resolve(new Response(responseStr));
-                                                return;
+                                    if (OPT_MODE_NOTIFY_ADS_WATCHED_ASYNC_TOK) {
+                                        var channelName = JSON.parse(init.body).variables.login;
+                                        // See if the first response has an ad, if it does then send requests until there is no ad
+                                        {
+                                            var cloned = response.clone();
+                                            var responseStr = await cloned.text();
+                                            var responseData = JSON.parse(responseStr);
+                                            if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
+                                                if (await tryNotifyAdsWatchedSigTok(realFetch, -1, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value) == 1) {
+                                                    console.log('No ad in main request');
+                                                    resolve(new Response(responseStr));
+                                                    return;
+                                                } else {
+                                                    console.log('Ad in main request');
+                                                }
                                             }
-                                        } else {
-                                            console.log('malformed');
-                                            console.log(responseData);
-                                            break;
                                         }
-                                    }
-                                    resolve(response);
-                                } else {
-                                    resolve(response);
-                                }
-                            });
-                        }
-                        else if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
-                            return new Promise(async function(resolve, reject) {
-                                var response = await realFetch(url, init);
-                                if (response.status === 200) {
-                                    for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS; i++) {
-                                        var cloned = response.clone();
-                                        var responseStr = await cloned.text();
-                                        var responseData = JSON.parse(responseStr);
-                                        if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
-                                            if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value) == 1) {
-                                                resolve(new Response(responseStr));
-                                                return;
+                                        if (!channelName) {
+                                            resolve(response);
+                                            return;
+                                        }
+                                        // Ads are being served, try skipping a bunch of ads
+                                        var resolved = false;
+                                        var skipAdTries = 0;
+                                        for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS; i++) {
+                                            new Promise(async (skipAdResolve, skipAdReject) => {
+                                                var noAds = false;
+                                                var accessTokenResponse = await getAccessToken(channelName, OPT_REGULAR_PLAYER_TYPE, realFetch);
+                                                if (accessTokenResponse.status == 200) {
+                                                    var responseStr = await accessTokenResponse.text();
+                                                    var responseData = JSON.parse(responseStr);
+                                                    var hasAd = false;
+                                                    if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
+                                                        hasAd = (await tryNotifyAdsWatchedSigTok(realFetch, -1, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value)) == 0;
+                                                    }
+                                                    var attempt = ++skipAdTries;
+                                                    console.log('Attempt ' + attempt + ' ' + (hasAd ? 'has ad' : 'no ad'));
+                                                    if (attempt === OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS && !resolved) {
+                                                        resolved = true;
+                                                        resolve(new Response(responseStr));
+                                                        return;
+                                                    }
+                                                } else if (!resolved) {
+                                                    resolved = true;
+                                                    resolve(response);
+                                                    return;
+                                                }
+                                            }).catch(console.log);
+                                        }
+                                    } else {
+                                        for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS; i++) {
+                                            var cloned = response.clone();
+                                            var responseStr = await cloned.text();
+                                            var responseData = JSON.parse(responseStr);
+                                            if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
+                                                if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value) == 1) {
+                                                    resolve(new Response(responseStr));
+                                                    return;
+                                                }
+                                            } else {
+                                                console.log('malformed');
+                                                console.log(responseData);
+                                                break;
                                             }
-                                        } else {
-                                            console.log('malformed');
-                                            console.log(responseData);
-                                            break;
                                         }
+                                        resolve(response);
                                     }
-                                    resolve(response);
                                 } else {
                                     resolve(response);
                                 }

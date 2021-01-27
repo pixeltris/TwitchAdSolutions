@@ -1,27 +1,16 @@
-// ==UserScript==
-// @name         TwitchAdSolutions
-// @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.2
-// @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip.user.js
-// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip.user.js
-// @description  Multiple solutions for blocking Twitch ads (dyn-skip)
-// @author       pixeltris
-// @match        *://*.twitch.tv/*
-// @run-at       document-start
-// @grant        none
-// ==/UserScript==
+twitch-videoad.js application/javascript
 (function() {
-    'use strict';
+    if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
     function declareOptions(scope) {
         // Options / globals
-        scope.OPT_MODE_MUTE_BLACK = true;
+        scope.OPT_MODE_MUTE_BLACK = false;
         scope.OPT_MODE_VIDEO_SWAP = false;
         scope.OPT_MODE_LOW_RES = false;
         scope.OPT_MODE_EMBED = false;
-        scope.OPT_MODE_STRIP_AD_SEGMENTS = false;// The default implementation attempts to match segment times (TODO: needs improvements - looping issues - cache matched segments and don't repeat any)
+        scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_STRIP_AD_SEGMENTS_NEWEST = false;// Matches segments ordered by newest
         scope.OPT_MODE_STRIP_AD_SEGMENTS_NEWEST_WITH_PREFETCH = false;// This will result in a very close match, but often a repeat of a second or so. May be preferred if you dislike the regular 2-3 jump.
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 1;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_AND_RELOAD = false;

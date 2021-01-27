@@ -20,11 +20,13 @@ namespace TwitchAdUtils
         static string UserAgent = UserAgentChrome;
         static bool UseOldAccessToken = false;
         static bool UseAccessTokenTemplate = false;
-        static bool ShouldNotifyAdWatched = true;
+        static bool ShouldNotifyAdWatched = false;
         static bool ShouldNotifyAdWatchedMin = true;
         static bool ShouldDenyAd = false;
+        static bool UseFastBread = true;// fast_bread (EXT-X-TWITCH-PREFETCH)
         static string PlayerTypeNormal = "site";//embed squad_secondary squad_primary
         static string PlayerTypeMiniNoAd = "picture-by-picture";//"thunderdome";
+        static string PlayerTypeEmbed = "embed";
         static string Platform = "web";
         static string PlayerBackend = "mediaplayer";
         static string MainM3U8AdditionalParams = "";
@@ -37,7 +39,8 @@ namespace TwitchAdUtils
         {
             Normal,
             MiniNoAd,
-            Proxy
+            Proxy,
+            Embed
         }
         
         static void Main(string[] args)
@@ -64,12 +67,14 @@ namespace TwitchAdUtils
             Console.Write("Enter channel name: ");
             string channel = Console.ReadLine().ToLower();
             Console.WriteLine("Fetching channel '" + channel + "'");
-            RunImpl(RunnerMode.Normal, channel);
+            //RunImpl(RunnerMode.Normal, channel);
+            RunImpl(RunnerMode.Embed, channel);
             //RunImpl(RunnerMode.MiniNoAd, channel);
         }
         
         static void BuildScripts()
         {
+            string[] deprecated = { "dyn-skip-midroll-alt", "dyn-skip-midroll", "dyn-video-swap", "dyn" };
             string baseScriptName = "base";
             string suffixConfg = ".cfg";
             string suffixUserscript = ".user.js";
@@ -80,7 +85,7 @@ namespace TwitchAdUtils
                 foreach (string dir in Directory.GetDirectories(Environment.CurrentDirectory))
                 {
                     DirectoryInfo dirInfo = new DirectoryInfo(dir);
-                    if (dirInfo.Name != baseScriptName)
+                    if (dirInfo.Name != baseScriptName && !deprecated.Contains(dirInfo.Name))
                     {
                         string cfgFile = Path.Combine(dir, dirInfo.Name + suffixConfg);
                         string userscriptFile = Path.Combine(dir, dirInfo.Name + suffixUserscript);
@@ -184,7 +189,16 @@ namespace TwitchAdUtils
         
         static string RunImpl(RunnerMode mode, string channel, bool isFetchingM3U8 = false, bool forceSkipAd = false)
         {
-            string playerType = mode == RunnerMode.MiniNoAd ? PlayerTypeMiniNoAd : PlayerTypeNormal;
+            string playerType = PlayerTypeNormal;
+            switch (mode)
+            {
+                case RunnerMode.MiniNoAd:
+                    playerType = PlayerTypeMiniNoAd;
+                    break;
+                case RunnerMode.Embed:
+                    playerType = PlayerTypeEmbed;
+                    break;
+            }
             string cookies = null;
             string uniqueId = null;
             int cycle = 0;
@@ -277,7 +291,12 @@ namespace TwitchAdUtils
                         }
                         else
                         {
-                            url = "https://usher.ttvnw.net/api/channel/hls/" + channel + ".m3u8?allow_source=true&sig=" + sig + "&token=" + System.Web.HttpUtility.UrlEncode(token) + MainM3U8AdditionalParams;
+                            string additionalParams = "";
+                            if (UseFastBread)
+                            {
+                                additionalParams += "&fast_bread=true";
+                            }
+                            url = "https://usher.ttvnw.net/api/channel/hls/" + channel + ".m3u8?allow_source=true" + additionalParams + "&sig=" + sig + "&token=" + System.Web.HttpUtility.UrlEncode(token) + MainM3U8AdditionalParams;
                         }
                         if (isFetchingM3U8)
                         {
@@ -296,6 +315,17 @@ namespace TwitchAdUtils
                         if (!string.IsNullOrEmpty(encodingsM3u8))
                         {
                             string[] lines = encodingsM3u8.Split('\n');
+                            string info = lines.FirstOrDefault(x => x.Contains("EXT-X-TWITCH-INFO"));
+                            bool isFuture = false;
+                            if (info != null)
+                            {
+                                Dictionary<string, string> attr = ParseAttributes(info);
+                                string futureStr;
+                                if (attr.TryGetValue("FUTURE", out futureStr))
+                                {
+                                    isFuture = bool.Parse(futureStr);
+                                }
+                            }
                             string streamM3u8Url = lines.FirstOrDefault(x => x.EndsWith(".m3u8"));
                             if (!string.IsNullOrEmpty(streamM3u8Url))
                             {
@@ -307,7 +337,7 @@ namespace TwitchAdUtils
                                     {
                                         if (streamM3u8.Contains(AdSignifier))
                                         {
-                                            Console.WriteLine("has ad " + DateTime.Now.TimeOfDay);
+                                            Console.WriteLine("has ad " + DateTime.Now.TimeOfDay + " - " + mode + " - future:" + isFuture);
                                             if (ShouldDenyAd)
                                             {
                                                 DeclineAd(uniqueId, streamM3u8, sig, token, true);
@@ -316,7 +346,7 @@ namespace TwitchAdUtils
                                         }
                                         else
                                         {
-                                            Console.WriteLine("no ad " + DateTime.Now.TimeOfDay);
+                                            Console.WriteLine("no ad " + DateTime.Now.TimeOfDay + " - " + mode + " - future:" + isFuture);
                                         }
                                         if ((streamM3u8.Contains(AdSignifier) || forceSkipAd) &&
                                             (!UseOldAccessToken && (ShouldNotifyAdWatched || forceSkipAd)))
@@ -794,7 +824,8 @@ namespace TwitchAdUtils
                                             if (!string.IsNullOrEmpty(mini))
                                             {
                                                 //string alt = RunImpl(RunnerMode.Proxy, channelName, true);
-                                                string alt = RunImpl(RunnerMode.Normal, channelName, true, true);
+                                                //string alt = RunImpl(RunnerMode.Normal, channelName, true, true);
+                                                string alt = RunImpl(RunnerMode.Embed, channelName, true);
                                                 state.M3U8Normal = normal;
                                                 state.M3U8Mini = mini;
                                                 state.M3U8Alt = alt;

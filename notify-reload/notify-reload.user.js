@@ -2,9 +2,9 @@
 // @name         TwitchAdSolutions
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
 // @version      1.2
-// @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip.user.js
-// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/dyn-skip/dyn-skip.user.js
-// @description  Multiple solutions for blocking Twitch ads (dyn-skip)
+// @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
+// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
+// @description  Multiple solutions for blocking Twitch ads (notify-reload)
 // @author       pixeltris
 // @match        *://*.twitch.tv/*
 // @run-at       document-start
@@ -14,7 +14,7 @@
     'use strict';
     function declareOptions(scope) {
         // Options / globals
-        scope.OPT_MODE_MUTE_BLACK = true;
+        scope.OPT_MODE_MUTE_BLACK = false;
         scope.OPT_MODE_VIDEO_SWAP = false;
         scope.OPT_MODE_LOW_RES = false;
         scope.OPT_MODE_EMBED = false;
@@ -28,7 +28,7 @@
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_EXPECTED_DURATION = 10000;// In milliseconds
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_ASYNC_TOK = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = false;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT_DELAY = 0;
         scope.OPT_MODE_PROXY_M3U8 = '';
         scope.OPT_MODE_PROXY_M3U8_OBFUSCATED = false;
