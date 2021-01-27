@@ -10,7 +10,7 @@ M3U8 proxies (or full proxies / VPNs) are currently the most reliable way of avo
 
 Alternatively:
 
-- `notify-strip` is ok-ish.
+- `notify-strip` / `notify-reload` are ok-ish.
 - `Alternate Player for Twitch.tv` consistently updates with new ad-blocking methods.
 - `ttv_adEraser` somewhat fixes the purple screen issue of `ttv-ublock`.
 - `ttv-tools` (firefox) has nice features.
@@ -29,7 +29,7 @@ Alternatively:
 - notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js))
   - Notifies that ads were watched, then reloads the player.
   - Repeats this until no ads **(which may never happen ~ infinite reload)**.
-  - You should expect 3-10 (give or take) player reloads. Once successful you shouldn't see preroll ads for a while on any stream (20+ minutes?).
+  - You should expect 3-10 player reloads (give or take). Once successful you shouldn't see preroll ads for a while on any stream (10+ minutes?).
 - strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip.user.js))
   - Ad segments are replaced by low resolution stream segments (on a m3u8 level).
   - Skips 2-3 seconds when switching to the live stream.
