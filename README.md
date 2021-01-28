@@ -10,7 +10,7 @@ M3U8 proxies (or full proxies / VPNs) are currently the most reliable way of avo
 
 Alternatively:
 
-- `notify-strip` / `notify-reload` are ok-ish.
+- `notify-strip` is ok-ish.
 - `Alternate Player for Twitch.tv` consistently updates with new ad-blocking methods.
 - `ttv_adEraser` somewhat fixes the purple screen issue of `ttv-ublock`.
 - `ttv-tools` (firefox) has nice features.
@@ -64,7 +64,7 @@ Alternatively:
 
 - Navigate to the uBlock Origin Dashboard (the extension options)
 - Under the `My filters` tab add `twitch.tv##+js(twitch-videoad)`.
-- Under the `Settings` tab, enable `I am an advanced user`, then click the cog that appears. Modify the value of `userResourcesLocation` from `unset` to the full url of the solution you wish to use (if a url is already in use, add a space after the existing url). e.g. `userResourcesLocation https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/dyn/dyn-ublock-origin.js` 
+- Under the `Settings` tab, enable `I am an advanced user`, then click the cog that appears. Modify the value of `userResourcesLocation` from `unset` to the full url of the solution you wish to use (if a url is already in use, add a space after the existing url). e.g. `userResourcesLocation https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js` 
 - To ensure uBlock Origin loads the script I recommend that you disable/enable the uBlock Origin extension (or restart your browser).
 
 ## Applying a solution (userscript)
