@@ -22,18 +22,14 @@ Alternatively:
 **If you want a perfect solution, please use** `Twitch AdBlock`.
 
 - notify-strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js))
-  - Similar to `strip`, but notifies Twitch that ads were "watched" (reduces preroll ad frequency).
-  - The `strip` variant used here shouldn't have looping issues on preroll ads, but may suffer more issues on midroll ads.
-- notify-strip-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload.user.js))
-  - Adds a reload step to `notify-strip` which may reduce issues transitioning away from the low resolution stream.
+  - The same as `strip`, but notifies Twitch that ads were "watched" (reduces preroll ad frequency).
 - notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js))
   - Notifies that ads were watched, then reloads the player.
   - Repeats this until no ads **(which may never happen ~ infinite reload)**.
   - You should expect 3-10 player reloads (give or take). Once successful you shouldn't see preroll ads for a while on any stream (10+ minutes?).
 - strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/strip/strip.user.js))
   - Ad segments are replaced by low resolution stream segments (on a m3u8 level).
-  - Skips 2-3 seconds when switching to the live stream.
-  - Stuttering and looping of segments often occur (during the ad segments).
+  - *TODO: Fix midrolls issues (stream freezes for several seconds / potentially longer low res than needed).*
   - **NOTE: Removing segments doesn't notify Twitch that ads were watched (aka more served ads).**
 - low-res ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js))
   - No ads.

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.2
+// @version      1.3
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip-reload/notify-strip-reload.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-strip-reload)
@@ -19,14 +19,11 @@
         scope.OPT_MODE_LOW_RES = false;
         scope.OPT_MODE_EMBED = false;
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
-        scope.OPT_MODE_STRIP_AD_SEGMENTS_NEWEST = true;
-        scope.OPT_MODE_STRIP_AD_SEGMENTS_NEWEST_WITH_PREFETCH = false;// This will result in a very close match, but often a repeat of a second or so. May be preferred if you dislike the regular 2-3 jump.
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS = 1;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_INITIAL_ATTEMPTS = 0;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_AND_RELOAD = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_EXPECTED_DURATION = 10000;// In milliseconds
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED_ASYNC_TOK = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT_DELAY = 0;
@@ -94,8 +91,8 @@
             }
             var newBlobStr = `
                 ${processM3U8.toString()}
-                ${getSegmentTimes.toString()}
-                ${getSegmentUrls.toString()}
+                ${getSegmentInfos.toString()}
+                ${getSegmentInfosLines.toString()}
                 ${hookWorkerFetch.toString()}
                 ${declareOptions.toString()}
                 ${getAccessToken.toString()}
@@ -160,33 +157,135 @@
         req.send();
         return req.responseText.split("'")[1];
     }
-    function getSegmentTimes(lines) {
-        var result = [];
-        var lastDate = 0;
+    function getSegmentInfosLines(streamInfo, lines) {
+        var result = {};
+        result.segs = [];
+        result.targetDuration = 0;
+        result.elapsedSecs = 0;
+        result.totalSecs = 0;
+        result.hasPrefetch = false;
+        result.hasLiveBeforeAd = true;// This most likely means a midroll (live segments before ad segments)
+        var hasLive = false;
         for (var i = 0; i < lines.length; i++) {
             var line = lines[i];
-            if (line.startsWith('#EXT-X-PROGRAM-DATE-TIME:')) {
-                lastDate = Date.parse(line.substring(line.indexOf(':') + 1));
-            } else if (line.startsWith('http')) {
-                result[lastDate] = line;
+            if (line.startsWith('#EXT-X-TARGETDURATION')) {
+                result.targetDuration = parseInt(line.split(':')[1]);
+            }
+            if (line.startsWith('#EXT-X-TWITCH-ELAPSED-SECS')) {
+                result.elapsedSecs = line.split(':')[1];
+            }
+            if (line.startsWith('#EXT-X-TWITCH-TOTAL-SECS')) {
+                result.totalSecs = line.split(':')[1];
+            }
+            if (line.startsWith('#EXT-X-DATERANGE')) {
+                var attr = parseAttributes(line);
+                if (attr['CLASS'] && attr['CLASS'].includes('stitched-ad')) {
+                    streamInfo.IsMidroll = attr['X-TV-TWITCH-AD-ROLL-TYPE'] == 'MIDROLL';
+                }
+            }
+            if (line.startsWith('http')) {
+                var segInfo = {};
+                segInfo.urlLineIndex = i;
+                segInfo.urlLine = lines[i];
+                segInfo.url = lines[i];
+                segInfo.isPrefetch = false;
+                if (i >= 1 && lines[i - 1].startsWith('#EXTINF')) {
+                    //#EXTINF:2.002,DCM|2435256
+                    //#EXTINF:2.002,Amazon|8493257483
+                    //#EXTINF:2.000,live
+                    var splitted = lines[i - 1].split(':')[1].split(',');
+                    segInfo.extInfLineIndex = i - 1;
+                    segInfo.extInfLine = lines[i - 1];
+                    segInfo.extInfLen = splitted[0];//2.000 (can be between 2.000 -> 5.000?)
+                    segInfo.extInfType = splitted[1].split('|')[0];//live / Amazon / DCM
+                    segInfo.isAd = segInfo.extInfType != 'live';
+                    if (segInfo.isAd && !hasLive && result.hasLiveBeforeAd) {
+                        result.hasLiveBeforeAd = false;
+                    }
+                    hasLive = !segInfo.isAd;
+                }
+                if (i >= 2 && lines[i - 2].startsWith('#EXT-X-PROGRAM-DATE-TIME')) {
+                    segInfo.dateTimeLineIndex = i - 2;
+                    segInfo.dateTimeLine = lines[i - 2];
+                    segInfo.dateTime = new Date(lines[i - 2].split(':')[1]);
+                }
+                result.segs.push(segInfo);
+            }
+            if (lines[i].startsWith('#EXT-X-TWITCH-PREFETCH:')) {
+                var segInfo = {};
+                segInfo.urlLineIndex = i;
+                segInfo.urlLine = lines[i];
+                segInfo.url = lines[i].substr(lines[i].indexOf(':') + 1);
+                segInfo.isPrefetch = true;
+                result.hasPrefetch = true;
+                result.segs.push(segInfo);
             }
         }
         return result;
     }
-    function getSegmentUrls(lines, includePrefetch) {
-        var result = [];
-        for (var i = 0; i < lines.length; i++) {
-            var line = lines[i];
-            if (line.startsWith('http')) {
-                result.push(line);
-            } else if (includePrefetch && line.startsWith('#EXT-X-TWITCH-PREFETCH:')) {
-                result.push(line.substring(line.indexOf(':') + 1));
+    function getSegmentInfos(streamInfo, lines, backupLines) {
+        var result = {};
+        result.segs = [];
+        result.main = getSegmentInfosLines(streamInfo, lines);
+        result.backup = getSegmentInfosLines(streamInfo, backupLines);
+        // Push all backup segments first
+        for (var i = 0; i < result.backup.segs.length; i++) {
+            var seg = {};
+            seg.backup = result.backup.segs[i];
+            result.segs.push(seg);
+        }
+        // Insert any live main segments
+        // NOTE: We might want to make sure we aren't writing over previously established backup segments (make use of streamInfo.SegmentCache)
+        // NOTE: Midroll ads will result in a very long backup stream. Better logic required for midrolls.
+        for (var i = result.main.segs.length - 1, j = result.segs.length - 1; i >= 0 && j >= 0; i--, j--) {
+            while (result.main.segs[i].isPrefetch) {
+                if (result.segs[j].backup.isPrefetch) {
+                    result.segs[j].main = result.main.segs[i];
+                    j--;
+                }
+                i--;
+            }
+            if (!result.main.segs[i].isAd) {
+                result.segs[j].main = result.main.segs[i];
+            } else {
+                break;
+            }
+        }
+        // Set the segment cache (currently unused)
+        streamInfo.SegmentCache.length = 0;
+        for (var i = 0; i < result.segs.length; i++) {
+            if (result.segs[i].main != null) {
+                streamInfo.SegmentCache[result.segs[i].main.url] = result.segs[i];
+            }
+            if (result.segs[i].backup != null) {
+                streamInfo.SegmentCache[result.segs[i].backup.url] = result.segs[i];
             }
         }
         return result;
     }
     async function processM3U8(url, textStr, realFetch) {
         var haveAdTags = textStr.includes(AD_SIGNIFIER);
+        if (OPT_MODE_STRIP_AD_SEGMENTS) {
+            var si = StreamInfosByUrl[url];
+            if (si != null) {
+                si.BackupSeqNumber = -1;
+                var lines = textStr.replace('\r', '').split('\n');
+                for (var i = 0; i < lines.length; i++) {
+                    if (lines[i].startsWith('#EXT-X-MEDIA-SEQUENCE:')) {
+                        var oldRealSeq = si.RealSeqNumber;
+                        si.RealSeqNumber = parseInt(/#EXT-X-MEDIA-SEQUENCE:([0-9]*)/.exec(lines[i])[1]);
+                        if (!haveAdTags && si.FakeSeqNumber > 0) {
+                            // We previously modified the sequence number, we need to keep doing so (alternatively pause/playing might work better)
+                            si.FakeSeqNumber += Math.max(0, si.RealSeqNumber - oldRealSeq);
+                            lines[i] = '#EXT-X-MEDIA-SEQUENCE:' + si.FakeSeqNumber;
+                            console.log('No ad, but modifying sequence realSeq:' + si.RealSeqNumber + ' fakeSeq:' + si.FakeSeqNumber);
+                        }
+                        break;
+                    }
+                }
+                textStr = lines.join('\n');
+            }
+        }
         if (haveAdTags) {
             var si = StreamInfosByUrl[url];
             if (OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST && si != null && !si.NotifyObservedNoAds) {
@@ -213,7 +312,7 @@
                     console.log('Reload player');
                     postMessage({key:'UboHideAdBanner'});
                     postMessage({key:'UboReloadPlayer'});
-                    return "";
+                    return '';
                 }
             }
             postMessage({
@@ -225,22 +324,13 @@
         if (!OPT_MODE_STRIP_AD_SEGMENTS) {
             return textStr;
         }
-        // NOTE: midroll ads are intertwined with live segments, always display the banner on midroll ads
-        if (haveAdTags && (!textStr.includes(LIVE_SIGNIFIER) || textStr.includes('MIDROLL'))) {
-            postMessage({key:'UboShowAdBanner',isMidroll:textStr.includes('MIDROLL')});
-        } else if ((LastAdUrl && LastAdUrl == url) || LastAdTime < Date.now() - 10000) {
-            postMessage({key:'UboHideAdBanner'});
-            LastAdTime = 0;
-        }
         if (haveAdTags) {
             LastAdUrl = url;
             LastAdTime = Date.now();
-            /*if (OPT_MODE_NOTIFY_ADS_WATCHED) {
-                console.log('Stripping ads (instead of skipping ads)');
-            }*/
             var streamInfo = StreamInfosByUrl[url];
             if (streamInfo == null) {
-                console.log('Unknown stream url! ' + url);
+                console.log('Unknown stream url ' + url);
+                postMessage({key:'UboHideAdBanner'});
                 return textStr;
             }
             if (!streamInfo.BackupFailed && streamInfo.BackupUrl == null) {
@@ -283,71 +373,69 @@
                 }
             }
             var lines = textStr.replace('\r', '').split('\n');
-            if (OPT_MODE_STRIP_AD_SEGMENTS_NEWEST) {
-                if (backupM3u8 != null) {
-                    var backupLines = backupM3u8.replace('\r', '').split('\n');
-                    var segUrls = getSegmentUrls(lines, false);
-                    var backupSegUrls = getSegmentUrls(backupLines, OPT_MODE_STRIP_AD_SEGMENTS_NEWEST_WITH_PREFETCH);
-                    for (var i = segUrls.length - 1, j = backupSegUrls.length - 1; i >= 0 && j >= 0; i--, j--) {
-                        if (streamInfo.SegmentMap[segUrls[i]] == null) {
-                            streamInfo.SegmentMap[segUrls[i]] = backupSegUrls[j];
+            var newLines = [];
+            if (backupM3u8 != null) {
+                var seqMatch = /#EXT-X-MEDIA-SEQUENCE:([0-9]*)/.exec(backupM3u8);
+                if (seqMatch != null) {
+                    var oldBackupSeqNumber = streamInfo.BackupSeqNumber;
+                    streamInfo.BackupSeqNumber = Math.max(0, parseInt(seqMatch[1]));
+                    if (streamInfo.RealSeqNumber > 0) {
+                        // We already have a real stream, this must be a midroll. We should therefore increment rather than just using backup directly.
+                        // - If we don't do this then our sequence number will be broken and the stream will get stuck in a loading state.
+                        if (streamInfo.FakeSeqNumber == 0) {
+                            streamInfo.FakeSeqNumber = streamInfo.RealSeqNumber;
+                        }
+                        if (oldBackupSeqNumber == -1) {
+                            // First backup sequence, assume +1
+                            streamInfo.FakeSeqNumber++;
+                        }
+                        else {
+                            streamInfo.FakeSeqNumber += Math.max(0, streamInfo.BackupSeqNumber - oldBackupSeqNumber);
+                        }
+                    } else {
+                        streamInfo.FakeSeqNumber = streamInfo.BackupSeqNumber;
+                    }
+                }
+                var backupLines = backupM3u8.replace('\r', '').split('\n');
+                var segInfos = getSegmentInfos(streamInfo, lines, backupLines);
+                newLines.push('#EXTM3U');
+                newLines.push('#EXT-X-VERSION:3');
+                newLines.push('#EXT-X-TARGETDURATION:' + segInfos.backup.targetDuration);
+                newLines.push('#EXT-X-MEDIA-SEQUENCE:' + streamInfo.FakeSeqNumber);
+                // The following will could cause issues when we stop stripping segments
+                //newLines.push('#EXT-X-TWITCH-ELAPSED-SECS:' + streamInfo.backup.elapsedSecs);
+                //newLines.push('#EXT-X-TWITCH-TOTAL-SECS:' + streamInfo.backup.totalSecs);
+                var pushedLiveSegs = 0;
+                var pushedBackupSegs = 0;
+                var pushedPrefetchSegs = 0;
+                for (var i = 0; i < segInfos.segs.length; i++) {
+                    var seg = segInfos.segs[i];
+                    var segData = null;
+                    if (seg.main != null && !seg.main.isAd) {
+                        pushedLiveSegs++;
+                        segData = seg.main;
+                    } else if (seg.backup != null) {
+                        pushedBackupSegs++;
+                        segData = seg.backup;
+                    }
+                    if (segData != null) {
+                        if (segData.isPrefetch) {
+                            pushedPrefetchSegs++;
+                            newLines.push(segData.urlLine);
+                        } else {
+                            //newLines.push(segData.dateTimeLine);
+                            newLines.push(segData.extInfLine);
+                            newLines.push(segData.urlLine);
                         }
                     }
                 }
-                for (var i = 0; i < lines.length; i++) {
-                    var line = lines[i];
-                    if (line == null) {
-                        continue;
-                    }
-                    if (line.includes('stitched-ad')) {
-                        lines[i] = '';
-                    }
-                    if (line.startsWith('#EXTINF:') && !line.includes(',live')) {
-                        var newSegUrl = streamInfo.SegmentMap[lines[i + 1]];
-                        //lines[i] = line.substring(0, line.indexOf(',')) + ',live';
-                        lines[i + 1] = newSegUrl != null ? newSegUrl : '';
-                    }
-                    /*if (line.startsWith('#EXT-X-TWITCH-PREFETCH')) {
-                        // TODO
-                        lines[i] = '';
-                    }*/
-                }
-            } else {
-                var segmentMap = [];
-                if (backupM3u8 != null) {
-                    var backupLines = backupM3u8.replace('\r', '').split('\n');
-                    var segTimes = getSegmentTimes(lines);
-                    var backupSegTimes = getSegmentTimes(backupLines);
-                    for (const [segTime, segUrl] of Object.entries(segTimes)) {
-                        //segmentMap[segUrl] = Object.values(backupSegTimes)[Object.keys(backupSegTimes).length-1];
-                        var closestTime = Number.MAX_VALUE;
-                        var matchingBackupTime = Number.MAX_VALUE;
-                        for (const [backupSegTime, backupSegUrl] of Object.entries(backupSegTimes)) {
-                            var timeDiff = Math.abs(segTime - backupSegTime);
-                            if (timeDiff < closestTime) {
-                                closestTime = timeDiff;
-                                matchingBackupTime = backupSegTime;
-                                segmentMap[segUrl] = backupSegUrl;
-                            }
-                        }
-                        if (closestTime != Number.MAX_VALUE) {
-                            backupSegTimes.splice(backupSegTimes.indexOf(matchingBackupTime), 1);
-                        }
-                    }
-                }
-                for (var i = 0; i < lines.length; i++) {
-                    var line = lines[i];
-                    if (line.includes('stitched-ad')) {
-                        lines[i] = '';
-                    }
-                    if (line.startsWith('#EXTINF:') && !line.includes(',live')) {
-                        lines[i] = line.substring(0, line.indexOf(',')) + ',live';
-                        var backupSegment = segmentMap[lines[i + 1]];
-                        lines[i + 1] = backupSegment != null ? backupSegment : ''
-                    }
+                if (pushedLiveSegs > 0 || pushedBackupSegs > 0) {
+                    console.log('liveSegs:' + pushedLiveSegs + ' backupSegs:' + pushedBackupSegs + ' prefetch:' + pushedPrefetchSegs + ' realSeq:' + streamInfo.RealSeqNumber + ' fakeSeq:' + streamInfo.FakeSeqNumber);
+                } else {
+                    console.log('TODO: If theres no backup data then we need to provide our own .ts file, otherwise the player will spam m3u8 requests (denial-of-service)');
                 }
             }
-            textStr = lines.join('\n');
+            textStr = newLines.length > 0 ? newLines.join('\n') : lines.join('\n');
             //console.log(textStr);
         }
         return textStr;
@@ -356,6 +444,22 @@
         var realFetch = fetch;
         fetch = async function(url, options) {
             if (typeof url === 'string') {
+                if (OPT_MODE_STRIP_AD_SEGMENTS && url.endsWith('.ts')) {
+                    var shownAdBanner = false;
+                    for (const [channelName, streamInfo] of Object.entries(StreamInfos)) {
+                        var seg = streamInfo.SegmentCache[url];
+                        if (seg && !seg.isPrefetch) {
+                            if (seg.main == null && seg.backup != null) {
+                                shownAdBanner = true;
+                                postMessage({key:'UboShowAdBanner',isMidroll:streamInfo.IsMidroll});
+                            }
+                            break;
+                        }
+                    }
+                    if (!shownAdBanner) {
+                        postMessage({key:'UboHideAdBanner'});
+                    }
+                }
                 if (url.endsWith('m3u8')) {
                     return new Promise(function(resolve, reject) {
                         var processAfter = async function(response) {
@@ -429,9 +533,13 @@
                                         streamInfo.RootM3U8Params = (new URL(url)).search;
                                         streamInfo.BackupUrl = null;
                                         streamInfo.BackupFailed = false;
-                                        streamInfo.SegmentMap = [];
+                                        streamInfo.SegmentCache = [];
+                                        streamInfo.IsMidroll = false;
                                         streamInfo.NotifyFirstTime = 0;
                                         streamInfo.NotifyObservedNoAds = false;
+                                        streamInfo.RealSeqNumber = -1;
+                                        streamInfo.BackupSeqNumber = -1;
+                                        streamInfo.FakeSeqNumber = 0;
                                         var lines = encodingsM3u8.replace('\r', '').split('\n');
                                         for (var i = 0; i < lines.length; i++) {
                                             if (!lines[i].startsWith('#') && lines[i].includes('.m3u8')) {
@@ -619,12 +727,7 @@
             if (typeof url === 'string') {
                 if (url.includes('/access_token') || url.includes('gql')) {
                     if (OPT_ACCESS_TOKEN_PLAYER_TYPE) {
-                        if (url.includes('/access_token')) {
-                            var modifiedUrl = new URL(url);
-                            modifiedUrl.searchParams.set('player_type', OPT_ACCESS_TOKEN_PLAYER_TYPE);
-                            arguments[0] = modifiedUrl.href;
-                        }
-                        else if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
+                        if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
                             const newBody = JSON.parse(init.body);
                             newBody.variables.playerType = OPT_ACCESS_TOKEN_PLAYER_TYPE;
                             init.body = JSON.stringify(newBody);
@@ -643,79 +746,28 @@
                             value: gql_device_id
                         });
                     }
-                    if (OPT_MODE_NOTIFY_ADS_WATCHED) {
+                    if (OPT_MODE_NOTIFY_ADS_WATCHED && OPT_MODE_NOTIFY_ADS_WATCHED_INITIAL_ATTEMPTS > 0) {
                         var tok = null, sig = null;
                         if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
                             return new Promise(async function(resolve, reject) {
                                 var response = await realFetch(url, init);
                                 if (response.status === 200) {
-                                    if (OPT_MODE_NOTIFY_ADS_WATCHED_ASYNC_TOK) {
-                                        var channelName = JSON.parse(init.body).variables.login;
-                                        // See if the first response has an ad, if it does then send requests until there is no ad
-                                        {
-                                            var cloned = response.clone();
-                                            var responseStr = await cloned.text();
-                                            var responseData = JSON.parse(responseStr);
-                                            if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
-                                                if (await tryNotifyAdsWatchedSigTok(realFetch, -1, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value) == 1) {
-                                                    console.log('No ad in main request');
-                                                    resolve(new Response(responseStr));
-                                                    return;
-                                                } else {
-                                                    console.log('Ad in main request');
-                                                }
+                                    for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_INITIAL_ATTEMPTS; i++) {
+                                        var cloned = response.clone();
+                                        var responseStr = await cloned.text();
+                                        var responseData = JSON.parse(responseStr);
+                                        if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
+                                            if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value) == 1) {
+                                                resolve(new Response(responseStr));
+                                                return;
                                             }
+                                        } else {
+                                            console.log('malformed');
+                                            console.log(responseData);
+                                            break;
                                         }
-                                        if (!channelName) {
-                                            resolve(response);
-                                            return;
-                                        }
-                                        // Ads are being served, try skipping a bunch of ads
-                                        var resolved = false;
-                                        var skipAdTries = 0;
-                                        for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS; i++) {
-                                            new Promise(async (skipAdResolve, skipAdReject) => {
-                                                var noAds = false;
-                                                var accessTokenResponse = await getAccessToken(channelName, OPT_REGULAR_PLAYER_TYPE, realFetch);
-                                                if (accessTokenResponse.status == 200) {
-                                                    var responseStr = await accessTokenResponse.text();
-                                                    var responseData = JSON.parse(responseStr);
-                                                    var hasAd = false;
-                                                    if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
-                                                        hasAd = (await tryNotifyAdsWatchedSigTok(realFetch, -1, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value)) == 0;
-                                                    }
-                                                    var attempt = ++skipAdTries;
-                                                    console.log('Attempt ' + attempt + ' ' + (hasAd ? 'has ad' : 'no ad'));
-                                                    if (attempt === OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS && !resolved) {
-                                                        resolved = true;
-                                                        resolve(new Response(responseStr));
-                                                        return;
-                                                    }
-                                                } else if (!resolved) {
-                                                    resolved = true;
-                                                    resolve(response);
-                                                    return;
-                                                }
-                                            }).catch(console.log);
-                                        }
-                                    } else {
-                                        for (var i = 0; i < OPT_MODE_NOTIFY_ADS_WATCHED_ATTEMPTS; i++) {
-                                            var cloned = response.clone();
-                                            var responseStr = await cloned.text();
-                                            var responseData = JSON.parse(responseStr);
-                                            if (responseData && responseData.data && responseData.data.streamPlaybackAccessToken && responseData.data.streamPlaybackAccessToken.value && responseData.data.streamPlaybackAccessToken.signature) {
-                                                if (await tryNotifyAdsWatchedSigTok(realFetch, i, responseData.data.streamPlaybackAccessToken.signature, responseData.data.streamPlaybackAccessToken.value) == 1) {
-                                                    resolve(new Response(responseStr));
-                                                    return;
-                                                }
-                                            } else {
-                                                console.log('malformed');
-                                                console.log(responseData);
-                                                break;
-                                            }
-                                        }
-                                        resolve(response);
                                     }
+                                    resolve(response);
                                 } else {
                                     resolve(response);
                                 }

@@ -67,14 +67,14 @@ namespace TwitchAdUtils
             Console.Write("Enter channel name: ");
             string channel = Console.ReadLine().ToLower();
             Console.WriteLine("Fetching channel '" + channel + "'");
-            //RunImpl(RunnerMode.Normal, channel);
-            RunImpl(RunnerMode.Embed, channel);
+            RunImpl(RunnerMode.Normal, channel);
+            //RunImpl(RunnerMode.Embed, channel);
             //RunImpl(RunnerMode.MiniNoAd, channel);
         }
         
         static void BuildScripts()
         {
-            string[] deprecated = { "dyn-skip-midroll-alt", "dyn-skip-midroll", "dyn-video-swap", "dyn" };
+            string[] deprecated = { "dyn-skip-midroll-alt", "dyn-skip-midroll", "dyn-video-swap", "dyn", "dyn-skip" };
             string baseScriptName = "base";
             string suffixConfg = ".cfg";
             string suffixUserscript = ".user.js";
