@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name         TwitchAdSolutions
+// @name         TwitchAdSolutions (notify-strip)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.3
+// @version      1.4
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-strip)
@@ -60,8 +60,6 @@
         scope.StreamInfos = [];
         scope.StreamInfosByUrl = [];
         scope.CurrentChannelNameFromM3U8 = null;
-        scope.LastAdUrl = null;
-        scope.LastAdTime = 0;
         // Need this in both scopes. Window scope needs to update this to worker scope.
         scope.gql_device_id = null;
     }
@@ -93,6 +91,7 @@
                 ${processM3U8.toString()}
                 ${getSegmentInfos.toString()}
                 ${getSegmentInfosLines.toString()}
+                ${getFinalSegUrl.toString()}
                 ${hookWorkerFetch.toString()}
                 ${declareOptions.toString()}
                 ${getAccessToken.toString()}
@@ -131,6 +130,9 @@
                 }
                 else if (e.data.key == 'UboReloadPlayer') {
                     reloadTwitchPlayer();
+                }
+                else if (e.data.key == 'UboPauseResumePlayer') {
+                    reloadTwitchPlayer(true);
                 }
             }
             function getAdDiv() {
@@ -207,7 +209,7 @@
                 if (i >= 2 && lines[i - 2].startsWith('#EXT-X-PROGRAM-DATE-TIME')) {
                     segInfo.dateTimeLineIndex = i - 2;
                     segInfo.dateTimeLine = lines[i - 2];
-                    segInfo.dateTime = new Date(lines[i - 2].split(':')[1]);
+                    segInfo.dateTime = new Date(lines[i - 2].substr(lines[i - 2].indexOf(':')));
                 }
                 result.segs.push(segInfo);
             }
@@ -263,20 +265,42 @@
         }
         return result;
     }
+    function getFinalSegUrl(lines) {
+        for (var i = lines.length - 1; i >= 0; i--) {
+            if (lines[i].startsWith("http")) {
+                return lines[i];
+            }
+        }
+        return null;
+    }
     async function processM3U8(url, textStr, realFetch) {
         var haveAdTags = textStr.includes(AD_SIGNIFIER);
         if (OPT_MODE_STRIP_AD_SEGMENTS) {
             var si = StreamInfosByUrl[url];
             if (si != null) {
-                si.BackupSeqNumber = -1;
                 var lines = textStr.replace('\r', '').split('\n');
                 for (var i = 0; i < lines.length; i++) {
                     if (lines[i].startsWith('#EXT-X-MEDIA-SEQUENCE:')) {
                         var oldRealSeq = si.RealSeqNumber;
                         si.RealSeqNumber = parseInt(/#EXT-X-MEDIA-SEQUENCE:([0-9]*)/.exec(lines[i])[1]);
                         if (!haveAdTags && si.FakeSeqNumber > 0) {
-                            // We previously modified the sequence number, we need to keep doing so (alternatively pause/playing might work better)
-                            si.FakeSeqNumber += Math.max(0, si.RealSeqNumber - oldRealSeq);
+                            /*// We have some sequencing issues... for now lets pause/play and stop modifying sequence.
+                            // TODO: Improve sequencing (determine if the m3u8 urls have actually changed)
+                            si.FakeSeqNumber = 0;
+                            si.BackupSeqNumber = -1;
+                            postMessage({key:'UboPauseResumePlayer'});*/
+                            // We previously modified the sequence number, we need to keep doing so (alternatively pause/playing might work better
+                            var finalSegUrl = getFinalSegUrl(lines);
+                            if (finalSegUrl != si.FinalSegUrl) {
+                                si.FinalSegUrl = finalSegUrl;
+                                // TODO: Maybe only do the jump check if there was an ad recently? (within the last 5 m3u8 requests)
+                                var jump = Math.max(0, si.RealSeqNumber - oldRealSeq);
+                                if (jump <= 3) {
+                                    si.FakeSeqNumber += Math.max(0, si.RealSeqNumber - oldRealSeq);
+                                } else if (jump > 0) {
+                                    si.FakeSeqNumber++;
+                                }
+                            }
                             lines[i] = '#EXT-X-MEDIA-SEQUENCE:' + si.FakeSeqNumber;
                             console.log('No ad, but modifying sequence realSeq:' + si.RealSeqNumber + ' fakeSeq:' + si.FakeSeqNumber);
                         }
@@ -325,8 +349,6 @@
             return textStr;
         }
         if (haveAdTags) {
-            LastAdUrl = url;
-            LastAdTime = Date.now();
             var streamInfo = StreamInfosByUrl[url];
             if (streamInfo == null) {
                 console.log('Unknown stream url ' + url);
@@ -375,33 +397,12 @@
             var lines = textStr.replace('\r', '').split('\n');
             var newLines = [];
             if (backupM3u8 != null) {
-                var seqMatch = /#EXT-X-MEDIA-SEQUENCE:([0-9]*)/.exec(backupM3u8);
-                if (seqMatch != null) {
-                    var oldBackupSeqNumber = streamInfo.BackupSeqNumber;
-                    streamInfo.BackupSeqNumber = Math.max(0, parseInt(seqMatch[1]));
-                    if (streamInfo.RealSeqNumber > 0) {
-                        // We already have a real stream, this must be a midroll. We should therefore increment rather than just using backup directly.
-                        // - If we don't do this then our sequence number will be broken and the stream will get stuck in a loading state.
-                        if (streamInfo.FakeSeqNumber == 0) {
-                            streamInfo.FakeSeqNumber = streamInfo.RealSeqNumber;
-                        }
-                        if (oldBackupSeqNumber == -1) {
-                            // First backup sequence, assume +1
-                            streamInfo.FakeSeqNumber++;
-                        }
-                        else {
-                            streamInfo.FakeSeqNumber += Math.max(0, streamInfo.BackupSeqNumber - oldBackupSeqNumber);
-                        }
-                    } else {
-                        streamInfo.FakeSeqNumber = streamInfo.BackupSeqNumber;
-                    }
-                }
                 var backupLines = backupM3u8.replace('\r', '').split('\n');
                 var segInfos = getSegmentInfos(streamInfo, lines, backupLines);
                 newLines.push('#EXTM3U');
                 newLines.push('#EXT-X-VERSION:3');
                 newLines.push('#EXT-X-TARGETDURATION:' + segInfos.backup.targetDuration);
-                newLines.push('#EXT-X-MEDIA-SEQUENCE:' + streamInfo.FakeSeqNumber);
+                newLines.push('');//#EXT-X-MEDIA-SEQUENCE:' + streamInfo.FakeSeqNumber);
                 // The following will could cause issues when we stop stripping segments
                 //newLines.push('#EXT-X-TWITCH-ELAPSED-SECS:' + streamInfo.backup.elapsedSecs);
                 //newLines.push('#EXT-X-TWITCH-TOTAL-SECS:' + streamInfo.backup.totalSecs);
@@ -429,6 +430,12 @@
                         }
                     }
                 }
+                var finalSegUrl = getFinalSegUrl(newLines);
+                if (finalSegUrl != streamInfo.FinalSegUrl) {
+                    streamInfo.FinalSegUrl = finalSegUrl;
+                    streamInfo.FakeSeqNumber++;// We might need something better than this for lager jumps in seq?
+                }
+                newLines[3] = '#EXT-X-MEDIA-SEQUENCE:' + streamInfo.FakeSeqNumber;
                 if (pushedLiveSegs > 0 || pushedBackupSegs > 0) {
                     console.log('liveSegs:' + pushedLiveSegs + ' backupSegs:' + pushedBackupSegs + ' prefetch:' + pushedPrefetchSegs + ' realSeq:' + streamInfo.RealSeqNumber + ' fakeSeq:' + streamInfo.FakeSeqNumber);
                 } else {
@@ -540,6 +547,7 @@
                                         streamInfo.RealSeqNumber = -1;
                                         streamInfo.BackupSeqNumber = -1;
                                         streamInfo.FakeSeqNumber = 0;
+                                        streamInfo.FinalSegUrl = null;
                                         var lines = encodingsM3u8.replace('\r', '').split('\n');
                                         for (var i = 0; i < lines.length; i++) {
                                             if (!lines[i].startsWith('#') && lines[i].includes('.m3u8')) {
@@ -871,6 +879,7 @@
         }
     }
     function pollForAds() {
+        //console.log('pollForAds ' + new Date(Date.now()));
         //check ad by looking for text banner
         var adBanner = document.querySelectorAll("span.tw-c-text-overlay");
         var foundAd = false;
@@ -904,9 +913,22 @@
                 }
             }
         }
-        setTimeout(pollForAds,100);
+        //setTimeout(pollForAds,100);
     }
-    function reloadTwitchPlayer() {
+    function pollForAdsObserver() {
+        pollForAds();
+        var vids = document.getElementsByClassName('video-player');
+        for (var i = 0; i < vids.length; i++) {
+            var observer = new MutationObserver(pollForAds);
+            observer.observe(vids[i], {
+                childList: true,
+                subtree: true,
+                attributes: false,
+                characterData: false
+            });
+        }
+    }
+    function reloadTwitchPlayer(isPausePlay) {
         // Taken from ttv-tools / ffz
         // https://github.com/Nerixyz/ttv-tools/blob/master/src/context/twitch-player.ts
         // https://github.com/FrankerFaceZ/FrankerFaceZ/blob/master/src/sites/twitch-twilight/modules/player.jsx
@@ -947,6 +969,11 @@
         if (player.paused) {
             return;
         }
+        if (isPausePlay) {
+            player.pause();
+            player.play();
+            return;
+        }
         const sink = player.mediaSinkManager || (player.core ? player.core.mediaSinkManager : null);
         if (sink && sink.video && sink.video._ffz_compressor) {
             const video = sink.video;
@@ -974,11 +1001,11 @@
             var script = document.createElement('script');
             script.src = "https://cdn.jsdelivr.net/npm/hls.js@latest";
             script.onload = function() {
-                pollForAds();
+                pollForAdsObserver();
             }
             document.head.appendChild(script);
         } else {
-            pollForAds();
+            pollForAdsObserver();
         }
     }
     hookFetch();
