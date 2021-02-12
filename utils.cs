@@ -126,6 +126,10 @@ namespace TwitchAdUtils
                                 {
                                     modifiedOptions = true;
                                 }
+                                if (lineTrimmed.StartsWith("// @name "))
+                                {
+                                    line = line += " (" + dirInfo.Name + ")";
+                                }
                                 if (lineTrimmed.StartsWith("// @description"))
                                 {
                                     string url = "https://github.com/pixeltris/TwitchAdSolutions/raw/master/" + dirInfo.Name + "/" + dirInfo.Name + suffixUserscript;

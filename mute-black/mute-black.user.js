@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name         TwitchAdSolutions mute black
+// @name         TwitchAdSolutions (mute-black) - simplified
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
 // @version      1.4
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black.user.js
@@ -20,9 +20,9 @@
     var foundAdContainer = false;// Have ad containers been found (the clickable ad)
     var foundAdBanner = false;// Is the ad banner visible (top left of screen)
 
-	function onFoundAd() {
+    function onFoundAd() {
         if (!foundAdContainer) {
-            // hide ad contianers
+            // hide ad containers
             var adContainers = document.querySelectorAll('[data-test-selector="sad-overlay"]');
             for (var i = 0; i < adContainers.length; i++) {
                 adContainers[i].style.display = "none";
@@ -71,24 +71,49 @@
             }
         }
     }
-    let observer = null;
-	function onContentLoaded() {
-		pollForAds();
+    let videoObserver = new MutationObserver(pollForAds);
+    function observePlayers() {
+        pollForAds();
 
-		observer = new MutationObserver(pollForAds);
-		observer.observe(document.body, {
-			childList: true
-			, subtree: true
-			, attributes: false
-			, characterData: false
-		});
+        videoObserver.disconnect();
+        for (const vid of document.getElementsByClassName('video-player')) {
+            videoObserver.observe(vid, {
+                childList: true,
+                subtree: true,
+                attributes: false,
+                characterData: false
+            });
+        }
     }
-    if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
-        onContentLoaded();
-    } else {
-        window.addEventListener("DOMContentLoaded", function() {
-            onContentLoaded();
+    observePlayers();
+    function checkDocumentForPlayers(mutationList, observer) {
+        var modifiedPlayerList = false;
+        mutationList.forEach((mutation) => {
+            switch(mutation.type) {
+                case 'childList': {
+                    for(let nodelist of [mutation.addedNodes, mutation.removedNodes]) {
+                        for(let node of nodelist) {
+                            if(node.nodeType !== Node.ELEMENT_NODE) continue;
+                            if(node.classList.contains('video-player')) {
+                                modifiedPlayerList = true;
+                            }
+                            for(let video of node.getElementsByClassName("video-player")) {
+                                modifiedPlayerList = true;
+                            }
+                        }
+                    }
+                }
+            }
         });
+        if(modifiedPlayerList) {
+            observePlayers();
+        }
     }
+    let playerObserver = new MutationObserver(checkDocumentForPlayers);
+    playerObserver.observe(document, {
+        childList: true,
+        subtree: true,
+        attributes: false,
+        characterData: false
+    });
 })();
-
