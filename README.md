@@ -6,7 +6,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 M3U8 proxies (or full proxies / VPNs) are currently the most reliable way of avoiding ads. More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
 
-- `Twitch AdBlock` - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/mipdalemhlhfenbikcloloheedmmecme) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock/) - [code](https://robwu.nl/crxviewer/?crx=mipdalemhlhfenbikcloloheedmmecme&qf=js/background.js)
+- *There currently aren't any public proxies. `Twitch AdBlock` was taken down on March 31 (see [#22](https://github.com/pixeltris/TwitchAdSolutions/issues/22)).*
 
 Alternatively:
 
@@ -79,7 +79,6 @@ For a more detailed description of the following please refer to [this](other-so
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707 (UserScript + FrankerFaceZ(optional))
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code (UserScript + FrankerFaceZ(optional))
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
-- [Twitch AdBlock](https://chrome.google.com/webstore/detail/twitch-adblock/mipdalemhlhfenbikcloloheedmmecme) - [code](https://robwu.nl/crxviewer/?crx=mipdalemhlhfenbikcloloheedmmecme&qf=js/background.js) (extension)
 
 ---
 
