@@ -27,10 +27,10 @@
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT_DELAY = 0;
-        scope.OPT_MODE_PROXY_M3U8 = 'Ax0ZHhYNF0QLXg8PFBsRBgIfR0MVWQUJBVwFVBJBHAYfBQBFS0UcVhhM';
-        scope.OPT_MODE_PROXY_M3U8_OBFUSCATED = true;
+        scope.OPT_MODE_PROXY_M3U8 = 'http://127.0.0.1/twitch-m3u8/';
+        scope.OPT_MODE_PROXY_M3U8_OBFUSCATED = false;
         scope.OPT_MODE_PROXY_M3U8_FULL_URL = false;
-        scope.OPT_MODE_PROXY_M3U8_PARTIAL_URL = true;
+        scope.OPT_MODE_PROXY_M3U8_PARTIAL_URL = false;
         scope.OPT_VIDEO_SWAP_PLAYER_TYPE = 'picture-by-picture';
         scope.OPT_BACKUP_PLAYER_TYPE = 'picture-by-picture';
         scope.OPT_REGULAR_PLAYER_TYPE = 'site';

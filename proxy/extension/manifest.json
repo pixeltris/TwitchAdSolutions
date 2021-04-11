@@ -1,0 +1,16 @@
+{
+    "name": "Twitch M3U8 Proxy",
+    "description": "Twitch M3U8 Proxy",
+    "version": "1.0",
+    "manifest_version": 2,
+    "background": {
+        "scripts": ["background.js"],
+        "persistent": true
+    },
+    "permissions": [
+        "webRequest",
+        "webRequestBlocking",
+        "*://*.twitch.tv/*",
+        "*://*.ttvnw.net/*"
+    ]
+}

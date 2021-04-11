@@ -1,0 +1,31 @@
+
+
+
+
+
+- If you want to use a socks5 proxy:
+
+The first line MUST be the IP of the socks proxy
+The second line MUST be the port of the socks proxy
+
+- If you need a user / pass:
+
+The third line MUST be the username
+The fourth line MUST be the password
+
+- If you DON'T need a user / pass then the third / fourth line MUST be empty.
+- If you DON'T want to use a socks proxy then leave all four lines empty, or delete this file.
+
+----------------------------
+Example (with user/pass)
+----------------------------
+10.1.1.49
+1080
+myusername
+mypassword
+
+----------------------------
+Example (without user/pass)
+----------------------------
+10.2.2.66
+1080

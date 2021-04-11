@@ -16,16 +16,15 @@ Web browser extensions / scripts:
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code
   - Reloads the player (or page) when it detects the ad banner in DOM.
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js)
-  - Notifies Twitch that ads were watched before loading the main stream (prerolls).
-  - Removes ad segments which cannot be skipped (midrolls). The player will freeze on the last live frame until no more ads.
-- [Twitch AdBlock](https://addons.mozilla.org/en-GB/firefox/addon/twitch-adblock/) - [code](https://robwu.nl/crxviewer/?crx=https%3A%2F%2Faddons.mozilla.org%2Fen-GB%2Ffirefox%2Faddon%2Ftwitch-adblock%2F&qf=js/background.js)
+  - Removes ad segments which cannot be skipped. The player will freeze on the last live frame until no more ads.
+- https://github.com/TTV-LOL/extensions
   - Uses a proxy on the main m3u8 file to get a stream without ads (no prerolls / midrolls).
 
 Applications / third party websites:
 - https://github.com/streamlink/streamlink
   - Removes ad segments (I assume this will freeze on the last live frame until no more ads).
-- https://github.com/nopbreak/TwitchMod
-  - Unsure how this one blocks ads, but it claims that it can. As this is a mod of the official Twitch app (which isn't obfuscated) they might have insight into better ad blocking methods.
+- [multiChat for Twitch](https://play.google.com/store/apps/details?id=org.mchatty)
+  - Unsure how this one blocks ads, but it claims that it does.
 - https://twitchls.com/
   - Uses the `embed` player. Purple screen may display every 10-15 mins.
 - https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/

@@ -152,13 +152,11 @@
                                 StreamInfos[channelName] = streamInfo = {};
                             }
                             streamInfo.ChannelName = channelName;
-                            streamInfo.Urls = [];
                             streamInfo.AdUrlCache = [];
                             streamInfo.IsMidroll = false;
                             var lines = encodingsM3u8.replace('\r', '').split('\n');
                             for (var i = 0; i < lines.length; i++) {
                                 if (!lines[i].startsWith('#') && lines[i].includes('.m3u8')) {
-                                    streamInfo.Urls.push(lines[i]);
                                     StreamInfosByUrl[lines[i]] = streamInfo;
                                 }
                             }

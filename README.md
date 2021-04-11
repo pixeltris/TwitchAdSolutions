@@ -6,7 +6,8 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 M3U8 proxies (or full proxies / VPNs) are currently the most reliable way of avoiding ads. More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
 
-- *There currently aren't any public proxies. `Twitch AdBlock` was taken down on March 31 (see [#22](https://github.com/pixeltris/TwitchAdSolutions/issues/22)).*
+- `TTV.LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
+- *`Twitch AdBlock` was taken down on March 31 (see [#22](https://github.com/pixeltris/TwitchAdSolutions/issues/22)).*
 
 Alternatively:
 
@@ -48,14 +49,6 @@ Alternatively:
   - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
   - **Assumes the proxy server acts in good faith and maintains a good uptime.**
 
-*The following renamed/deprecated scripts will be removed from the master branch on `1st March 2021`:*
-
-- `dyn` renamed to `strip` as this better reflects the functionality (strips ad segments).
-- `dyn-skip` removed as it no longer works.
-- `dyn-skip-midroll` renamed to `notify-reload` as the original name has lost its meaning.
-- `dyn-skip-midroll-alt` renamed to `notify-strip` as the original name has lost its meaning.
-- `dyn-video-swap` renamed to `video-swap`.
-
 ## Applying a solution (uBlock Origin)
 
 - Navigate to the uBlock Origin Dashboard (the extension options)
@@ -79,11 +72,12 @@ For a more detailed description of the following please refer to [this](other-so
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707 (UserScript + FrankerFaceZ(optional))
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code (UserScript + FrankerFaceZ(optional))
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
+- https://github.com/TTV-LOL/extensions (extension)
 
 ---
 
 - https://github.com/streamlink/streamlink (desktop application)
-- https://github.com/nopbreak/TwitchMod (android app)
+- [multiChat for Twitch](https://play.google.com/store/apps/details?id=org.mchatty) (android app)
 - https://twitchls.com/ (external site - purple screen may display every 10-15 mins)
 - [Use a VPN targeting a region without ads](https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/)
 
