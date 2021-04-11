@@ -19,6 +19,8 @@ Web browser extensions / scripts:
   - Removes ad segments which cannot be skipped. The player will freeze on the last live frame until no more ads.
 - https://github.com/TTV-LOL/extensions
   - Uses a proxy on the main m3u8 file to get a stream without ads (no prerolls / midrolls).
+- [Ad-Free But 480p, for Twitch](https://gist.github.com/saucettv/06c470c4150398d4505381bfad67bf0b) - [firefox](https://addons.mozilla.org/en-GB/firefox/addon/ad-free-but-480p-for-twitch/)
+  - Sets the stream to an ad-free variant which is limited to 480p.
 
 Applications / third party websites:
 - https://github.com/streamlink/streamlink

@@ -73,6 +73,7 @@ For a more detailed description of the following please refer to [this](other-so
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code (UserScript + FrankerFaceZ(optional))
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
 - https://github.com/TTV-LOL/extensions (extension)
+- [Ad-Free But 480p, for Twitch](https://gist.github.com/saucettv/06c470c4150398d4505381bfad67bf0b) - [firefox](https://addons.mozilla.org/en-GB/firefox/addon/ad-free-but-480p-for-twitch/)
 
 ---
 
