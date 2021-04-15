@@ -7,6 +7,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 M3U8 proxies (or full proxies / VPNs) are currently the most reliable way of avoiding ads. More proxy hosts would be ideal (see [#8](https://github.com/pixeltris/TwitchAdSolutions/issues/8)).
 
 - `TTV.LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
+- `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
 - *`Twitch AdBlock` was taken down on March 31 (see [#22](https://github.com/pixeltris/TwitchAdSolutions/issues/22)).*
 
 Alternatively:
@@ -20,10 +21,11 @@ Alternatively:
 
 *These solutions generally aren't compatible with other Twitch ad blockers. e.g. `ttv-ublock` will break some of these.*
 
-**If you want a perfect solution, please use** `Twitch AdBlock`.
+**If you want a perfect solution, please use** `TTV.LOL` or `Purple AdBlock`.
 
 - notify-strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js))
   - The same as `strip`, but notifies Twitch that ads were "watched" (reduces preroll ad frequency).
+  - *Audio sync issues? Infinite loading on midrolls? Try ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/c3e1ee390ae684fe47d5159c689332d53e67094d/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/c3e1ee390ae684fe47d5159c689332d53e67094d/notify-strip/notify-strip.user.js)) TODO: Fix these issues [#17](https://github.com/pixeltris/TwitchAdSolutions/issues/17) [#24](https://github.com/pixeltris/TwitchAdSolutions/issues/24).*
 - notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js))
   - Notifies that ads were watched, then reloads the player.
   - Repeats this until no ads **(which may never happen ~ infinite reload)**.
@@ -38,16 +40,6 @@ Alternatively:
 - mute-black ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/mute-black/mute-black.user.js))
   - Ads are muted / blacked out for the duration of the ad.
   - You might see tiny bits of the ad.
-- video-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap/video-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap/video-swap.user.js))
-  - Ads are replaced by a low resolution stream for the duration of the ad.
-  - Similar to `strip`, but skips closer to 20 seconds when switching to the live stream (TODO: low latency support).
-  - You might see tiny bits of the ad.
-  - Audio controls wont work whilst the ad is playing.
-  - *There are various UX/UI issues with this script which need to be addressed.*
-- ~~proxy-m3u8 ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/proxy-m3u8/proxy-m3u8.user.js))~~ **(proxy currently points to a dead url)**
-  - Uses a proxy server to fetch an ad-free stream.
-  - Currently only the initial m3u8 is proxied, so there shouldn't be any additional latency.
-  - **Assumes the proxy server acts in good faith and maintains a good uptime.**
 
 ## Applying a solution (uBlock Origin)
 
@@ -73,6 +65,7 @@ For a more detailed description of the following please refer to [this](other-so
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code (UserScript + FrankerFaceZ(optional))
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
 - https://github.com/TTV-LOL/extensions (extension)
+- https://github.com/arthurbolsoni/Purple-adblock (extension)
 - [Ad-Free But 480p, for Twitch](https://gist.github.com/saucettv/06c470c4150398d4505381bfad67bf0b) - [firefox](https://addons.mozilla.org/en-GB/firefox/addon/ad-free-but-480p-for-twitch/)
 
 ---
