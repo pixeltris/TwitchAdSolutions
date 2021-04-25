@@ -19,7 +19,7 @@ Web browser extensions / scripts:
 - https://github.com/TTV-LOL/extensions
   - Uses a proxy on the main m3u8 file to get a stream without ads (no prerolls / midrolls).
 - [Video Ad-Block, for Twitch](https://gist.github.com/saucettv/0f85e9051c7d25aee67fdc033609fe1d) - [chrome](https://chrome.google.com/webstore/detail/video-ad-block-for-twitch/kgeglempfkhalebjlogemlmeakondflc) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/video-ad-block-for-twitch)
-  - Sets the stream to an ad-free variant which is limited to 480p.
+  - Sets the stream to an ad-free variant which is limited to 480p for the duration of the ad. Switches back to the regular stream after the ad.
 
 Applications / third party websites:
 - https://github.com/streamlink/streamlink
