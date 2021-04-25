@@ -4,8 +4,7 @@ Web browser extensions / scripts:
   - Simulates `embed` Twitch player at a network level (doesn't modify DOM).
   - Twitch detects this and may display a purple screen every 10-15 mins asking the user to remove ad blockers.
 - https://github.com/Nerixyz/ttv-tools
-  - Notifies Twitch that ads were watched and then reloads the player.
-  - Can replace ad segments with a custom video (instead of ad skipping).
+  - Removes ad segments which cannot be skipped (loading wheel until ad-free stream).
   - Can keep stream at lowest latency (speeds up stream if too far behind).
 - https://github.com/LeonHeidelbach/ttv_adEraser
   - Modifies DOM to switch between the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
@@ -19,7 +18,7 @@ Web browser extensions / scripts:
   - Removes ad segments which cannot be skipped. The player will freeze on the last live frame until no more ads.
 - https://github.com/TTV-LOL/extensions
   - Uses a proxy on the main m3u8 file to get a stream without ads (no prerolls / midrolls).
-- [Ad-Free But 480p, for Twitch](https://gist.github.com/saucettv/06c470c4150398d4505381bfad67bf0b) - [firefox](https://addons.mozilla.org/en-GB/firefox/addon/ad-free-but-480p-for-twitch/)
+- [Video Ad-Block, for Twitch](https://gist.github.com/saucettv/0f85e9051c7d25aee67fdc033609fe1d) - [chrome](https://chrome.google.com/webstore/detail/video-ad-block-for-twitch/kgeglempfkhalebjlogemlmeakondflc) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/video-ad-block-for-twitch)
   - Sets the stream to an ad-free variant which is limited to 480p.
 
 Applications / third party websites:
