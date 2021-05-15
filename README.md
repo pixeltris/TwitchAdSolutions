@@ -65,7 +65,7 @@ For a more detailed description of the following please refer to [this](other-so
 - [Alternate Player for Twitch.tv](https://chrome.google.com/webstore/detail/bhplkbgoehhhddaoolmakpocnenplmhf) - [code](https://robwu.nl/crxviewer/?crx=bhplkbgoehhhddaoolmakpocnenplmhf&qf=player.js) (extension)
 - https://github.com/TTV-LOL/extensions (extension)
 - https://github.com/arthurbolsoni/Purple-adblock (extension)
-- [Video Ad-Block, for Twitch](https://gist.github.com/saucettv/0f85e9051c7d25aee67fdc033609fe1d) - [chrome](https://chrome.google.com/webstore/detail/video-ad-block-for-twitch/kgeglempfkhalebjlogemlmeakondflc) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/video-ad-block-for-twitch)
+- [Video Ad-Block, for Twitch](https://github.com/saucettv/VideoAdBlockForTwitch) - [chrome](https://chrome.google.com/webstore/detail/video-ad-block-for-twitch/kgeglempfkhalebjlogemlmeakondflc) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/video-ad-block-for-twitch)
 
 ---
 
