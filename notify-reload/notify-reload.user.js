@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (notify-reload)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.5
+// @version      1.6
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-reload)
@@ -17,8 +17,6 @@
         scope.OPT_ROLLING_DEVICE_ID = true;
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST = false;
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_EXPECTED_DURATION = 10000;// In milliseconds
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = true;
         scope.OPT_BACKUP_PLAYER_TYPE = 'picture-by-picture';//'picture-by-picture';'thunderdome';
@@ -156,24 +154,9 @@
             streamInfo.IsMidroll = textStr.includes('"MIDROLL"') || textStr.includes('"midroll"');
             postMessage({key:'UboShowAdBanner',isMidroll:streamInfo.IsMidroll});
             // Notify ads "watched" TODO: Keep crafting these requests even after ad tags are gone as sometimes it stops too early.
-            if (OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST && streamInfo != null && !streamInfo.NotifyObservedNoAds) {
-                var noAds = false;
-                var encodingsM3u8Response = await realFetch(streamInfo.RootM3U8Url);
-                if (encodingsM3u8Response.status === 200) {
-                    var encodingsM3u8 = await encodingsM3u8Response.text();
-                    var streamM3u8Url = encodingsM3u8.match(/^https:.*\.m3u8$/m)[0];
-                    var streamM3u8Response = await realFetch(streamM3u8Url);
-                    if (streamM3u8Response.status == 200) {
-                        noAds = (await tryNotifyAdsWatchedM3U8(await streamM3u8Response.text())) == 1;
-                        console.log('Notify ad watched. Response has ads: ' + !noAds);
-                    }
-                }
-                if (streamInfo.NotifyFirstTime == 0) {
-                    streamInfo.NotifyFirstTime = Date.now();
-                }
-                if (noAds && !streamInfo.NotifyObservedNoAds && Date.now() >= streamInfo.NotifyFirstTime + OPT_MODE_NOTIFY_ADS_WATCHED_PERSIST_EXPECTED_DURATION) {
-                    streamInfo.NotifyObservedNoAds = true;
-                }
+            // Deferred to after backup obtained to reduce slowdown. Midrolls are futile.
+            if (OPT_MODE_NOTIFY_ADS_WATCHED && !streamInfo.IsMidroll && (streamInfo.BackupFailed || streamInfo.BackupUrl != null)) {
+                await tryNotifyAdsWatchedM3U8(textStr);
             }
             postMessage({
                 key: 'UboFoundAdSegment',
@@ -355,12 +338,6 @@
                                         streamInfo.BackupRegRes = null;
                                         streamInfo.IsMidroll = false;
                                         streamInfo.HadAds = false;
-                                        streamInfo.NotifyFirstTime = 0;
-                                        streamInfo.NotifyObservedNoAds = false;
-                                        streamInfo.RealSeqNumber = -1;
-                                        streamInfo.BackupSeqNumber = -1;
-                                        streamInfo.FakeSeqNumber = 0;
-                                        streamInfo.FinalSegUrl = null;
                                         var lines = encodingsM3u8.replace('\r', '').split('\n');
                                         for (var i = 0; i < lines.length; i++) {
                                             if (!lines[i].startsWith('#') && lines[i].includes('.m3u8')) {
@@ -449,58 +426,63 @@
                 }));
     }
     async function tryNotifyAdsWatchedM3U8(streamM3u8) {
-        //console.log(streamM3u8);
-        if (!streamM3u8.includes(AD_SIGNIFIER)) {
-            return 1;
-        }
-        var matches = streamM3u8.match(/#EXT-X-DATERANGE:(ID="stitched-ad-[^\n]+)\n/);
-        if (matches.length > 1) {
-            const attrString = matches[1];
-            const attr = parseAttributes(attrString);
-            var podLength = parseInt(attr['X-TV-TWITCH-AD-POD-LENGTH'] ? attr['X-TV-TWITCH-AD-POD-LENGTH'] : '1');
-            var podPosition = parseInt(attr['X-TV-TWITCH-AD-POD-POSITION'] ? attr['X-TV-TWITCH-AD-POD-POSITION'] : '0');
-            var radToken = attr['X-TV-TWITCH-AD-RADS-TOKEN'];
-            var lineItemId = attr['X-TV-TWITCH-AD-LINE-ITEM-ID'];
-            var orderId = attr['X-TV-TWITCH-AD-ORDER-ID'];
-            var creativeId = attr['X-TV-TWITCH-AD-CREATIVE-ID'];
-            var adId = attr['X-TV-TWITCH-AD-ADVERTISER-ID'];
-            var rollType = attr['X-TV-TWITCH-AD-ROLL-TYPE'].toLowerCase();
-            const baseData = {
-                stitched: true,
-                roll_type: rollType,
-                player_mute: false,
-                player_volume: 0.5,
-                visible: true,
-            };
-            for (let podPosition = 0; podPosition < podLength; podPosition++) {
-                if (OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS) {
-                    // This is all that's actually required at the moment
-                    await gqlRequest(makeGraphQlPacket('video_ad_pod_complete', radToken, baseData));
-                } else {
-                    const extendedData = {
-                        ...baseData,
-                        ad_id: adId,
-                        ad_position: podPosition,
-                        duration: 30,
-                        creative_id: creativeId,
-                        total_ads: podLength,
-                        order_id: orderId,
-                        line_item_id: lineItemId,
-                    };
-                    await gqlRequest(makeGraphQlPacket('video_ad_impression', radToken, extendedData));
-                    for (let quartile = 0; quartile < 4; quartile++) {
-                        await gqlRequest(
-                            makeGraphQlPacket('video_ad_quartile_complete', radToken, {
-                                ...extendedData,
-                                quartile: quartile + 1,
-                            })
-                        );
+        try {
+            //console.log(streamM3u8);
+            if (!streamM3u8.includes(AD_SIGNIFIER)) {
+                return 1;
+            }
+            var matches = streamM3u8.match(/#EXT-X-DATERANGE:(ID="stitched-ad-[^\n]+)\n/);
+            if (matches.length > 1) {
+                const attrString = matches[1];
+                const attr = parseAttributes(attrString);
+                var podLength = parseInt(attr['X-TV-TWITCH-AD-POD-LENGTH'] ? attr['X-TV-TWITCH-AD-POD-LENGTH'] : '1');
+                var podPosition = parseInt(attr['X-TV-TWITCH-AD-POD-POSITION'] ? attr['X-TV-TWITCH-AD-POD-POSITION'] : '0');
+                var radToken = attr['X-TV-TWITCH-AD-RADS-TOKEN'];
+                var lineItemId = attr['X-TV-TWITCH-AD-LINE-ITEM-ID'];
+                var orderId = attr['X-TV-TWITCH-AD-ORDER-ID'];
+                var creativeId = attr['X-TV-TWITCH-AD-CREATIVE-ID'];
+                var adId = attr['X-TV-TWITCH-AD-ADVERTISER-ID'];
+                var rollType = attr['X-TV-TWITCH-AD-ROLL-TYPE'].toLowerCase();
+                const baseData = {
+                    stitched: true,
+                    roll_type: rollType,
+                    player_mute: false,
+                    player_volume: 0.5,
+                    visible: true,
+                };
+                for (let podPosition = 0; podPosition < podLength; podPosition++) {
+                    if (OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS) {
+                        // This is all that's actually required at the moment
+                        await gqlRequest(makeGraphQlPacket('video_ad_pod_complete', radToken, baseData));
+                    } else {
+                        const extendedData = {
+                            ...baseData,
+                            ad_id: adId,
+                            ad_position: podPosition,
+                            duration: 30,
+                            creative_id: creativeId,
+                            total_ads: podLength,
+                            order_id: orderId,
+                            line_item_id: lineItemId,
+                        };
+                        await gqlRequest(makeGraphQlPacket('video_ad_impression', radToken, extendedData));
+                        for (let quartile = 0; quartile < 4; quartile++) {
+                            await gqlRequest(
+                                makeGraphQlPacket('video_ad_quartile_complete', radToken, {
+                                    ...extendedData,
+                                    quartile: quartile + 1,
+                                })
+                            );
+                        }
+                        await gqlRequest(makeGraphQlPacket('video_ad_pod_complete', radToken, baseData));
                     }
-                    await gqlRequest(makeGraphQlPacket('video_ad_pod_complete', radToken, baseData));
                 }
             }
+            return 0;
+        } catch (err) {
+            console.log(err);
+            return 0;
         }
-        return 0;
     }
     function hookFetch() {
         var realFetch = window.fetch;
