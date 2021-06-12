@@ -240,15 +240,17 @@ twitch-videoad.js application/javascript
                         console.log('Backup url request (accessToken) failed with ' + accessTokenResponse.status);
                     }
                 }
-                var backupM3u8 = null;
-                var backupM3u8Response = await realFetch(streamInfo.BackupUrl);
-                if (backupM3u8Response.status == 200) {
-                    backupM3u8 = await backupM3u8Response.text();
-                }
-                if (backupM3u8 != null && !backupM3u8.includes(AD_SIGNIFIER)) {
-                    return backupM3u8;
-                } else {
-                    console.log('Backup m3u8 failed with ' + backupM3u8Response.status);
+                if (streamInfo.BackupUrl != null) {
+                    var backupM3u8 = null;
+                    var backupM3u8Response = await realFetch(streamInfo.BackupUrl);
+                    if (backupM3u8Response.status == 200) {
+                        backupM3u8 = await backupM3u8Response.text();
+                    }
+                    if (backupM3u8 != null && !backupM3u8.includes(AD_SIGNIFIER)) {
+                        return backupM3u8;
+                    } else {
+                        console.log('Backup m3u8 failed with ' + backupM3u8Response.status);
+                    }
                 }
             } catch (err) {
                 console.log('Fetching backup m3u8 failed');
@@ -256,6 +258,9 @@ twitch-videoad.js application/javascript
             }
             // Backups failed. Return nothing (this will likely result in spam or player error 2000?).
             console.log('Ad blocking failed. Stream might break.');
+            postMessage({key:'UboReloadPlayer'});
+            streamInfo.BackupFailed = false;
+            streamInfo.BackupUrl = null;
             return '';
         }
         if (streamInfo.HadAds) {
