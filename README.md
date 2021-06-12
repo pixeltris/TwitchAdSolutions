@@ -28,9 +28,9 @@ Alternatively:
 - notify-strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js))
   - Ad segments are replaced by low resolution stream segments.
   - Notifies Twitch that ads were "watched" (reduces preroll ad frequency).
-  - *Audio sync issues? Infinite loading on midrolls? Try ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/c3e1ee390ae684fe47d5159c689332d53e67094d/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/c3e1ee390ae684fe47d5159c689332d53e67094d/notify-strip/notify-strip.user.js)) TODO: Fix these issues [#17](https://github.com/pixeltris/TwitchAdSolutions/issues/17) [#24](https://github.com/pixeltris/TwitchAdSolutions/issues/24).*
+  - *You may experience a small jump in time when the regular stream kicks in*.
 - notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js))
-  - Notifies that ads were watched, then reloads the player.
+  - Notifies that ads were watched, then reloads the player (preroll only, falls back to `notify-strip` on midroll).
   - Repeats this until no ads **(which may never happen ~ infinite reload)**.
   - You should expect 3-10 player reloads (give or take). Once successful you shouldn't see preroll ads for a while on any stream (10+ minutes?).
 - low-res ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js))
