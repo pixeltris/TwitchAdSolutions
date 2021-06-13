@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (notify-reload)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.7
+// @version      1.8
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-reload)
@@ -267,7 +267,7 @@
                 console.log('Fetching backup m3u8 failed');
                 console.log(err);
             }
-            // Backups failed. Return nothing (this will likely result in spam or player error 2000?).
+            // Backups failed. Return nothing and reload the player (reload required as an empty result will terminate the stream).
             console.log('Ad blocking failed. Stream might break.');
             postMessage({key:'UboReloadPlayer'});
             streamInfo.BackupFailed = false;
@@ -275,7 +275,7 @@
             return '';
         }
         if (streamInfo.HadAds) {
-            postMessage({key:'UboSeekPlayer'});
+            postMessage({key:'UboPauseResumePlayer'});
             streamInfo.HadAds = false;
         }
         postMessage({key:'UboHideAdBanner'});
@@ -606,4 +606,47 @@
     }
     window.reloadTwitchPlayer = reloadTwitchPlayer;
     hookFetch();
+    function onContentLoaded() {
+        // This stops Twitch from pausing the player when in another tab and an ad shows.
+        // Taken from https://github.com/saucettv/VideoAdBlockForTwitch/blob/cefce9d2b565769c77e3666ac8234c3acfe20d83/chrome/content.js#L30
+        Object.defineProperty(document, 'visibilityState', {
+            get() {
+                return 'visible';
+            }
+        });
+        Object.defineProperty(document, 'hidden', {
+            get() {
+                return false;
+            }
+        });
+        const block = e => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.stopImmediatePropagation();
+        };
+        document.addEventListener('visibilitychange', block, true);
+        document.addEventListener('webkitvisibilitychange', block, true);
+        document.addEventListener('mozvisibilitychange', block, true);
+        document.addEventListener('hasFocus', block, true);
+        if (/Firefox/.test(navigator.userAgent)) {
+            Object.defineProperty(document, 'mozHidden', {
+                get() {
+                    return false;
+                }
+            });
+        } else {
+            Object.defineProperty(document, 'webkitHidden', {
+                get() {
+                    return false;
+                }
+            });
+        }
+    }
+    if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
+        onContentLoaded();
+    } else {
+        window.addEventListener("DOMContentLoaded", function() {
+            onContentLoaded();
+        });
+    }
 })();
