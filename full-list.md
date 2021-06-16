@@ -17,6 +17,13 @@
 - `Twitch-HLS-AdBlock` - [chrome / firefox (manual install)](https://github.com/instance01/Twitch-HLS-AdBlock#installation) / [code](https://github.com/instance01/Twitch-HLS-AdBlock)
   - Removes ad segments (no playback until ad-free stream).
 
+---
+
+*Compile from source*
+
+- `city17` - [server code](https://github.com/AlyoshaVasilieva/city17) / [extension code](https://github.com/AlyoshaVasilieva/city17-ext)
+  - Uses a proxy on the main m3u8 file to get a stream without ads.
+
 ## Web browser scripts (uBlock Origin / userscript)
 
 - https://github.com/pixeltris/TwitchAdSolutions#Scripts
