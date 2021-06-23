@@ -8,6 +8,8 @@
   - Replaces ad segments with ad-free segments (at either 480p or 1080p). Afterwards it invokes a pause/play to resync the player which then continues normally.
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
   - Removes ad segments (no playback until ad-free stream).
+- `Ad-Free But 480p, for Twitch` - [chrome](https://chrome.google.com/webstore/detail/ad-free-but-480p-for-twit/kdicfccgckkckdkcbilhbeacnnkcmpeb) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/ad-free-but-480p-for-twitch/) / [code](https://github.com/saucettv/AdFreeBut480pForTwitch)
+  - Uses a 480p variant of the stream which never gets ads. Limited to 480p resolution.
 - `ttv_adEraser` - [chrome](https://chrome.google.com/webstore/detail/ttv-aderaser/pjnopimdnmhiaanhjfficogijajbhjnc) / [firefox (manual install)](https://github.com/LeonHeidelbach/ttv_adEraser#mozilla-firefox) / [code](https://github.com/LeonHeidelbach/ttv_adEraser)
   - Switches to the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
 - `ttv-tools` - [firefox (manual install)](https://github.com/Nerixyz/ttv-tools/releases) / [code](https://github.com/Nerixyz/ttv-tools)
@@ -32,6 +34,10 @@
 - https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707/
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code
   - Reloads the player (or page) when it detects the ad banner in DOM.
+- https://greasyfork.org/en/scripts/371186-twitch-mute-ads-and-optionally-hide-them/code
+  - Mutes / hides ads.
+- https://greasyfork.org/en/scripts/425139-twitch-ad-fix/code
+  - Uses a proxy on the main m3u8 file to get a stream without ads.
 
 ## Applications / third party websites
 - `streamlink` - [code](https://github.com/streamlink/streamlink) / [website](https://streamlink.github.io/streamlink-twitch-gui/)
