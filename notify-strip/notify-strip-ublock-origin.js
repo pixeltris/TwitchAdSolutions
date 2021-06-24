@@ -567,8 +567,10 @@ twitch-videoad.js application/javascript
             return;
         }
         if (isSeek) {
-            console.log('Force seek to reset player (hopefully fixing any audio desync)');
+            console.log('Force seek to reset player (hopefully fixing any audio desync) pos:' + player.getPosition() + ' range:' + JSON.stringify(player.getBuffered()));
+            var pos = player.getPosition();
             player.seekTo(0);
+            player.seekTo(pos);
             return;
         }
         if (isPausePlay) {
@@ -598,17 +600,21 @@ twitch-videoad.js application/javascript
     function onContentLoaded() {
         // This stops Twitch from pausing the player when in another tab and an ad shows.
         // Taken from https://github.com/saucettv/VideoAdBlockForTwitch/blob/cefce9d2b565769c77e3666ac8234c3acfe20d83/chrome/content.js#L30
-        Object.defineProperty(document, 'visibilityState', {
-            get() {
-                return 'visible';
-            }
-        });
-        Object.defineProperty(document, 'hidden', {
-            get() {
-                return false;
-            }
-        });
-        const block = e => {
+        try {
+            Object.defineProperty(document, 'visibilityState', {
+                get() {
+                    return 'visible';
+                }
+            });
+        }catch{}
+        try {
+            Object.defineProperty(document, 'hidden', {
+                get() {
+                    return false;
+                }
+            });
+        }catch{}
+        var block = e => {
             e.preventDefault();
             e.stopPropagation();
             e.stopImmediatePropagation();
@@ -617,19 +623,21 @@ twitch-videoad.js application/javascript
         document.addEventListener('webkitvisibilitychange', block, true);
         document.addEventListener('mozvisibilitychange', block, true);
         document.addEventListener('hasFocus', block, true);
-        if (/Firefox/.test(navigator.userAgent)) {
-            Object.defineProperty(document, 'mozHidden', {
-                get() {
-                    return false;
-                }
-            });
-        } else {
-            Object.defineProperty(document, 'webkitHidden', {
-                get() {
-                    return false;
-                }
-            });
-        }
+        try {
+            if (/Firefox/.test(navigator.userAgent)) {
+                Object.defineProperty(document, 'mozHidden', {
+                    get() {
+                        return false;
+                    }
+                });
+            } else {
+                Object.defineProperty(document, 'webkitHidden', {
+                    get() {
+                        return false;
+                    }
+                });
+            }
+        }catch{}
     }
     if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
         onContentLoaded();
