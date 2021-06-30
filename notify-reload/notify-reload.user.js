@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (notify-reload)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.9
+// @version      1.10
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-reload)
@@ -150,7 +150,7 @@
                     break;
                 }
             }
-            streamInfo.HadAds = true;
+            streamInfo.HadAds[url] = true;
             streamInfo.IsMidroll = textStr.includes('"MIDROLL"') || textStr.includes('"midroll"');
             postMessage({key:'UboShowAdBanner',isMidroll:streamInfo.IsMidroll});
             // Notify ads "watched" TODO: Keep crafting these requests even after ad tags are gone as sometimes it stops too early.
@@ -274,9 +274,9 @@
             streamInfo.BackupUrl = null;
             return '';
         }
-        if (streamInfo.HadAds) {
+        if (streamInfo.HadAds[url]) {
             postMessage({key:'UboPauseResumePlayer'});
-            streamInfo.HadAds = false;
+            streamInfo.HadAds[url] = false;
         }
         postMessage({key:'UboHideAdBanner'});
         return textStr;
@@ -342,7 +342,7 @@
                                         streamInfo.BackupRegUrl = null;
                                         streamInfo.BackupRegRes = null;
                                         streamInfo.IsMidroll = false;
-                                        streamInfo.HadAds = false;
+                                        streamInfo.HadAds = [];// xxx.m3u8 -> bool (had ads on prev request)
                                         var lines = encodingsM3u8.replace('\r', '').split('\n');
                                         for (var i = 0; i < lines.length; i++) {
                                             if (!lines[i].startsWith('#') && lines[i].includes('.m3u8')) {
@@ -353,6 +353,7 @@
                                                         streamInfo.Urls[lines[i]] = res;
                                                     }
                                                 }
+                                                streamInfo.HadAds[lines[i]] = false;
                                                 StreamInfosByUrl[lines[i]] = streamInfo;
                                             }
                                         }
