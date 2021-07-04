@@ -4,7 +4,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 ## Recommendations
 
-M3U8 proxies (or full proxies / VPNs) are the most reliable way of avoiding ads.
+Proxies are the most reliable way of avoiding ads ([buffering / downtime info](full-list.md#proxy-issues)).
 
 - `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/ttv-lol/) / [code](https://github.com/TTV-LOL/extensions)
 - `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)

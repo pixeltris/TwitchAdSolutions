@@ -52,3 +52,9 @@
 ## Additional lists
 
 - https://github.com/saucettv/WorkingTwitchAdBlockers
+
+## Proxy issues
+
+Proxy solutions can have downtime and you'll either see ads or error 2000. This isn't Twitch retaliating.
+
+Buffering may occur at higher resolutions. This happens because traffic comes from a Twitch server closest to the initial m3u8 proxy request. The only solution to this is asking the proxy maintainer to add a proxy in a country closer to you. If they wont then you'll need to use a lower resolution, or use a different ad blocking solution. A VPN might also be better solution for you.
