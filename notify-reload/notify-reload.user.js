@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (notify-reload)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.10
+// @version      1.11
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-reload)
@@ -17,7 +17,7 @@
         scope.OPT_ROLLING_DEVICE_ID = true;
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
-        scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = true;
+        scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = true;
         scope.OPT_BACKUP_PLAYER_TYPE = 'picture-by-picture';//'picture-by-picture';'thunderdome';
         scope.OPT_REGULAR_PLAYER_TYPE = 'site';
@@ -36,7 +36,7 @@
         // Rolling device id crap... TODO: improve this
         var charTable = []; for (var i = 97; i <= 122; i++) { charTable.push(String.fromCharCode(i)); } for (var i = 65; i <= 90; i++) { charTable.push(String.fromCharCode(i)); } for (var i = 48; i <= 57; i++) { charTable.push(String.fromCharCode(i)); }
         var bs = 'eVI6jx47kJvCFfFowK86eVI6jx47kJvC';
-        var di = (new Date()).getYear() + (new Date()).getMonth() + ((new Date()).getDate() / 7) | 0;
+        var di = (new Date()).getUTCFullYear() + (new Date()).getUTCMonth() + ((new Date()).getUTCDate() / 7) | 0;
         for (var i = 0; i < bs.length; i++) {
             scope.gql_device_id_rolling += charTable[(bs.charCodeAt(i) ^ di) % charTable.length];
         }
