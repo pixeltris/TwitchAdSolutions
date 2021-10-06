@@ -24,6 +24,8 @@ Alternatively:
 
 *Don't combine these scripts with other Twitch specific ad blockers.*
 
+- bypass ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/bypass/bypass-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/bypass/bypass.user.js))
+  - No ads.
 - notify-strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js))
   - Ad segments are replaced by low resolution stream segments.
   - Notifies Twitch that ads were "watched" (reduces preroll ad frequency).
