@@ -4,14 +4,12 @@ twitch-videoad.js application/javascript
     function hookFetch() {
         var realFetch = window.fetch;
         window.fetch = function(url, init, ...args) {
-            if (typeof url === 'string') {
-                if (url.includes('gql')) {
-                    if (typeof init.headers['X-Device-Id'] === 'string') {
-                        init.headers['X-Device-Id'] = 'twitch-web-wall-mason';
-                    }
-                    if (typeof init.headers['Device-ID'] === 'string') {
-                        init.headers['Device-ID'] = 'twitch-web-wall-mason';
-                    }
+            if (typeof url === 'string' && url.includes('gql') && typeof init.body == 'string' && init.body.includes('PlaybackAccessToken')) {
+                if (typeof init.headers['X-Device-Id'] === 'string') {
+                    init.headers['X-Device-Id'] = 'twitch-web-wall-mason';
+                }
+                if (typeof init.headers['Device-ID'] === 'string') {
+                    init.headers['Device-ID'] = 'twitch-web-wall-mason';
                 }
             }
             return realFetch.apply(this, arguments);

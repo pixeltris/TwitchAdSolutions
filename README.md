@@ -2,6 +2,8 @@
 
 This repo aims to provide multiple solutions for blocking Twitch ads.
 
+**Don't combine Twitch specific ad blockers.**
+
 ## Recommendations
 
 Proxies are the most reliable way of avoiding ads ([buffering / downtime info](full-list.md#proxy-issues)).
@@ -22,10 +24,9 @@ Alternatively:
 
 **There are better / easier to use methods in the above** `Recommendations`.
 
-*Don't combine these scripts with other Twitch specific ad blockers.*
-
 - bypass ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/bypass/bypass-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/bypass/bypass.user.js))
   - No ads.
+  - *Enabled by default on uBlock Origin 1.38.4*.
 - notify-strip ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js))
   - Ad segments are replaced by low resolution stream segments.
   - Notifies Twitch that ads were "watched" (reduces preroll ad frequency).

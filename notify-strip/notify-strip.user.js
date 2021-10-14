@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (notify-strip)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.11
+// @version      1.12
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-strip)
@@ -494,14 +494,7 @@
         var realFetch = window.fetch;
         window.fetch = function(url, init, ...args) {
             if (typeof url === 'string') {
-                if (url.includes('/access_token') || url.includes('gql')) {
-                    if (OPT_ACCESS_TOKEN_PLAYER_TYPE) {
-                        if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
-                            const newBody = JSON.parse(init.body);
-                            newBody.variables.playerType = OPT_ACCESS_TOKEN_PLAYER_TYPE;
-                            init.body = JSON.stringify(newBody);
-                        }
-                    }
+                if (url.includes('gql')) {
                     var deviceId = init.headers['X-Device-Id'];
                     if (typeof deviceId !== 'string') {
                         deviceId = init.headers['Device-ID'];
@@ -515,12 +508,19 @@
                             value: gql_device_id
                         });
                     }
-                    if (OPT_ROLLING_DEVICE_ID) {
-                        if (typeof init.headers['X-Device-Id'] === 'string') {
-                            init.headers['X-Device-Id'] = gql_device_id_rolling;
+                    if (typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
+                        if (OPT_ACCESS_TOKEN_PLAYER_TYPE) {
+                            const newBody = JSON.parse(init.body);
+                            newBody.variables.playerType = OPT_ACCESS_TOKEN_PLAYER_TYPE;
+                            init.body = JSON.stringify(newBody);
                         }
-                        if (typeof init.headers['Device-ID'] === 'string') {
-                            init.headers['Device-ID'] = gql_device_id_rolling;
+                        if (OPT_ROLLING_DEVICE_ID) {
+                            if (typeof init.headers['X-Device-Id'] === 'string') {
+                                init.headers['X-Device-Id'] = gql_device_id_rolling;
+                            }
+                            if (typeof init.headers['Device-ID'] === 'string') {
+                                init.headers['Device-ID'] = gql_device_id_rolling;
+                            }
                         }
                     }
                 }
