@@ -15,7 +15,7 @@
     function hookFetch() {
         var realFetch = window.fetch;
         window.fetch = function(url, init, ...args) {
-            if (typeof url === 'string' && url.includes('gql') && typeof init.body == 'string' && init.body.includes('PlaybackAccessToken')) {
+            if (typeof url === 'string' && url.includes('gql') && typeof init.body == 'string' && init.body.includes('PlaybackAccessToken') && !init.body.includes('"isVod":true')) {
                 if (typeof init.headers['Authorization'] === 'string') {
                     init.headers['Authorization'] = '';
                 }
