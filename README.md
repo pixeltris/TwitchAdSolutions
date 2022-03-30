@@ -13,9 +13,7 @@ Proxies are the most reliable way of avoiding ads ([buffering / downtime info](f
 
 Alternatively:
 
-- `Video Ad-Block, for Twitch` - [chrome](https://chrome.google.com/webstore/detail/video-ad-block-for-twitch/kgeglempfkhalebjlogemlmeakondflc) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/video-ad-block-for-twitch/) / [code](https://github.com/saucettv/VideoAdBlockForTwitch)
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
-- `Ad-Free But 480p, for Twitch` - [chrome](https://chrome.google.com/webstore/detail/ad-free-but-480p-for-twit/kdicfccgckkckdkcbilhbeacnnkcmpeb) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/ad-free-but-480p-for-twitch/) / [code](https://github.com/saucettv/AdFreeBut480pForTwitch)
 - `notify-strip` - see below
 
 [Read this for a full list and descriptions.](full-list.md)
