@@ -4,7 +4,7 @@
   - Uses a proxy on the main m3u8 file to get a stream without ads.
 - `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
   - Uses a proxy on the main m3u8 file to get a stream without ads.
-- `Video Ad-Block, for Twitch` (forked) - [chrome (manual install)](https://github.com/cleanlock/VideoAdBlockForTwitch#installation-steps) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
+- `Video Ad-Block, for Twitch` (fork) - [chrome (manual install)](https://github.com/cleanlock/VideoAdBlockForTwitch#installation-steps) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
   - Replaces ad segments with ad-free segments (480p resolution). Afterwards it invokes a pause/play to resync the player which then continues normally (normal resolution).
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
   - Removes ad segments (no playback until ad-free stream).
@@ -21,7 +21,7 @@
 
 *Compile from source*
 
-- `city17` - [server code](https://github.com/AlyoshaVasilieva/city17) / [extension code](https://github.com/AlyoshaVasilieva/city17-ext)
+- `luminous-ttv` - [server code](https://github.com/AlyoshaVasilieva/luminous-ttv) / [extension code](https://github.com/AlyoshaVasilieva/luminous-ttv-ext)
   - Uses a proxy on the main m3u8 file to get a stream without ads.
 
 ## Web browser scripts (uBlock Origin / userscript)
@@ -40,16 +40,12 @@
 ## Applications / third party websites
 - `streamlink` - [code](https://github.com/streamlink/streamlink) / [website](https://streamlink.github.io/streamlink-twitch-gui/)
   - Removes ad segments (no playback until ad-free stream).
-- `multiChat for Twitch` - [android](https://play.google.com/store/apps/details?id=org.mchatty)
-  - Unsure how this one blocks ads, but it claims that it does.
+- `Xtra for Twitch` (fork) - [apks](https://github.com/crackededed/Xtra/releases) [code](https://github.com/crackededed/Xtra)
+  - Android app. I think this blocks ads, but I'm not 100% sure. If not maybe try [Twire](https://github.com/twireapp/Twire).
 - https://twitchls.com/
   - Uses the `embed` player. Purple screen may display every 10-15 mins.
 - https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/
   - Some countries don't get ads. A simple VPN/VPS could be used to block ads by proxying the m3u8 without having to proxy all your traffic (just the initial m3u8).
-
-## Additional lists
-
-- https://github.com/saucettv/WorkingTwitchAdBlockers
 
 ## Proxy issues
 

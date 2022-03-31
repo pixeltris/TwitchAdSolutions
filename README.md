@@ -13,9 +13,9 @@ Proxies are the most reliable way of avoiding ads ([buffering / downtime info](f
 
 Alternatively:
 
-- `Video Ad-Block, for Twitch` (forked) - [chrome (manual install)](https://github.com/cleanlock/VideoAdBlockForTwitch#installation-steps) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
+- `Video Ad-Block, for Twitch` (fork) - [chrome (manual install)](https://github.com/cleanlock/VideoAdBlockForTwitch#installation-steps) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
-- `notify-strip` - see below
+- `notify-strip` / `notify-swap` / `vaft` - see below
 
 [Read this for a full list and descriptions.](full-list.md)
 
@@ -27,15 +27,14 @@ Alternatively:
   - Ad segments are replaced by low resolution stream segments.
   - Notifies Twitch that ads were "watched" (reduces preroll ad frequency).
   - *You may experience a small jump in time when the regular stream kicks in*.
-- notify-reload ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-reload/notify-reload.user.js))
-  - Notifies that ads were watched, then reloads the player (preroll only, falls back to `notify-strip` on midroll).
-  - Repeats this until no ads **(which may never happen ~ infinite reload)**.
-  - You should expect 3-10 player reloads (give or take). Once successful you shouldn't see preroll ads for a while on any stream (10+ minutes?).
+- notify-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap.user.js))
+  - The same as `notify-strip` with a slightly different method to fix freezing issues (especially on Firefox).
+  - *Has a longer jump in time compared to `notify-strip`*.
+- vaft ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js))
+  - `Video Ad-Block, for Twitch` (fork) as a script.
 - low-res ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js))
   - No ads.
   - The stream is 480p for the duration of the stream.
-- bypass ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/bypass/bypass-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/bypass/bypass.user.js))
-  - No ads *(no longer works for many people)*.
 
 ## Applying a script (uBlock Origin)
 
