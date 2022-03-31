@@ -565,7 +565,6 @@ twitch-videoad.js application/javascript
             }
             videoPlayer = findReactNode(reactRootNode, node => node.setPlayerActive && node.props && node.props.mediaPlayerInstance);
             videoPlayer = videoPlayer && videoPlayer.props && videoPlayer.props.mediaPlayerInstance ? videoPlayer.props.mediaPlayerInstance : null;
-    
             if (isPausePlay) {
                 videoPlayer.pause();
                 videoPlayer.play();
