@@ -1,0 +1,20 @@
+name: autoupdate
+
+on:
+  schedule:
+    - cron:  '30 5 * * *'
+
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install dependencies
+        run: sudo apt install -y curl jq jsbeautifier
+      - name: Checkout
+        uses: actions/checkout@v2
+      - run: ./scripts/update.sh
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update vaft changes
