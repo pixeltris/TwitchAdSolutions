@@ -13,7 +13,7 @@ Proxies are the most reliable way of avoiding ads ([buffering / downtime info](f
 
 Alternatively:
 
-- `Video Ad-Block, for Twitch` (fork) - [chrome (manual install)](https://github.com/cleanlock/VideoAdBlockForTwitch#installation-steps) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
+- `Video Ad-Block, for Twitch` (fork) - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/ljhnljhabgjcihjoihakgdiicdjncpkd) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock/) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
 - `notify-strip` / `notify-swap` / `vaft` - see below
 
@@ -29,7 +29,7 @@ Alternatively:
   - *You may experience a small jump in time when the regular stream kicks in*.
 - notify-swap ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap.user.js))
   - The same as `notify-strip` with a slightly different method to fix freezing issues (especially on Firefox).
-  - *Has a longer jump in time compared to `notify-strip`*.
+  - *The ad/non-ad transition takes slightly longer than `notify-strip`*.
 - vaft ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js))
   - `Video Ad-Block, for Twitch` (fork) as a script.
 - low-res ([ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js))
