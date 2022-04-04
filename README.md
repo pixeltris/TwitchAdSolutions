@@ -32,7 +32,7 @@ Alternatively:
   - *The ad/non-ad transition takes slightly longer than `notify-strip`*.
 - vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/71bed117fc0f7074a9c7a7e89000dbf7db1feb04/vaft/vaft-ublock-origin.js)
   - `Video Ad-Block, for Twitch` (fork) as a script.
-- low-res [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/71bed117fc0f7074a9c7a7e89000dbf7db1feb04/low-res/low-res-ublock-origin.js)
+- low-res - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/71bed117fc0f7074a9c7a7e89000dbf7db1feb04/low-res/low-res-ublock-origin.js)
   - No ads.
   - The stream is 480p for the duration of the stream.
 

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      5.3.5
+// @version      5.4.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -125,9 +125,9 @@
                         GQLDeviceID = e.data.value;
                     } else if (e.data.key == 'SetHideBlockingMessage') {
                         if (e.data.value == "true") {
-                        HideBlockingMessage = true;
-                        } else if (e.data.value == "false") {
                         HideBlockingMessage = false;
+                        } else if (e.data.value == "false") {
+                        HideBlockingMessage = true;
                         }
                     }
                 });
@@ -219,9 +219,9 @@
                                                     qualityToSelect = 0;
                                                 }
                                             }
+                                            var currentQualityLS = window.localStorage.getItem('video-quality');
                                             lowQuality[qualityToSelect].click();
-                                            var originalQuality = JSON.parse(OriginalVideoPlayerQuality);
-                                            window.localStorage.setItem('video-quality', '{"default":"'+originalQuality.group+'"}');
+                                            window.localStorage.setItem('video-quality', currentQualityLS);
                                             if (e.data.value != null) {
                                                 OriginalVideoPlayerQuality = null;
                                                 IsPlayerAutoQuality = null;
@@ -392,6 +392,7 @@
                         var streamM3u8Response = await realFetch(streamM3u8Url);
                         if (streamM3u8Response.status == 200) {
                             var m3u8Text = await streamM3u8Response.text();
+                            console.log("Blocking ads...");
                             WasShowingAd = true;
                             if (HideBlockingMessage == false) {
                                 postMessage({
@@ -419,6 +420,7 @@
             }
         } else {
             if (WasShowingAd) {
+                console.log("Done blocking ads, changing back to original quality");
                 WasShowingAd = false;
                 //Here we put player back to original quality and remove the blocking message.
                 postMessage({

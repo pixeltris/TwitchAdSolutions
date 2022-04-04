@@ -74,7 +74,7 @@ namespace TwitchAdUtils
         
         static void BuildScripts()
         {
-            string[] deprecated = { "dyn-skip-midroll-alt", "dyn-skip-midroll", "dyn-video-swap", "dyn", "dyn-skip" };
+            string[] deprecated = { };
             string baseScriptName = "base";
             string suffixConfg = ".cfg";
             string suffixUserscript = ".user.js";
@@ -178,6 +178,64 @@ namespace TwitchAdUtils
                         }
                     }
                 }
+            }
+            using (WebClient wc = new WebClient())
+            {
+                string response = null, token = null, sig = null;
+                wc.Proxy = null;
+                string code = wc.DownloadString("https://raw.githubusercontent.com/cleanlock/VideoAdBlockForTwitch/master/chrome/remove_video_ads.js");
+                List<string> lines = code.Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).ToList();
+                for (int i = lines.Count - 1; i >= 0; i--)
+                {
+                    if (string.IsNullOrWhiteSpace(lines[i]))
+                    {
+                        lines.RemoveAt(i);
+                    }
+                    else
+                    {
+                        lines[i] = "    " + lines[i];
+                    }
+                }
+                string manifestStr = wc.DownloadString("https://raw.githubusercontent.com/cleanlock/VideoAdBlockForTwitch/master/chrome/manifest.json");
+                ChromeExtensionManifest manifest = JSONSerializer<ChromeExtensionManifest>.DeSerialize(manifestStr);
+                Console.WriteLine("vaft: " + manifest.version);
+                
+                string comment = "// This code is directly copied from https://github.com/cleanlock/VideoAdBlockForTwitch (only change is whitespace is removed for the ublock origin script - also indented)";
+                
+                StringBuilder sbUserscript = new StringBuilder();
+                sbUserscript.AppendLine("// ==UserScript==");
+                sbUserscript.AppendLine("// @name         TwitchAdSolutions (vaft)");
+                sbUserscript.AppendLine("// @namespace    https://github.com/pixeltris/TwitchAdSolutions");
+                sbUserscript.AppendLine("// @version      " + manifest.version);
+                sbUserscript.AppendLine("// @description  Multiple solutions for blocking Twitch ads (vaft)");
+                sbUserscript.AppendLine("// @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js");
+                sbUserscript.AppendLine("// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js");
+                sbUserscript.AppendLine("// @author       https://github.com/cleanlock/VideoAdBlockForTwitch#credits");
+                sbUserscript.AppendLine("// @match        *://*.twitch.tv/*");
+                sbUserscript.AppendLine("// @run-at       document-start");
+                sbUserscript.AppendLine("// @grant        none");
+                sbUserscript.AppendLine("// ==/UserScript==");
+                sbUserscript.AppendLine(comment);
+                sbUserscript.AppendLine("(function() {");
+                sbUserscript.AppendLine("    'use strict';");
+                
+                StringBuilder sbUblock = new StringBuilder();
+                sbUblock.AppendLine(comment);
+                sbUblock.AppendLine("twitch-videoad.js application/javascript");
+                sbUblock.AppendLine("(function() {");
+                sbUblock.AppendLine("    if ( /(^|\\.)twitch\\.tv$/.test(document.location.hostname) === false ) { return; }");
+                
+                foreach (string line in lines)
+                {
+                    sbUserscript.AppendLine(line);
+                    sbUblock.AppendLine(line);
+                }
+                
+                sbUserscript.AppendLine("})();");
+                sbUblock.AppendLine("})();");
+                
+                File.WriteAllText(Path.Combine("vaft", "vaft.user.js"), sbUserscript.ToString());
+                File.WriteAllText(Path.Combine("vaft", "vaft-ublock-origin.js"), sbUblock.ToString());
             }
         }
         
@@ -384,7 +442,7 @@ namespace TwitchAdUtils
                     }
                     else
                     {
-                        Console.WriteLine("Failed to get stream token");
+                        Console.WriteLine("Failed to get stream token mode:" + mode);
                     }
                 }
                 Thread.Sleep(LoopDelay);
@@ -617,6 +675,13 @@ namespace TwitchAdUtils
             public string value { get; set; }
             [DataMember]
             public string signature { get; set; }
+        }
+        
+        [DataContract]
+        public class ChromeExtensionManifest
+        {
+            [DataMember]
+            public string version { get; set; }
         }
         
         class CookieAwareWebClient : WebClient
