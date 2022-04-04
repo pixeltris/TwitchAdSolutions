@@ -30,7 +30,7 @@ Alternatively:
 - notify-swap - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/71bed117fc0f7074a9c7a7e89000dbf7db1feb04/notify-swap/notify-swap-ublock-origin.js)
   - The same as `notify-strip` with a slightly different method to fix freezing issues (especially on Firefox).
   - *The ad/non-ad transition takes slightly longer than `notify-strip`*.
-- vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/71bed117fc0f7074a9c7a7e89000dbf7db1feb04/vaft/vaft-ublock-origin.js)
+- vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/0fd419cc94bd86be8c787813c0928b65b789abaa/vaft/vaft-ublock-origin.js)
   - `Video Ad-Block, for Twitch` (fork) as a script.
 - low-res - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/low-res/low-res.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/71bed117fc0f7074a9c7a7e89000dbf7db1feb04/low-res/low-res-ublock-origin.js)
   - No ads.
