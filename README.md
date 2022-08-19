@@ -23,7 +23,7 @@ Alternatively:
 
 **There are better / easier to use methods in the above** `Recommendations`.
 
-- notify-strip - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/71bed117fc0f7074a9c7a7e89000dbf7db1feb04/notify-strip/notify-strip-ublock-origin.js)
+- notify-strip - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/d78340c760633b661b1c21634896f113c9b3ba71/notify-strip/notify-strip-ublock-origin.js)
   - Ad segments are replaced by low resolution stream segments.
   - Notifies Twitch that ads were "watched" (reduces preroll ad frequency).
   - *You may experience a small jump in time when the regular stream kicks in*.
