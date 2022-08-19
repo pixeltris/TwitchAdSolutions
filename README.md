@@ -50,3 +50,5 @@ Alternatively:
 ## Applying a script (userscript)
 
 - Viewing one of the userscript files should prompt the given script to be added.
+
+*If you are also using uBlock Origin you must add `twitch.tv#@#+js(twitch-videoad)` to your filter list.*

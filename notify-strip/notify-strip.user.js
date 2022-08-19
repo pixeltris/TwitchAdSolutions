@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (notify-strip)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.12
+// @version      1.13
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-strip)
@@ -19,7 +19,7 @@
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = false;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_RELOAD_PLAYER_ON_AD_SEGMENT = false;
-        scope.OPT_BACKUP_PLAYER_TYPE = 'picture-by-picture';//'picture-by-picture';'thunderdome';
+        scope.OPT_BACKUP_PLAYER_TYPE = 'thunderdome';//'picture-by-picture';'thunderdome';
         scope.OPT_REGULAR_PLAYER_TYPE = 'site';
         scope.OPT_INITIAL_M3U8_ATTEMPTS = 1;
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = 'site';
