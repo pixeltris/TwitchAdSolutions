@@ -39,6 +39,7 @@
         for (var i = 0; i < bs.length; i++) {
             scope.gql_device_id_rolling += charTable[(bs.charCodeAt(i) ^ di) % charTable.length];
         }
+        scope.gql_device_id_rolling = '1';//temporary
     }
     declareOptions(window);
     var twitchMainWorker = null;
