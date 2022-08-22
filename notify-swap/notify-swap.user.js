@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (notify-swap)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.13
+// @version      1.14
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-swap)

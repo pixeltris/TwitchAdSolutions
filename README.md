@@ -23,11 +23,11 @@ Alternatively:
 
 **There are better / easier to use methods in the above** `Recommendations`.
 
-- notify-strip - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/d78340c760633b661b1c21634896f113c9b3ba71/notify-strip/notify-strip-ublock-origin.js)
+- notify-strip - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/7d58144402aaf8f799249a9d1de6a32104f4ae6f/notify-strip/notify-strip-ublock-origin.js)
   - Ad segments are replaced by low resolution stream segments.
   - Notifies Twitch that ads were "watched" (reduces preroll ad frequency).
   - *You may experience a small jump in time when the regular stream kicks in*.
-- notify-swap - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/71bed117fc0f7074a9c7a7e89000dbf7db1feb04/notify-swap/notify-swap-ublock-origin.js)
+- notify-swap - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap/notify-swap.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/7d58144402aaf8f799249a9d1de6a32104f4ae6f/notify-swap/notify-swap-ublock-origin.js)
   - The same as `notify-strip` with a slightly different method to fix freezing issues (especially on Firefox).
   - *The ad/non-ad transition takes slightly longer than `notify-strip`*.
 - vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/0fd419cc94bd86be8c787813c0928b65b789abaa/vaft/vaft-ublock-origin.js)

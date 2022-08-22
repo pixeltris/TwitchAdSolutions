@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (notify-strip)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.13
+// @version      1.14
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-strip/notify-strip.user.js
 // @description  Multiple solutions for blocking Twitch ads (notify-strip)
