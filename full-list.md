@@ -8,14 +8,14 @@
   - Removes ad segments (no playback until ad-free stream).
 - `ttv-ublock` - [chrome](https://chrome.google.com/webstore/detail/ttv-ad-block/kndhknfnihidhcfnaacnndbolonbimai) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/ttv-adblock/) / [code](https://github.com/odensc/ttv-ublock)
   - Switches to the `embed` player at a network level. No ads but Twitch detects this and may display a purple screen every 10-15 mins asking the user to remove ad blockers (depends on time of day).
+- `Video Ad-Block, for Twitch` (fork) - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/ljhnljhabgjcihjoihakgdiicdjncpkd) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock/) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
+  - Replaces ad segments with ad-free segments. Twitch detects this and may display a commercial break screen.
 - `ttv_adEraser` - [chrome](https://chrome.google.com/webstore/detail/ttv-aderaser/pjnopimdnmhiaanhjfficogijajbhjnc) / [firefox (manual install)](https://github.com/LeonHeidelbach/ttv_adEraser#mozilla-firefox) / [code](https://github.com/LeonHeidelbach/ttv_adEraser)
   - Switches to the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
 - `ttv-tools` - [firefox (manual install)](https://github.com/Nerixyz/ttv-tools/releases) / [code](https://github.com/Nerixyz/ttv-tools)
   - Removes ad segments (no playback until ad-free stream).
 - `Twitch-HLS-AdBlock` - [chrome / firefox (manual install)](https://github.com/instance01/Twitch-HLS-AdBlock#installation) / [code](https://github.com/instance01/Twitch-HLS-AdBlock)
   - Removes ad segments (no playback until ad-free stream).
-- `Video Ad-Block, for Twitch` (fork) **(PATCHED)** - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/ljhnljhabgjcihjoihakgdiicdjncpkd) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock/) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
-  - Replaces ad segments with ad-free segments (480p resolution). Afterwards it invokes a pause/play to resync the player which then continues normally (normal resolution).
   
 ---
 
