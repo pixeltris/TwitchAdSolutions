@@ -24,7 +24,7 @@ Alternatively:
 
 **There are better / easier to use methods in the above** `Recommendations`.
 
-- vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/51ae5b1b6a69db59489634d724d9b476c8aa3596/vaft/vaft-ublock-origin.js)
+- vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/e80025cbd1eef78f3c609eaff8d5f934abcc9cf8/vaft/vaft-ublock-origin.js)
   - `Video Ad-Block, for Twitch` (fork) as a script.
   - *This is currently a fork of the fork, see [#63](https://github.com/cleanlock/VideoAdBlockForTwitch/pull/63)*.
 
