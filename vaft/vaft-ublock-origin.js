@@ -26,7 +26,7 @@ twitch-videoad.js application/javascript
             //This corrects the background tab buffer bug when switching to the background tab for the first time after an extended period.
             doTwitchPlayerTask(false, false, true, false, false);
         };
-        document.addEventListener('visibilitychange', process, true);
+        document.addEventListener('visibilitychange', block, true);
         document.addEventListener('webkitvisibilitychange', block, true);
         document.addEventListener('mozvisibilitychange', block, true);
         document.addEventListener('hasFocus', block, true);
@@ -71,7 +71,7 @@ twitch-videoad.js application/javascript
         scope.StreamInfosByUrl = [];
         scope.MainUrlByUrl = [];
         scope.EncodingCacheTimeout = 60000;
-        scope.DefaultProxyType = 'TTV LOL';
+        scope.DefaultProxyType = null;
         scope.DefaultForcedQuality = null;
         scope.DefaultProxyQuality = null;
     }
