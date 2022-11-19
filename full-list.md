@@ -13,7 +13,7 @@
 - `ttv-ublock` - [chrome](https://chrome.google.com/webstore/detail/ttv-ad-block/kndhknfnihidhcfnaacnndbolonbimai) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/ttv-adblock/) / [code](https://github.com/odensc/ttv-ublock)
   - Switches to the `embed` player at a network level. No ads but Twitch detects this and may display a purple screen every 10-15 mins asking the user to remove ad blockers (depends on time of day).
 - `AdGuard Extra (Beta)` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox)
-  - Uses segments from the `embed` player during ads. This can get a clean stream faster but suffers from audo sync / freezing issues.
+  - Uses segments from the `embed` player during ads. This can get a clean stream faster but suffers from audio sync / freezing issues.
 - `ttv_adEraser` - [chrome](https://chrome.google.com/webstore/detail/ttv-aderaser/pjnopimdnmhiaanhjfficogijajbhjnc) / [firefox (manual install)](https://github.com/LeonHeidelbach/ttv_adEraser#mozilla-firefox) / [code](https://github.com/LeonHeidelbach/ttv_adEraser)
   - Switches to the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
 - `ttv-tools` - [firefox (manual install)](https://github.com/Nerixyz/ttv-tools/releases) / [code](https://github.com/Nerixyz/ttv-tools)
