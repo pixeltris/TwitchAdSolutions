@@ -9,14 +9,16 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 Proxies are the most reliable way of avoiding ads ([buffering / downtime info](full-list.md#proxy-issues)).
 
 - `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/ttv-lol/) / [code](https://github.com/TTV-LOL/extensions)
+- `TTV LOL PRO` - [code](https://github.com/younesaassila/ttv-lol-pro)
 
 Alternatively:
 
-- `Video Ad-Block, for Twitch` (fork) - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/ljhnljhabgjcihjoihakgdiicdjncpkd) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock/) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
+- `Video Ad-Block, for Twitch` (fork) - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/ljhnljhabgjcihjoihakgdiicdjncpkd) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock/) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
 - `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
 - `ttv-ublock` - [chrome](https://chrome.google.com/webstore/detail/ttv-ad-block/kndhknfnihidhcfnaacnndbolonbimai) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/ttv-adblock/) / [code](https://github.com/odensc/ttv-ublock)
-- `vaft` - see below
+- `AdGuard Extra (Beta)` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox)
+- `notify-swap-new` - see below
 
 [Read this for a full list and descriptions.](full-list.md)
 
@@ -24,9 +26,13 @@ Alternatively:
 
 **There are better / easier to use methods in the above recommendations.**
 
+- notify-swap-new - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/7ea1ddf5b9d9100253e623a3a1784f3196ff781a/video-swap-new/video-swap-new-ublock-origin.js)
+  - Uses the embed player during ads.
+  - *Full screen ad message displayed during ads.* [Read the twitch announcement](https://discuss.dev.twitch.tv/t/an-updated-twitch-embedded-player-viewer-experience/41718)
+  - *You may notice a seemingly random player reload some time after the ad message is gone.*
 - vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/338dadc691551a3ed3a82c2e336f59072e6d7167/vaft/vaft-ublock-origin.js)
   - `Video Ad-Block, for Twitch` (fork) as a script.
-  - *If the ad-free stream fails you'll see an adblocker warning. For more info see [#89](https://github.com/pixeltris/TwitchAdSolutions/issues/89).*
+  - *Full screen ad message displayed during ads.*
 
 *For the sake of security it's recommended to use a permalink when using uBlock Origin (permalinks do not auto update).*
 
