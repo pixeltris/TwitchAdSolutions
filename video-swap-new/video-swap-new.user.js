@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name         TwitchAdSolutions (notify-swap-new)
+// @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
 // @version      1.16
-// @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap-new/notify-swap-new.user.js
-// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/notify-swap-new/notify-swap-new.user.js
-// @description  Multiple solutions for blocking Twitch ads (notify-swap-new)
+// @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
+// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
+// @description  Multiple solutions for blocking Twitch ads (video-swap-new)
 // @author       pixeltris
 // @match        *://*.twitch.tv/*
 // @run-at       document-start
