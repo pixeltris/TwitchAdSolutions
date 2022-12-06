@@ -42,6 +42,7 @@
 ## Applications / third party websites
 - `streamlink` - [code](https://github.com/streamlink/streamlink) / [website](https://streamlink.github.io/streamlink-twitch-gui/)
   - Removes ad segments (no playback until ad-free stream).
+  - Use [this](https://github.com/2bc4/streamlink-ttvlol) modified file for uninterrupted playback.
 - `Xtra for Twitch` (fork) - [apks](https://github.com/crackededed/Xtra/releases) / [code](https://github.com/crackededed/Xtra)
   - Android app. I think this blocks ads, but I'm not 100% sure. If not maybe try [Twire](https://github.com/twireapp/Twire).
 - https://twitchls.com/
