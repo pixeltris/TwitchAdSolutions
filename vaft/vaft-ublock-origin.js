@@ -1,5 +1,5 @@
 // This code is directly copied from https://github.com/cleanlock/VideoAdBlockForTwitch (only change is whitespace is removed for the ublock origin script - also indented)
-twitch-videoad.js application/javascript
+twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
     //This stops Twitch from pausing the player when in another tab and an ad shows.
