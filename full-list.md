@@ -6,7 +6,7 @@
   - A fork of the `TTV LOL` extension with some UX improvements.
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
   - Removes ad segments (no playback until ad-free stream).
-- `Video Ad-Block, for Twitch` (fork) - [chrome](https://chrome.google.com/webstore/detail/twitch-adblock/ljhnljhabgjcihjoihakgdiicdjncpkd) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock/) / [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
+- `Video Ad-Block, for Twitch` (fork) - [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
   - Replaces ad segments with ad-free segments. Opt-in proxy fallback during ad segments when the ad-free stream fails locally. Adblocker warning when all methods fail.
 - `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
   - Replaces ad segments with ad-free segments. Proxy fallback which is currently broken. Loading wheel when all methods fail.
