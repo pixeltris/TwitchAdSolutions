@@ -31,13 +31,10 @@
 ## Web browser scripts (uBlock Origin / userscript)
 
 - https://github.com/Wilkolicious/twitchAdSkip
-- https://gist.github.com/simple-hacker/ddd81964b3e8bca47e0aead5ad19a707/
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code
   - Reloads the player (or page) when it detects the ad banner in DOM.
 - https://greasyfork.org/en/scripts/371186-twitch-mute-ads-and-optionally-hide-them/code
   - Mutes / hides ads.
-- https://greasyfork.org/en/scripts/425139-twitch-ad-fix/code
-  - Uses a proxy on the main m3u8 file to get a stream without ads.
 
 ## Applications / third party websites
 - `streamlink` - [code](https://github.com/streamlink/streamlink) / [website](https://streamlink.github.io/streamlink-twitch-gui/)
