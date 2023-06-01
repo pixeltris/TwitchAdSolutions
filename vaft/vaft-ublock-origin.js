@@ -59,8 +59,8 @@ twitch-videoad.js text/javascript
         scope.ClientSession = 'null';
         //scope.PlayerType1 = 'site'; //Source - NOTE: This is unused as it's implicitly used by the website iself
         scope.PlayerType2 = 'autoplay'; //360p
-        scope.PlayerType3 = 'proxy'; //Source
-        scope.PlayerType4 = 'embed'; //Source
+        scope.PlayerType3 = 'embed'; //Source
+        //scope.PlayerType4 = 'embed'; //Source
         scope.CurrentChannelName = null;
         scope.UsherParams = null;
         scope.WasShowingAd = false;
@@ -73,7 +73,8 @@ twitch-videoad.js text/javascript
         scope.DefaultProxyType = null;
         scope.DefaultForcedQuality = null;
         scope.DefaultProxyQuality = null;
-        scope.ClientIntegrity = null;
+        scope.ClientIntegrityHeader = null;
+        scope.AuthorizationHeader = null;
     }
     declareOptions(window);
     var TwitchAdblockSettings = {
@@ -123,8 +124,10 @@ twitch-videoad.js text/javascript
                         ClientID = e.data.value;
                     } else if (e.data.key == 'UpdateDeviceId') {
                         GQLDeviceID = e.data.value;
-                    } else if (e.data.key == 'UpdateClientIntegrity') {
-                        ClientIntegrity = e.data.value;
+                    } else if (e.data.key == 'UpdateClientIntegrityHeader') {
+                        ClientIntegrityHeader = e.data.value;
+                    } else if (e.data.key == 'UpdateAuthorizationHeader') {
+                        AuthorizationHeader = e.data.value;
                     }
                 });
                 hookWorkerFetch();
@@ -140,7 +143,7 @@ twitch-videoad.js text/javascript
                     if (adBlockDiv == null) {
                         adBlockDiv = getAdBlockDiv();
                     }
-                    adBlockDiv.P.textContent = 'Blocking ads...';
+                    adBlockDiv.P.textContent = 'Blocking ads';
                     adBlockDiv.style.display = 'block';
                 } else if (e.data.key == 'HideAdBlockBanner') {
                     if (adBlockDiv == null) {
@@ -281,9 +284,9 @@ twitch-videoad.js text/javascript
                             if (weaverText.includes(AdSignifier)) {
                                 weaverText = await processM3U8(url, responseText, realFetch, PlayerType3);
                             }
-                            if (weaverText.includes(AdSignifier)) {
-                                weaverText = await processM3U8(url, responseText, realFetch, PlayerType4);
-                            }
+                            //if (weaverText.includes(AdSignifier)) {
+                            //    weaverText = await processM3U8(url, responseText, realFetch, PlayerType4);
+                            //}
                             resolve(new Response(weaverText));
                         };
                         var send = function() {
@@ -659,9 +662,9 @@ twitch-videoad.js text/javascript
         return gqlRequest(body, realFetch);
     }
     function gqlRequest(body, realFetch) {
-        if (ClientIntegrity == null) {
-            console.error('ClientIntegrity is null');
-            throw 'ClientIntegrity is null';
+        if (ClientIntegrityHeader == null) {
+            console.error('ClientIntegrityHeader is null');
+            throw 'ClientIntegrityHeader is null';
         }
         var fetchFunc = realFetch ? realFetch : fetch;
         if (!GQLDeviceID) {
@@ -676,11 +679,12 @@ twitch-videoad.js text/javascript
             body: JSON.stringify(body),
             headers: {
                 'Client-ID': ClientID,
-                'Client-Integrity': ClientIntegrity,
+                'Client-Integrity': ClientIntegrityHeader,
                 'Device-ID': GQLDeviceID,
                 'X-Device-Id': GQLDeviceID,
                 'Client-Version': ClientVersion,
-                'Client-Session-Id': ClientSession
+                'Client-Session-Id': ClientSession,
+                'Authorization': AuthorizationHeader
             }
         });
     }
@@ -855,13 +859,17 @@ twitch-videoad.js text/javascript
                                 value: ClientID
                             });
                         }
-                    }
-                    //Client integrity
-                    if (url.includes('gql') && init && typeof init.headers['Client-Integrity'] === 'string') {
-                        ClientIntegrity = init.headers['Client-Integrity'];
+                        //Client integrity header
+                        ClientIntegrityHeader = init.headers['Client-Integrity'];
                         twitchMainWorker.postMessage({
-                            key: 'UpdateClientIntegrity',
+                            key: 'UpdateClientIntegrityHeader',
                             value: init.headers['Client-Integrity']
+                        });
+                        //Authorization header
+                        AuthorizationHeader = init.headers['Authorization'];
+                        twitchMainWorker.postMessage({
+                            key: 'UpdateAuthorizationHeader',
+                            value: init.headers['Authorization']
                         });
                     }
                     //To prevent pause/resume loop for mid-rolls.

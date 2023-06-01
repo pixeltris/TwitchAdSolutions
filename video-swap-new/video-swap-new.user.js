@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.18
+// @version      1.19
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -41,7 +41,8 @@
             scope.gql_device_id_rolling += charTable[(bs.charCodeAt(i) ^ di) % charTable.length];
         }
         scope.gql_device_id_rolling = '1';//temporary
-        scope.ClientIntegrity = null;
+        scope.ClientIntegrityHeader = null;
+        scope.AuthorizationHeader = null;
     }
     declareOptions(window);
     var twitchMainWorker = null;
@@ -71,8 +72,10 @@
                 self.addEventListener('message', function(e) {
                     if (e.data.key == 'UboUpdateDeviceId') {
                         gql_device_id = e.data.value;
-                    } else if (e.data.key == 'UpdateClientIntegrity') {
-                        ClientIntegrity = e.data.value;
+                    } else if (e.data.key == 'UpdateClientIntegrityHeader') {
+                        ClientIntegrityHeader = e.data.value;
+                    } else if (e.data.key == 'UpdateAuthorizationHeader') {
+                        AuthorizationHeader = e.data.value;
                     }
                 });
                 hookWorkerFetch();
@@ -85,7 +88,7 @@
                 if (e.data.key == 'UboShowAdBanner') {
                     var adDiv = getAdDiv();
                     if (adDiv != null) {
-                        adDiv.P.textContent = 'Blocking' + (e.data.isMidroll ? ' midroll' : '') + ' ads...';
+                        adDiv.P.textContent = 'Blocking' + (e.data.isMidroll ? ' midroll' : '') + ' ads';
                         if (OPT_SHOW_AD_BANNER) {
                             adDiv.style.display = 'block';
                         }
@@ -321,9 +324,9 @@
         return gqlRequest(body, realFetch);
     }
     function gqlRequest(body, realFetch) {
-        if (ClientIntegrity == null) {
-            console.error('ClientIntegrity is null');
-            throw 'ClientIntegrity is null';
+        if (ClientIntegrityHeader == null) {
+            console.error('ClientIntegrityHeader is null');
+            throw 'ClientIntegrityHeader is null';
         }
         var fetchFunc = realFetch ? realFetch : fetch;
         return fetchFunc('https://gql.twitch.tv/gql', {
@@ -331,8 +334,9 @@
             body: JSON.stringify(body),
             headers: {
                 'Client-Id': CLIENT_ID,
-                'Client-Integrity': ClientIntegrity,
-                'X-Device-Id': OPT_ROLLING_DEVICE_ID ? gql_device_id_rolling : gql_device_id
+                'Client-Integrity': ClientIntegrityHeader,
+                'X-Device-Id': OPT_ROLLING_DEVICE_ID ? gql_device_id_rolling : gql_device_id,
+                'Authorization': AuthorizationHeader
             }
         });
     }
@@ -446,10 +450,17 @@
                             }
                         }
                         if (typeof init.headers['Client-Integrity'] === 'string') {
-                            ClientIntegrity = init.headers['Client-Integrity'];
+                            ClientIntegrityHeader = init.headers['Client-Integrity'];
                             twitchMainWorker.postMessage({
-                                key: 'UpdateClientIntegrity',
+                                key: 'UpdateClientIntegrityHeader',
                                 value: init.headers['Client-Integrity']
+                            });
+                        }
+                        if (typeof init.headers['Authorization'] === 'string') {
+                            AuthorizationHeader = init.headers['Authorization'];
+                            twitchMainWorker.postMessage({
+                                key: 'UpdateAuthorizationHeader',
+                                value: init.headers['Authorization']
                             });
                         }
                     }
