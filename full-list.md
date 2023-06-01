@@ -44,7 +44,9 @@
   - Removes ad segments (no playback until ad-free stream).
   - Use [this](https://github.com/2bc4/streamlink-ttvlol) modified file for uninterrupted playback.
 - `Xtra for Twitch` (fork) - [apks](https://github.com/crackededed/Xtra/releases) / [code](https://github.com/crackededed/Xtra)
-  - Android app. I think this blocks ads, but I'm not 100% sure. If not maybe try [Twire](https://github.com/twireapp/Twire).
+  - An alternate Twitch player for Android with extra features, including ad blocking. This blocks ads using the TTV LOL proxy, but other proxies can also be used by changing the URL in settings.
+- `ReVanced` - [code](https://revanced.app)
+  - A collection of tools that allows you to patch Twitch and other Android apps such as YouTube to remove ads. ReVanced's Twitch patches use the TTV LOL and PurpleAdBlocker proxies (can be toggled between in settings). The setup is complicated, so anyone who doesn't want the hassle should just use Xtra instead.
 - https://twitchls.com/
   - Uses the `embed` player. Purple screen may display every 10-15 mins.
 - https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/
