@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.17
+// @version      1.18
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -18,9 +18,11 @@
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = false;
-        scope.OPT_BACKUP_PLAYER_TYPE = 'embed';
+        scope.OPT_BACKUP_PLAYER_TYPE = 'autoplay';
+        scope.OPT_BACKUP_PLATFORM = 'ios';
         scope.OPT_REGULAR_PLAYER_TYPE = 'site';
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = null;
+        scope.OPT_SHOW_AD_BANNER = true;
         scope.AD_SIGNIFIER = 'stitched-ad';
         scope.LIVE_SIGNIFIER = ',live';
         scope.CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
@@ -84,7 +86,9 @@
                     var adDiv = getAdDiv();
                     if (adDiv != null) {
                         adDiv.P.textContent = 'Blocking' + (e.data.isMidroll ? ' midroll' : '') + ' ads...';
-                        //adDiv.style.display = 'block';
+                        if (OPT_SHOW_AD_BANNER) {
+                            adDiv.style.display = 'block';
+                        }
                     }
                 } else if (e.data.key == 'UboHideAdBanner') {
                     var adDiv = getAdDiv();
@@ -224,7 +228,7 @@
                                 for (var i = 0; i < 2; i++) {
                                     var encodingsUrl = url;
                                     if (i == 1) {
-                                        var accessTokenResponse = await getAccessToken(channelName, OPT_BACKUP_PLAYER_TYPE);
+                                        var accessTokenResponse = await getAccessToken(channelName, OPT_BACKUP_PLAYER_TYPE, OPT_BACKUP_PLATFORM, realFetch);
                                         if (accessTokenResponse != null && accessTokenResponse.status === 200) {
                                             var accessToken = await accessTokenResponse.json();
                                             var urlInfo = new URL('https://usher.ttvnw.net/api/channel/hls/' + channelName + '.m3u8' + (new URL(url)).search);
@@ -297,9 +301,12 @@
             },
         }];
     }
-    function getAccessToken(channelName, playerType, realFetch) {
+    function getAccessToken(channelName, playerType, platform, realFetch) {
+        if (!platform) {
+            platform = 'web';
+        }
         var body = null;
-        var templateQuery = 'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature    __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "web", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}';
+        var templateQuery = 'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "' + platform + '", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature    __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "' + platform + '", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}';
         body = {
             operationName: 'PlaybackAccessToken_Template',
             query: templateQuery,
