@@ -674,8 +674,8 @@
     }
     function gqlRequest(body, realFetch) {
         if (ClientIntegrityHeader == null) {
-            console.error('ClientIntegrityHeader is null');
-            throw 'ClientIntegrityHeader is null';
+            console.warn('ClientIntegrityHeader is null');
+            //throw 'ClientIntegrityHeader is null';
         }
         var fetchFunc = realFetch ? realFetch : fetch;
         if (!GQLDeviceID) {
