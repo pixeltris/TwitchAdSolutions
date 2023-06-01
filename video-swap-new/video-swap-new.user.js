@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.16
+// @version      1.17
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -14,13 +14,13 @@
     'use strict';
     function declareOptions(scope) {
         // Options / globals
-        scope.OPT_ROLLING_DEVICE_ID = true;
+        scope.OPT_ROLLING_DEVICE_ID = false;
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = false;
         scope.OPT_BACKUP_PLAYER_TYPE = 'embed';
         scope.OPT_REGULAR_PLAYER_TYPE = 'site';
-        scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = 'site';
+        scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = null;
         scope.AD_SIGNIFIER = 'stitched-ad';
         scope.LIVE_SIGNIFIER = ',live';
         scope.CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
@@ -39,6 +39,7 @@
             scope.gql_device_id_rolling += charTable[(bs.charCodeAt(i) ^ di) % charTable.length];
         }
         scope.gql_device_id_rolling = '1';//temporary
+        scope.ClientIntegrity = null;
     }
     declareOptions(window);
     var twitchMainWorker = null;
@@ -68,6 +69,8 @@
                 self.addEventListener('message', function(e) {
                     if (e.data.key == 'UboUpdateDeviceId') {
                         gql_device_id = e.data.value;
+                    } else if (e.data.key == 'UpdateClientIntegrity') {
+                        ClientIntegrity = e.data.value;
                     }
                 });
                 hookWorkerFetch();
@@ -83,23 +86,18 @@
                         adDiv.P.textContent = 'Blocking' + (e.data.isMidroll ? ' midroll' : '') + ' ads...';
                         //adDiv.style.display = 'block';
                     }
-                }
-                else if (e.data.key == 'UboHideAdBanner') {
+                } else if (e.data.key == 'UboHideAdBanner') {
                     var adDiv = getAdDiv();
                     if (adDiv != null) {
                         adDiv.style.display = 'none';
                     }
-                }
-                else if (e.data.key == 'UboChannelNameM3U8Changed') {
+                } else if (e.data.key == 'UboChannelNameM3U8Changed') {
                     //console.log('M3U8 channel name changed to ' + e.data.value);
-                }
-                else if (e.data.key == 'UboReloadPlayer') {
+                } else if (e.data.key == 'UboReloadPlayer') {
                     reloadTwitchPlayer();
-                }
-                else if (e.data.key == 'UboPauseResumePlayer') {
+                } else if (e.data.key == 'UboPauseResumePlayer') {
                     reloadTwitchPlayer(false, true);
-                }
-                else if (e.data.key == 'UboSeekPlayer') {
+                } else if (e.data.key == 'UboSeekPlayer') {
                     reloadTwitchPlayer(true);
                 }
             }
@@ -316,12 +314,17 @@
         return gqlRequest(body, realFetch);
     }
     function gqlRequest(body, realFetch) {
+        if (ClientIntegrity == null) {
+            console.error('ClientIntegrity is null');
+            throw 'ClientIntegrity is null';
+        }
         var fetchFunc = realFetch ? realFetch : fetch;
         return fetchFunc('https://gql.twitch.tv/gql', {
             method: 'POST',
             body: JSON.stringify(body),
             headers: {
-                'client-id': CLIENT_ID,
+                'Client-Id': CLIENT_ID,
+                'Client-Integrity': ClientIntegrity,
                 'X-Device-Id': OPT_ROLLING_DEVICE_ID ? gql_device_id_rolling : gql_device_id
             }
         });
@@ -418,7 +421,13 @@
                     if (typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
                         if (OPT_ACCESS_TOKEN_PLAYER_TYPE) {
                             const newBody = JSON.parse(init.body);
-                            newBody.variables.playerType = OPT_ACCESS_TOKEN_PLAYER_TYPE;
+                            if (Array.isArray(newBody)) {
+                                for (let i = 0; i < newBody.length; i++) {
+                                    newBody[i].variables.playerType = OPT_ACCESS_TOKEN_PLAYER_TYPE;
+                                }
+                            } else {
+                                newBody.variables.playerType = OPT_ACCESS_TOKEN_PLAYER_TYPE;
+                            }
                             init.body = JSON.stringify(newBody);
                         }
                         if (OPT_ROLLING_DEVICE_ID) {
@@ -428,6 +437,13 @@
                             if (typeof init.headers['Device-ID'] === 'string') {
                                 init.headers['Device-ID'] = gql_device_id_rolling;
                             }
+                        }
+                        if (typeof init.headers['Client-Integrity'] === 'string') {
+                            ClientIntegrity = init.headers['Client-Integrity'];
+                            twitchMainWorker.postMessage({
+                                key: 'UpdateClientIntegrity',
+                                value: init.headers['Client-Integrity']
+                            });
                         }
                     }
                 }

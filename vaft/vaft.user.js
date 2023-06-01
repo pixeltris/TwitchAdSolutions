@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      5.5.1
+// @version      5.8.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -10,7 +10,6 @@
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
-// This code is directly copied from https://github.com/cleanlock/VideoAdBlockForTwitch (only change is whitespace is removed for the ublock origin script - also indented)
 (function() {
     'use strict';
     //This stops Twitch from pausing the player when in another tab and an ad shows.
@@ -85,6 +84,7 @@
         scope.DefaultProxyType = null;
         scope.DefaultForcedQuality = null;
         scope.DefaultProxyQuality = null;
+        scope.ClientIntegrity = null;
     }
     declareOptions(window);
     var TwitchAdblockSettings = {
@@ -134,6 +134,8 @@
                         ClientID = e.data.value;
                     } else if (e.data.key == 'UpdateDeviceId') {
                         GQLDeviceID = e.data.value;
+                    } else if (e.data.key == 'UpdateClientIntegrity') {
+                        ClientIntegrity = e.data.value;
                     }
                 });
                 hookWorkerFetch();
@@ -161,9 +163,9 @@
                 } else if (e.data.key == 'ForceChangeQuality') {
                     //This is used to fix the bug where the video would freeze.
                     try {
-                        if (navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
+                        //if (navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
                             return;
-                        }
+                        //}
                         var autoQuality = doTwitchPlayerTask(false, false, false, true, false);
                         var currentQuality = doTwitchPlayerTask(false, true, false, false, false);
                         if (IsPlayerAutoQuality == null) {
@@ -667,6 +669,10 @@
         return gqlRequest(body, realFetch);
     }
     function gqlRequest(body, realFetch) {
+        if (ClientIntegrity == null) {
+            console.error('ClientIntegrity is null');
+            throw 'ClientIntegrity is null';
+        }
         var fetchFunc = realFetch ? realFetch : fetch;
         if (!GQLDeviceID) {
             var dcharacters = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -680,6 +686,7 @@
             body: JSON.stringify(body),
             headers: {
                 'Client-ID': ClientID,
+                'Client-Integrity': ClientIntegrity,
                 'Device-ID': GQLDeviceID,
                 'X-Device-Id': GQLDeviceID,
                 'Client-Version': ClientVersion,
@@ -858,6 +865,14 @@
                                 value: ClientID
                             });
                         }
+                    }
+                    //Client integrity
+                    if (url.includes('gql') && init && typeof init.headers['Client-Integrity'] === 'string') {
+                        ClientIntegrity = init.headers['Client-Integrity'];
+                        twitchMainWorker.postMessage({
+                            key: 'UpdateClientIntegrity',
+                            value: init.headers['Client-Integrity']
+                        });
                     }
                     //To prevent pause/resume loop for mid-rolls.
                     if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && init.body.includes('picture-by-picture')) {

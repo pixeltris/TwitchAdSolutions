@@ -1,4 +1,3 @@
-// This code is directly copied from https://github.com/cleanlock/VideoAdBlockForTwitch (only change is whitespace is removed for the ublock origin script - also indented)
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
@@ -74,6 +73,7 @@ twitch-videoad.js text/javascript
         scope.DefaultProxyType = null;
         scope.DefaultForcedQuality = null;
         scope.DefaultProxyQuality = null;
+        scope.ClientIntegrity = null;
     }
     declareOptions(window);
     var TwitchAdblockSettings = {
@@ -123,6 +123,8 @@ twitch-videoad.js text/javascript
                         ClientID = e.data.value;
                     } else if (e.data.key == 'UpdateDeviceId') {
                         GQLDeviceID = e.data.value;
+                    } else if (e.data.key == 'UpdateClientIntegrity') {
+                        ClientIntegrity = e.data.value;
                     }
                 });
                 hookWorkerFetch();
@@ -150,9 +152,9 @@ twitch-videoad.js text/javascript
                 } else if (e.data.key == 'ForceChangeQuality') {
                     //This is used to fix the bug where the video would freeze.
                     try {
-                        if (navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
+                        //if (navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
                             return;
-                        }
+                        //}
                         var autoQuality = doTwitchPlayerTask(false, false, false, true, false);
                         var currentQuality = doTwitchPlayerTask(false, true, false, false, false);
                         if (IsPlayerAutoQuality == null) {
@@ -656,6 +658,10 @@ twitch-videoad.js text/javascript
         return gqlRequest(body, realFetch);
     }
     function gqlRequest(body, realFetch) {
+        if (ClientIntegrity == null) {
+            console.error('ClientIntegrity is null');
+            throw 'ClientIntegrity is null';
+        }
         var fetchFunc = realFetch ? realFetch : fetch;
         if (!GQLDeviceID) {
             var dcharacters = 'abcdefghijklmnopqrstuvwxyz0123456789';
@@ -669,6 +675,7 @@ twitch-videoad.js text/javascript
             body: JSON.stringify(body),
             headers: {
                 'Client-ID': ClientID,
+                'Client-Integrity': ClientIntegrity,
                 'Device-ID': GQLDeviceID,
                 'X-Device-Id': GQLDeviceID,
                 'Client-Version': ClientVersion,
@@ -847,6 +854,14 @@ twitch-videoad.js text/javascript
                                 value: ClientID
                             });
                         }
+                    }
+                    //Client integrity
+                    if (url.includes('gql') && init && typeof init.headers['Client-Integrity'] === 'string') {
+                        ClientIntegrity = init.headers['Client-Integrity'];
+                        twitchMainWorker.postMessage({
+                            key: 'UpdateClientIntegrity',
+                            value: init.headers['Client-Integrity']
+                        });
                     }
                     //To prevent pause/resume loop for mid-rolls.
                     if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && init.body.includes('picture-by-picture')) {
