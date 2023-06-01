@@ -1,22 +1,22 @@
+*There was an update on 31st May 2023 which may have broken some solutions.*
+
 ## Web browser extensions
 
-- `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
-  - Uses a proxy on the main m3u8 file to get a stream without ads.
 - `TTV LOL PRO` - [code](https://github.com/younesaassila/ttv-lol-pro)
   - A fork of the `TTV LOL` extension with some UX improvements.
+- `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
+  - Uses a proxy on the main m3u8 file to get a stream without ads.
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
   - Removes ad segments (no playback until ad-free stream).
-- `Video Ad-Block, for Twitch` (fork) - [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
-  - Replaces ad segments with ad-free segments. Opt-in proxy fallback during ad segments when the ad-free stream fails locally. Adblocker warning when all methods fail.
 - `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
   - Replaces ad segments with ad-free segments. Proxy fallback which is currently broken. Loading wheel when all methods fail.
 - `AdGuard Extra (Beta)` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox)
   - Uses segments from the `embed` player during ads. This can get a clean stream faster but suffers from audio sync / freezing issues.
+- `Video Ad-Block, for Twitch` (fork) - [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
+  - Replaces ad segments with ad-free segments. Opt-in proxy fallback during ad segments when the ad-free stream fails locally. Adblocker warning when all methods fail.
 - `ttv_adEraser` - [chrome](https://chrome.google.com/webstore/detail/ttv-aderaser/pjnopimdnmhiaanhjfficogijajbhjnc) / [firefox (manual install)](https://github.com/LeonHeidelbach/ttv_adEraser#mozilla-firefox) / [code](https://github.com/LeonHeidelbach/ttv_adEraser)
   - Switches to the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
 - `ttv-tools` - [firefox (manual install)](https://github.com/Nerixyz/ttv-tools/releases) / [code](https://github.com/Nerixyz/ttv-tools)
-  - Removes ad segments (no playback until ad-free stream).
-- `Twitch-HLS-AdBlock` - [chrome / firefox (manual install)](https://github.com/instance01/Twitch-HLS-AdBlock#installation) / [code](https://github.com/instance01/Twitch-HLS-AdBlock)
   - Removes ad segments (no playback until ad-free stream).
   
 ---
@@ -28,7 +28,8 @@
 
 ## Web browser scripts (uBlock Origin / userscript)
 
-- https://github.com/Wilkolicious/twitchAdSkip
+*These haven't been updated in a while and probably don't work.*
+
 - https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code
   - Reloads the player (or page) when it detects the ad banner in DOM.
 - https://greasyfork.org/en/scripts/371186-twitch-mute-ads-and-optionally-hide-them/code
@@ -40,7 +41,7 @@
   - Use [this](https://github.com/2bc4/streamlink-ttvlol) modified file for uninterrupted playback.
 - `Xtra for Twitch` (fork) - [apks](https://github.com/crackededed/Xtra/releases) / [code](https://github.com/crackededed/Xtra)
   - An alternate Twitch player for Android with extra features, including ad blocking. This blocks ads using the TTV LOL proxy, but other proxies can also be used by changing the URL in settings.
-- `ReVanced` - [code](https://revanced.app)
+- `ReVanced` - [code](https://github.com/revanced)
   - A collection of tools that allows you to patch Twitch and other Android apps such as YouTube to remove ads. ReVanced's Twitch patches use the TTV LOL and PurpleAdBlocker proxies (can be toggled between in settings). The setup is complicated, so anyone who doesn't want the hassle should just use Xtra instead.
 - https://twitchls.com/
   - Uses the `embed` player. Purple screen may display every 10-15 mins.
