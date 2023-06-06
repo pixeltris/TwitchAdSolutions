@@ -5,6 +5,8 @@
 - `TTV LOL PRO` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd) / [code](https://github.com/younesaassila/ttv-lol-pro)
   - A fork of the `TTV LOL` extension with sweeping improvements to its ad blocking abilities. Recommended to be used with uBlock Origin. Do not use with vaft/video-swap-new.
   - **NOTE: Incompatible with proxies made for the original TTV LOL.**
+- `TTV LOL PRO (v1)` - [code](https://github.com/younesaassila/ttv-lol-pro/releases/tag/v1.9.3)
+  - The older, deprecated version of `TTV LOL PRO` that still uses TTV LOL-compatible proxies. Only use this if you're having issues with the current version and know what you're doing.
 - `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
   - Uses a proxy on the main m3u8 file to get a stream without ads.
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
