@@ -3,7 +3,7 @@
 ## Web browser extensions
 
 - `TTV LOL PRO` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd) / [code](https://github.com/younesaassila/ttv-lol-pro)
-  - A fork of the `TTV LOL` extension with sweeping improvements to its ad blocking abilities. Recommended to be used with uBlock Origin.
+  - A fork of the `TTV LOL` extension with sweeping improvements to its ad blocking abilities. Recommended to be used with uBlock Origin. Do not use with vaft/video-swap-new.
   - **NOTE: Incompatible with proxies made for the original TTV LOL.**
 - `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
   - Uses a proxy on the main m3u8 file to get a stream without ads.
