@@ -8,7 +8,7 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 Proxies are the most reliable way of avoiding ads ([buffering / downtime info](full-list.md#proxy-issues)).
 
-- `TTV LOL PRO` - [code](https://github.com/younesaassila/ttv-lol-pro)
+- `TTV LOL PRO` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd) / [code](https://github.com/younesaassila/ttv-lol-pro)
 - `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
 
 Alternatively:
