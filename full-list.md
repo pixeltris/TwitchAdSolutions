@@ -2,7 +2,7 @@
 
 ## Web browser extensions
 
-- `TTV LOL PRO` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd) / [code](https://github.com/younesaassila/ttv-lol-pro)
+- `TTV LOL PRO` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd) / [firefox](https://addons.mozilla.org/addon/ttv-lol-pro/) / [code](https://github.com/younesaassila/ttv-lol-pro)
   - A fork of the `TTV LOL` extension with sweeping improvements to its ad blocking abilities.
   - Recommended to be used with uBlock Origin.
   - **NOTE: Incompatible with proxies made for the original TTV LOL.**
