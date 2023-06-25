@@ -402,7 +402,7 @@ twitch-videoad.js text/javascript
     }
     function hookFetch() {
         var realFetch = window.fetch;
-        window.fetch = function(url, init, ...args) {
+        Object.defineProperty(window, "fetch", function(url, init, ...args) {
             if (typeof url === 'string') {
                 if (url.includes('gql')) {
                     var deviceId = init.headers['X-Device-Id'];
@@ -456,7 +456,7 @@ twitch-videoad.js text/javascript
                 }
             }
             return realFetch.apply(this, arguments);
-        };
+        });
     }
     function reloadTwitchPlayer(isSeek, isPausePlay) {
         // Taken from ttv-tools / ffz
