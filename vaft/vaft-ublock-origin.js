@@ -777,7 +777,7 @@ twitch-videoad.js text/javascript
     localDeviceID = window.localStorage.getItem('local_copy_unique_id');
     function hookFetch() {
         var realFetch = window.fetch;
-        Object.defineProperty(window, "fetch", function(url, init, ...args) {
+        Object.defineProperty(window, "fetch", {writable: true, value: function(url, init, ...args) {
             if (typeof url === 'string') {
                 //Check if squad stream.
                 if (window.location.pathname.includes('/squad')) {
@@ -883,7 +883,7 @@ twitch-videoad.js text/javascript
                 }
             }
             return realFetch.apply(this, arguments);
-        });
+        }});
     }
     hookFetch();
 })();
