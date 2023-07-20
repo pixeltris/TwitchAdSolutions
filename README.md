@@ -1,7 +1,6 @@
 # TwitchAdSolutions
 
-This repo aims to provide multiple solutions for blocking Twitch ads.
-
+This repo aims to provide multiple solutions for blocking Twitch ads.<br>
 **Don't combine Twitch specific ad blockers.**
 
 ## Recommendations
@@ -11,17 +10,11 @@ Proxies are the most reliable way of avoiding ads ([buffering / downtime info](f
 - `TTV LOL PRO` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd) / [firefox](https://addons.mozilla.org/addon/ttv-lol-pro/) / [code](https://github.com/younesaassila/ttv-lol-pro)
 - `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
 
-Alternatively:
-
-- `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
-- `AdGuard Extra (Beta)` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox)
-- `Video Ad-Block, for Twitch` (fork) - [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
-
-[Read this for a full list and descriptions.](full-list.md)
-
-*There was an update on 31st May 2023 which may have broken some solutions.*
+Alternatively: [Check this full list with descriptions.](full-list.md)
 
 ## Script
+
+**My recommendation as it seems to be the best and most reliable ad-blocker.**
 
 - vaft - [ublock](https://github.com/yungsamd17/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [ublock (permalink)](https://github.com/yungsamd17/TwitchAdSolutions/raw/4a64aab0ac406faf8321842dbadfc11560312403/vaft/vaft-ublock-origin.js)
   - `Video Ad-Block, for Twitch` (fork) as a script.
