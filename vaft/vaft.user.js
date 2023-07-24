@@ -1,10 +1,10 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
-// @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      5.8.3
+// @namespace    https://github.com/yungsamd17/TwitchAdSolutions
+// @version      5.8.4
 // @description  Multiple solutions for blocking Twitch ads (vaft)
-// @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
-// @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
+// @updateURL    https://github.com/yungsamd17/TwitchAdSolutions/raw/master/vaft/vaft.user.js
+// @downloadURL  https://github.com/yungsamd17/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @author       https://github.com/cleanlock/VideoAdBlockForTwitch#credits
 // @match        *://*.twitch.tv/*
 // @run-at       document-start
@@ -69,7 +69,7 @@
         scope.ClientVersion = 'null';
         scope.ClientSession = 'null';
         //scope.PlayerType1 = 'site'; //Source - NOTE: This is unused as it's implicitly used by the website iself
-        scope.PlayerType2 = 'autoplay'; //360p
+        scope.PlayerType2 = 'embed'; //360p
         scope.PlayerType3 = 'embed'; //Source
         //scope.PlayerType4 = 'embed'; //Source
         scope.CurrentChannelName = null;
