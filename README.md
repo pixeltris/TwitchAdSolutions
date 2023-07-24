@@ -16,7 +16,7 @@ Alternatively: [Check this full list with descriptions.](full-list.md)
 
 **My recommendation as it seems to be the best and most reliable ad-blocker.**
 
-- vaft - [ublock](https://github.com/yungsamd17/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [ublock (permalink)](https://github.com/yungsamd17/TwitchAdSolutions/raw/4a64aab0ac406faf8321842dbadfc11560312403/vaft/vaft-ublock-origin.js)
+- vaft - [ublock](https://github.com/yungsamd17/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/yungsamd17/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/yungsamd17/TwitchAdSolutions/raw/4a64aab0ac406faf8321842dbadfc11560312403/vaft/vaft-ublock-origin.js)
   - `Video Ad-Block, for Twitch` (fork) as a script.
   - *Full screen ad message displayed during ads.*
 
@@ -30,3 +30,7 @@ Alternatively: [Check this full list with descriptions.](full-list.md)
 - To ensure uBlock Origin loads the script I recommend that you disable/enable the uBlock Origin extension (or restart your browser).
 
 *To stop using a script remove the filter and make the url `unset`.*
+
+## Applying a script (userscript)
+
+- Viewing one of the userscript files should prompt the given script to be added.
