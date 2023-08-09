@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.20
+// @version      1.21
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -260,6 +260,32 @@
                                                 return;
                                             }
                                         } else {
+                                            var lowResLines = encodingsM3u8.replace('\r', '').split('\n');
+                                            var lowResBestUrl = null;
+                                            for (var j = 0; j < lowResLines.length; j++) {
+                                                if (lowResLines[j].startsWith('#EXT-X-STREAM-INF')) {
+                                                    var res = parseAttributes(lowResLines[j])['RESOLUTION'];
+                                                    if (res && lowResLines[j + 1].endsWith('.m3u8')) {
+                                                        // Assumes resolutions are correctly ordered
+                                                        lowResBestUrl = lowResLines[j + 1];
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            if (lowResBestUrl != null && streamInfo.Encodings != null) {
+                                                var normalEncodingsM3u8 = streamInfo.Encodings;
+                                                var normalLines = normalEncodingsM3u8.replace('\r', '').split('\n');
+                                                for (var j = 0; j < normalLines.length - 1; j++) {
+                                                    if (normalLines[j].startsWith('#EXT-X-STREAM-INF')) {
+                                                        var res = parseAttributes(normalLines[j])['RESOLUTION'];
+                                                        if (res) {
+                                                            lowResBestUrl += ' ';// The stream doesn't load unless each url line is unique
+                                                            normalLines[j + 1] = lowResBestUrl;
+                                                        }
+                                                    }
+                                                }
+                                                encodingsM3u8 = normalLines.join('\r\n');
+                                            }
                                             streamInfo.BackupEncodings = encodingsM3u8;
                                         }
                                         var lines = encodingsM3u8.replace('\r', '').split('\n');
@@ -522,22 +548,25 @@
             player.play();
             return;
         }
-        const sink = player.mediaSinkManager || (player.core ? player.core.mediaSinkManager : null);
-        if (sink && sink.video && sink.video._ffz_compressor) {
-            const video = sink.video;
-            const volume = video.volume ? video.volume : player.getVolume();
-            const muted = player.isMuted();
-            const newVideo = document.createElement('video');
-            newVideo.volume = muted ? 0 : volume;
-            newVideo.playsInline = true;
-            video.replaceWith(newVideo);
-            player.attachHTMLVideoElement(newVideo);
-            setImmediate(() => {
-                player.setVolume(volume);
-                player.setMuted(muted);
-            });
+        const lsKeyQuality = 'video-quality';
+        const lsKeyMuted = 'video-muted';
+        const lsKeyVolume = 'volume';
+        var currentQualityLS = localStorage.getItem(lsKeyQuality);
+        var currentMutedLS = localStorage.getItem(lsKeyMuted);
+        var currentVolumeLS = localStorage.getItem(lsKeyVolume);
+        if (player?.core?.state) {
+            localStorage.setItem(lsKeyMuted, JSON.stringify({default:player.core.state.muted}));
+            localStorage.setItem(lsKeyVolume, player.core.state.volume);
         }
-        playerState.setSrc({ isNewMediaPlayerInstance: true, refreshAccessToken: true });// ffz sets this false
+        if (player?.core?.state?.quality?.group) {
+            localStorage.setItem(lsKeyQuality, JSON.stringify({default:player.core.state.quality.group}));
+        }
+        playerState.setSrc({ isNewMediaPlayerInstance: true, refreshAccessToken: true });
+        setTimeout(() => {
+            localStorage.setItem(lsKeyQuality, currentQualityLS);
+            localStorage.setItem(lsKeyMuted, currentMutedLS);
+            localStorage.setItem(lsKeyVolume, currentVolumeLS);
+        }, 3000);
     }
     window.reloadTwitchPlayer = reloadTwitchPlayer;
     hookFetch();

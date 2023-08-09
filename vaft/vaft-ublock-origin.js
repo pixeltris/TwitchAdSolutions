@@ -57,10 +57,8 @@ twitch-videoad.js text/javascript
         scope.ClientID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
         scope.ClientVersion = 'null';
         scope.ClientSession = 'null';
-        //scope.PlayerType1 = 'site'; //Source - NOTE: This is unused as it's implicitly used by the website iself
-        scope.PlayerType2 = 'autoplay'; //360p
-        scope.PlayerType3 = 'embed'; //Source
-        //scope.PlayerType4 = 'embed'; //Source
+        scope.PlayerType2 = 'embed'; //Source
+        scope.PlayerType3 = 'autoplay'; //360p
         scope.CurrentChannelName = null;
         scope.UsherParams = null;
         scope.WasShowingAd = false;
@@ -284,9 +282,6 @@ twitch-videoad.js text/javascript
                             if (weaverText.includes(AdSignifier)) {
                                 weaverText = await processM3U8(url, responseText, realFetch, PlayerType3);
                             }
-                            //if (weaverText.includes(AdSignifier)) {
-                            //    weaverText = await processM3U8(url, responseText, realFetch, PlayerType4);
-                            //}
                             resolve(new Response(weaverText));
                         };
                         var send = function() {
