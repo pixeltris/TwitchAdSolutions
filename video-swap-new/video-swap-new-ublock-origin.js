@@ -152,11 +152,27 @@ twitch-videoad.js text/javascript
                 var streamM3u8Response = await realFetch(streamM3u8Url);
                 if (streamM3u8Response.status == 200) {
                     var streamM3u8 = await streamM3u8Response.text();
-                    if (streamM3u8 != null && !streamM3u8.includes(AD_SIGNIFIER)) {
-                        console.log('No more ads on main stream. Triggering player reload to go back to main stream...');
-                        streamInfo.UseBackupStream = false;
-                        postMessage({key:'UboHideAdBanner'});
-                        postMessage({key:'UboReloadPlayer'});
+                    if (streamM3u8 != null) {
+                        if (!streamM3u8.includes(AD_SIGNIFIER)) {
+                            console.log('No more ads on main stream. Triggering player reload to go back to main stream...');
+                            streamInfo.UseBackupStream = false;
+                            postMessage({key:'UboHideAdBanner'});
+                            postMessage({key:'UboReloadPlayer'});
+                        } else if (!streamM3u8.includes('"MIDROLL"') && !streamM3u8.includes('"midroll"')) {
+                            var lines = streamM3u8.replace('\r', '').split('\n');
+                            for (var i = 0; i < lines.length; i++) {
+                                var line = lines[i];
+                                if (line.startsWith('#EXTINF') && lines.length > i + 1) {
+                                    if (!line.includes(LIVE_SIGNIFIER) && !streamInfo.RequestedAds.has(lines[i + 1])) {
+                                        // Only request one .ts file per .m3u8 request to avoid making too many requests
+                                        //console.log('Fetch ad .ts file');
+                                        streamInfo.RequestedAds.add(lines[i + 1]);
+                                        fetch(lines[i + 1]).then((response)=>{response.blob()});
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -211,6 +227,7 @@ twitch-videoad.js text/javascript
                             var useBackupStream = false;
                             if (streamInfo == null || streamInfo.Encodings == null || streamInfo.BackupEncodings == null) {
                                 StreamInfos[channelName] = streamInfo = {
+                                    RequestedAds: new Set(),
                                     Encodings: null,
                                     BackupEncodings: null,
                                     IsMidroll: false,
@@ -340,7 +357,7 @@ twitch-videoad.js text/javascript
     }
     function gqlRequest(body, realFetch) {
         if (ClientIntegrityHeader == null) {
-            console.warn('ClientIntegrityHeader is null');
+            //console.warn('ClientIntegrityHeader is null');
             //throw 'ClientIntegrityHeader is null';
         }
         var fetchFunc = realFetch ? realFetch : fetch;
@@ -466,17 +483,21 @@ twitch-videoad.js text/javascript
                         }
                         if (typeof init.headers['Client-Integrity'] === 'string') {
                             ClientIntegrityHeader = init.headers['Client-Integrity'];
-                            twitchMainWorker.postMessage({
-                                key: 'UpdateClientIntegrityHeader',
-                                value: init.headers['Client-Integrity']
-                            });
+                            if (ClientIntegrityHeader && twitchMainWorker) {
+                                twitchMainWorker.postMessage({
+                                    key: 'UpdateClientIntegrityHeader',
+                                    value: init.headers['Client-Integrity']
+                                });
+                            }
                         }
                         if (typeof init.headers['Authorization'] === 'string') {
                             AuthorizationHeader = init.headers['Authorization'];
-                            twitchMainWorker.postMessage({
-                                key: 'UpdateAuthorizationHeader',
-                                value: init.headers['Authorization']
-                            });
+                            if (AuthorizationHeader && twitchMainWorker) {
+                                twitchMainWorker.postMessage({
+                                    key: 'UpdateAuthorizationHeader',
+                                    value: init.headers['Authorization']
+                                });
+                            }
                         }
                     }
                 }

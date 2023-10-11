@@ -311,6 +311,7 @@ twitch-videoad.js text/javascript
                                     StreamInfos[channelName] = streamInfo = {};
                                 }
                                 streamInfo.ChannelName = channelName;
+                                streamInfo.RequestedAds = new Set();
                                 streamInfo.Urls = [];// xxx.m3u8 -> { Resolution: "284x160", FrameRate: 30.0 }
                                 streamInfo.EncodingsM3U8Cache = [];
                                 streamInfo.EncodingsM3U8 = encodingsM3u8;
@@ -471,6 +472,21 @@ twitch-videoad.js text/javascript
             var isMidroll = textStr.includes('"MIDROLL"') || textStr.includes('"midroll"');
             //Reduces ad frequency. TODO: Reduce the number of requests. This is really spamming Twitch with requests.
             if (!isMidroll) {
+                if (playerType === PlayerType2) {
+                    var lines = textStr.replace('\r', '').split('\n');
+                    for (var i = 0; i < lines.length; i++) {
+                        var line = lines[i];
+                        if (line.startsWith('#EXTINF') && lines.length > i + 1) {
+                            if (!line.includes(',live') && !streamInfo.RequestedAds.has(lines[i + 1])) {
+                                // Only request one .ts file per .m3u8 request to avoid making too many requests
+                                //console.log('Fetch ad .ts file');
+                                streamInfo.RequestedAds.add(lines[i + 1]);
+                                fetch(lines[i + 1]).then((response)=>{response.blob()});
+                                break;
+                            }
+                        }
+                    }
+                }
                 try {
                     //tryNotifyTwitch(textStr);
                 } catch (err) {}
@@ -658,7 +674,7 @@ twitch-videoad.js text/javascript
     }
     function gqlRequest(body, realFetch) {
         if (ClientIntegrityHeader == null) {
-            console.warn('ClientIntegrityHeader is null');
+            //console.warn('ClientIntegrityHeader is null');
             //throw 'ClientIntegrityHeader is null';
         }
         var fetchFunc = realFetch ? realFetch : fetch;
@@ -856,16 +872,20 @@ twitch-videoad.js text/javascript
                         }
                         //Client integrity header
                         ClientIntegrityHeader = init.headers['Client-Integrity'];
-                        twitchMainWorker.postMessage({
-                            key: 'UpdateClientIntegrityHeader',
-                            value: init.headers['Client-Integrity']
-                        });
+                        if (ClientIntegrityHeader && twitchMainWorker) {
+                            twitchMainWorker.postMessage({
+                                key: 'UpdateClientIntegrityHeader',
+                                value: init.headers['Client-Integrity']
+                            });
+                        }
                         //Authorization header
                         AuthorizationHeader = init.headers['Authorization'];
-                        twitchMainWorker.postMessage({
-                            key: 'UpdateAuthorizationHeader',
-                            value: init.headers['Authorization']
-                        });
+                        if (AuthorizationHeader && twitchMainWorker) {
+                            twitchMainWorker.postMessage({
+                                key: 'UpdateAuthorizationHeader',
+                                value: init.headers['Authorization']
+                            });
+                        }
                     }
                     //To prevent pause/resume loop for mid-rolls.
                     if (url.includes('gql') && init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && init.body.includes('picture-by-picture')) {
