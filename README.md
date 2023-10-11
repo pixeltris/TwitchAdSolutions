@@ -27,11 +27,11 @@ Alternatively:
 
 **There are better / easier to use methods in the above recommendations.**
 
-- video-swap-new - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/c3663da4a9c62c87051e6666f57765319c0b3a3a/video-swap-new/video-swap-new-ublock-origin.js)
+- video-swap-new - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/a285eeda5046a304c5eb38b958c875afca066daa/video-swap-new/video-swap-new-ublock-origin.js)
   - Uses the embed player during ads.
   - *Full screen ad message displayed during ads.* [Read the twitch announcement](https://discuss.dev.twitch.tv/t/an-updated-twitch-embedded-player-viewer-experience/41718)
   - *You may notice a seemingly random player reload some time after the ad message is gone.*
-- vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/c3663da4a9c62c87051e6666f57765319c0b3a3a/vaft/vaft-ublock-origin.js)
+- vaft - [ublock](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft-ublock-origin.js) / [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock (permalink)](https://github.com/pixeltris/TwitchAdSolutions/raw/a285eeda5046a304c5eb38b958c875afca066daa/vaft/vaft-ublock-origin.js)
   - `Video Ad-Block, for Twitch` (fork) as a script.
   - *Full screen ad message displayed during ads.*
 
