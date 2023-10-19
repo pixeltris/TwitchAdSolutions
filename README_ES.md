@@ -21,7 +21,7 @@ Alternativamente:
 - `Video Ad-Block, for Twitch` (bifurcación) - [código](https://github.com/cleanlock/VideoAdBlockForTwitch)
 - `video-swap-new` - ver abajo
 
-[Lee esto para ver una lista completa y descripciones.](full-list.md)
+[Lee esto para ver una lista completa y descripciones.](full-list_ES.md)
 
 *Hubo una actualización el 31 de mayo de 2023 que podría haber afectado algunas soluciones.*
 
