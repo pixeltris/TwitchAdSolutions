@@ -42,13 +42,17 @@ Hubo una actualización el 31 de mayo de 2023 que puede haber roto algunas soluc
 - `streamlink` - [código](https://github.com/streamlink/streamlink) / [sitio web](https://streamlink.github.io/streamlink-twitch-gui/)
   - Elimina los segmentos de anuncios (sin reproducción hasta que se muestra la transmisión sin anuncios).
   - Utiliza [este](https://github.com/2bc4/streamlink-ttvlol) archivo modificado para una reproducción ininterrumpida.
+
 - `Xtra for Twitch` (bifurcación) - [apks](https://github.com/crackededed/Xtra/releases) / [código](https://github.com/crackededed/Xtra)
   - Un reproductor alternativo de Twitch para Android con funciones adicionales, incluido el bloqueo de anuncios. Actualmente solo utiliza la API TTV LOL para la intermediación. Sin embargo, TTV LOL ya no funciona, por lo que es necesario introducir una URL de proxy personalizada en la configuración para habilitar la capacidad de bloqueo de anuncios. Por ejemplo: `https://eu.luminous.dev/live/$channel?allow_source=true&allow_audio_only=true&fast_bread=true`
+
 - `ReVanced` - [código](https://github.com/revanced)
   - Una colección de herramientas que te permite parchear Twitch y otras aplicaciones de Android como YouTube para eliminar anuncios. Los parches de Twitch de ReVanced utilizan los proxies TTV LOL y PurpleAdBlocker (se pueden alternar en la configuración). La configuración es complicada, así que cualquiera que quiera evitar complicaciones debería usar Xtra en su lugar.
-- https://twitchls.com/
+
+- `twitchls` - [sitio web](https://twitchls.com/)
   - Utiliza el reproductor `embed`. La pantalla morada puede mostrarse cada 10-15 minutos.
-- https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/
+
+- `Post reddit` - [sitio web](https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/)
   - Algunos países no reciben anuncios. Se puede usar una VPN/VPS sencilla para bloquear anuncios mediante la intermediación del m3u8 sin necesidad de intermediar todo tu tráfico (solo el m3u8 inicial).
 
 ## Problemas con proxies
