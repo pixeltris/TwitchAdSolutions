@@ -8,6 +8,7 @@
 // @author       https://github.com/cleanlock/VideoAdBlockForTwitch#credits
 // @match        *://*.twitch.tv/*
 // @run-at       document-start
+// @inject-into  page
 // @grant        none
 // ==/UserScript==
 (function() {

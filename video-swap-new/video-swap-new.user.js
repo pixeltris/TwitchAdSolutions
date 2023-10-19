@@ -8,6 +8,7 @@
 // @author       pixeltris
 // @match        *://*.twitch.tv/*
 // @run-at       document-start
+// @inject-into  page
 // @grant        none
 // ==/UserScript==
 (function() {
