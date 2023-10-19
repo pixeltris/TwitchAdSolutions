@@ -1,6 +1,6 @@
 twitch-videoad.js text/javascript
-(function() {
-    if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
+(function () {
+    if (/(^|\.)twitch\.tv$/.test(document.location.hostname) === false) { return; }
     function declareOptions(scope) {
         // Options / globals
         scope.OPT_ROLLING_DEVICE_ID = false;
@@ -72,12 +72,12 @@ twitch-videoad.js text/javascript
             `
             super(URL.createObjectURL(new Blob([newBlobStr])));
             twitchMainWorker = this;
-            this.onmessage = function(e) {
+            this.onmessage = function (e) {
                 // NOTE: Removed adDiv caching as '.video-player' can change between streams?
                 if (e.data.key == 'UboShowAdBanner') {
                     var adDiv = getAdDiv();
                     if (adDiv != null) {
-                        adDiv.P.textContent = 'Blocking' + (e.data.isMidroll ? ' midroll' : '') + ' ads';
+                        adDiv.P.textContent = 'Bloqueando' + ' anuncios' + (e.data.isMidroll ? ' intermedios' : '');
                         if (OPT_SHOW_AD_BANNER) {
                             adDiv.style.display = 'block';
                         }
@@ -122,18 +122,18 @@ twitch-videoad.js text/javascript
         return req.responseText.split("'")[1];
     }
     function onFoundAd(streamInfo, textStr, reloadPlayer) {
-        console.log('Found ads, switch to backup');
+        console.log('Anuncios encontrados, cambiar a copia de seguridad');
         streamInfo.UseBackupStream = true;
         streamInfo.IsMidroll = textStr.includes('"MIDROLL"') || textStr.includes('"midroll"');
         if (reloadPlayer) {
-            postMessage({key:'UboReloadPlayer'});
+            postMessage({ key: 'UboReloadPlayer' });
         }
-        postMessage({key:'UboShowAdBanner',isMidroll:streamInfo.IsMidroll});
+        postMessage({ key: 'UboShowAdBanner', isMidroll: streamInfo.IsMidroll });
     }
     async function processM3U8(url, textStr, realFetch) {
         var streamInfo = StreamInfosByUrl[url];
         if (streamInfo == null) {
-            console.log('Unknown stream url ' + url);
+            console.log('URL desconocida ' + url);
             //postMessage({key:'UboHideAdBanner'});
             return textStr;
         }
@@ -143,9 +143,9 @@ twitch-videoad.js text/javascript
         var haveAdTags = textStr.includes(AD_SIGNIFIER);
         if (streamInfo.UseBackupStream) {
             if (streamInfo.Encodings == null) {
-                console.log('Found backup stream but not main stream?');
+                console.log('¿Encontró la corriente de reserva pero no la principal?');
                 streamInfo.UseBackupStream = false;
-                postMessage({key:'UboReloadPlayer'});
+                postMessage({ key: 'UboReloadPlayer' });
                 return '';
             } else {
                 var streamM3u8Url = streamInfo.Encodings.match(/^https:.*\.m3u8$/m)[0];
@@ -154,10 +154,10 @@ twitch-videoad.js text/javascript
                     var streamM3u8 = await streamM3u8Response.text();
                     if (streamM3u8 != null) {
                         if (!streamM3u8.includes(AD_SIGNIFIER)) {
-                            console.log('No more ads on main stream. Triggering player reload to go back to main stream...');
+                            console.log('No más anuncios en el flujo principal. Recarga del reproductor para volver al flujo principal...');
                             streamInfo.UseBackupStream = false;
-                            postMessage({key:'UboHideAdBanner'});
-                            postMessage({key:'UboReloadPlayer'});
+                            postMessage({ key: 'UboHideAdBanner' });
+                            postMessage({ key: 'UboReloadPlayer' });
                         } else if (!streamM3u8.includes('"MIDROLL"') && !streamM3u8.includes('"midroll"')) {
                             var lines = streamM3u8.replace('\r', '').split('\n');
                             for (var i = 0; i < lines.length; i++) {
@@ -167,7 +167,7 @@ twitch-videoad.js text/javascript
                                         // Only request one .ts file per .m3u8 request to avoid making too many requests
                                         //console.log('Fetch ad .ts file');
                                         streamInfo.RequestedAds.add(lines[i + 1]);
-                                        fetch(lines[i + 1]).then((response)=>{response.blob()});
+                                        fetch(lines[i + 1]).then((response) => { response.blob() });
                                         break;
                                     }
                                 }
@@ -183,26 +183,26 @@ twitch-videoad.js text/javascript
             onFoundAd(streamInfo, textStr, true);
             return '';
         } else {
-            postMessage({key:'UboHideAdBanner'});
+            postMessage({ key: 'UboHideAdBanner' });
         }
         return textStr;
     }
     function hookWorkerFetch() {
         console.log('hookWorkerFetch');
         var realFetch = fetch;
-        fetch = async function(url, options) {
+        fetch = async function (url, options) {
             if (typeof url === 'string') {
                 url = url.trimEnd();
                 if (url.endsWith('m3u8')) {
-                    return new Promise(function(resolve, reject) {
-                        var processAfter = async function(response) {
+                    return new Promise(function (resolve, reject) {
+                        var processAfter = async function (response) {
                             var str = await processM3U8(url, await response.text(), realFetch);
                             resolve(new Response(str));
                         };
-                        var send = function() {
-                            return realFetch(url, options).then(function(response) {
+                        var send = function () {
+                            return realFetch(url, options).then(function (response) {
                                 processAfter(response);
-                            })['catch'](function(err) {
+                            })['catch'](function (err) {
                                 console.log('fetch hook err ' + err);
                                 reject(err);
                             });
@@ -220,7 +220,7 @@ twitch-videoad.js text/javascript
                     }
                     CurrentChannelNameFromM3U8 = channelName;
                     if (OPT_MODE_STRIP_AD_SEGMENTS) {
-                        return new Promise(async function(resolve, reject) {
+                        return new Promise(async function (resolve, reject) {
                             // - First m3u8 request is the m3u8 with the video encodings (360p,480p,720p,etc).
                             // - Second m3u8 request is the m3u8 for the given encoding obtained in the first request. At this point we will know if there's ads.
                             var streamInfo = StreamInfos[channelName];
@@ -379,7 +379,7 @@ twitch-videoad.js text/javascript
                 .map(x => {
                     const idx = x.indexOf('=');
                     const key = x.substring(0, idx);
-                    const value = x.substring(idx +1);
+                    const value = x.substring(idx + 1);
                     const num = Number(value);
                     return [key, Number.isNaN(num) ? value.startsWith('"') ? JSON.parse(value) : value : num]
                 }));
@@ -445,7 +445,7 @@ twitch-videoad.js text/javascript
     }
     function hookFetch() {
         var realFetch = window.fetch;
-        window.fetch = function(url, init, ...args) {
+        window.fetch = function (url, init, ...args) {
             if (typeof url === 'string') {
                 if (url.includes('gql')) {
                     var deviceId = init.headers['X-Device-Id'];
@@ -529,25 +529,25 @@ twitch-videoad.js text/javascript
             reactRootNode = rootNode._reactRootContainer._internalRoot.current;
         }
         if (!reactRootNode) {
-            console.log('Could not find react root');
+            console.log('No se pudo encontrar la raíz del reproductor');
             return;
         }
         var player = findReactNode(reactRootNode, node => node.setPlayerActive && node.props && node.props.mediaPlayerInstance);
         player = player && player.props && player.props.mediaPlayerInstance ? player.props.mediaPlayerInstance : null;
         var playerState = findReactNode(reactRootNode, node => node.setSrc && node.setInitialPlaybackSettings);
         if (!player) {
-            console.log('Could not find player');
+            console.log('No se ha podido encontrar el reproductor');
             return;
         }
         if (!playerState) {
-            console.log('Could not find player state');
+            console.log('No se encuentra el estado del reproductor');
             return;
         }
         if (player.paused) {
             return;
         }
         if (isSeek) {
-            console.log('Force seek to reset player (hopefully fixing any audio desync) pos:' + player.getPosition() + ' range:' + JSON.stringify(player.getBuffered()));
+            console.log('Forzar la búsqueda para reiniciar el reproductor (con la esperanza de arreglar cualquier desincronización de audio) pos:' + player.getPosition() + ' rango:' + JSON.stringify(player.getBuffered()));
             var pos = player.getPosition();
             player.seekTo(0);
             player.seekTo(pos);
@@ -565,11 +565,11 @@ twitch-videoad.js text/javascript
         var currentMutedLS = localStorage.getItem(lsKeyMuted);
         var currentVolumeLS = localStorage.getItem(lsKeyVolume);
         if (player?.core?.state) {
-            localStorage.setItem(lsKeyMuted, JSON.stringify({default:player.core.state.muted}));
+            localStorage.setItem(lsKeyMuted, JSON.stringify({ default: player.core.state.muted }));
             localStorage.setItem(lsKeyVolume, player.core.state.volume);
         }
         if (player?.core?.state?.quality?.group) {
-            localStorage.setItem(lsKeyQuality, JSON.stringify({default:player.core.state.quality.group}));
+            localStorage.setItem(lsKeyQuality, JSON.stringify({ default: player.core.state.quality.group }));
         }
         playerState.setSrc({ isNewMediaPlayerInstance: true, refreshAccessToken: true });
         setTimeout(() => {
@@ -589,14 +589,14 @@ twitch-videoad.js text/javascript
                     return 'visible';
                 }
             });
-        }catch{}
+        } catch { }
         try {
             Object.defineProperty(document, 'hidden', {
                 get() {
                     return false;
                 }
             });
-        }catch{}
+        } catch { }
         var block = e => {
             e.preventDefault();
             e.stopPropagation();
@@ -620,7 +620,7 @@ twitch-videoad.js text/javascript
                     }
                 });
             }
-        }catch{}
+        } catch { }
         // Hooks for preserving volume / resolution
         var keysToCache = [
             'video-quality',
@@ -634,14 +634,14 @@ twitch-videoad.js text/javascript
             cachedValues.set(keysToCache[i], localStorage.getItem(keysToCache[i]));
         }
         var realSetItem = localStorage.setItem;
-        localStorage.setItem = function(key, value) {
+        localStorage.setItem = function (key, value) {
             if (cachedValues.has(key)) {
                 cachedValues.set(key, value);
             }
             realSetItem.apply(this, arguments);
         };
         var realGetItem = localStorage.getItem;
-        localStorage.getItem = function(key) {
+        localStorage.getItem = function (key) {
             if (cachedValues.has(key)) {
                 return cachedValues.get(key);
             }
@@ -651,7 +651,7 @@ twitch-videoad.js text/javascript
     if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
         onContentLoaded();
     } else {
-        window.addEventListener("DOMContentLoaded", function() {
+        window.addEventListener("DOMContentLoaded", function () {
             onContentLoaded();
         });
     }
