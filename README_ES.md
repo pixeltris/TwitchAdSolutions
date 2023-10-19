@@ -4,6 +4,8 @@ Este repositorio tiene como objetivo proporcionar múltiples soluciones para blo
 
 **No combines bloqueadores de anuncios específicos de Twitch.**
 
+**Puede que este README no esté actualizado, considere revisar el** [**ORIGINAL**](README.md) 
+
 ## Recomendaciones
 
 Los proxies son la forma más fiable de evitar los anuncios ([información sobre buffering/downtime](full-list.md#proxy-issues)).
