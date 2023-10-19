@@ -4,6 +4,8 @@ This repo aims to provide multiple solutions for blocking Twitch ads.
 
 **Don't combine Twitch specific ad blockers.**
 
+[**Readme in Spanish**](README_ES.md)
+
 ## Recommendations
 
 Proxies are the most reliable way of avoiding ads ([buffering / downtime info](full-list.md#proxy-issues)).
