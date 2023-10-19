@@ -8,7 +8,7 @@ Este repositorio tiene como objetivo proporcionar múltiples soluciones para blo
 
 ## Recomendaciones
 
-Los proxies son la forma más fiable de evitar los anuncios ([información sobre buffering/downtime](full-list.md#proxy-issues)).
+Los proxies son la forma más fiable de evitar los anuncios ([información sobre buffering/downtime](full-list_ES.md#proxy-issues)).
 
 - `TTV LOL PRO` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd) / [firefox](https://addons.mozilla.org/addon/ttv-lol-pro/) / [código](https://github.com/younesaassila/ttv-lol-pro)
 - `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [código](https://github.com/TTV-LOL/extensions)
