@@ -16,8 +16,8 @@
   - Replaces ad segments with ad-free segments. Proxy fallback which is currently broken. Loading wheel when all methods fail.
 - `AdGuard Extra (Beta)` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox)
   - Uses segments from the `embed` player during ads. This can get a clean stream faster but suffers from audio sync / freezing issues.
-- `Video Ad-Block, for Twitch` (fork) - [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
-  - Replaces ad segments with ad-free segments. Opt-in proxy fallback during ad segments when the ad-free stream fails locally. Adblocker warning when all methods fail.
+- `Twitch Adblock (No-Pepe) (Fork of "Video Ad-Block, for Twitch")` - [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock-no-pepe) / [code](https://github.com/single-right-quote/VideoAdBlockForTwitchNoPepe)
+  - Blocks ads on Twitch by switching to an ad-free version of the stream at 480p during the ad-time and automatically switches back to the original video quality after the ad-time is over. This is 100% done locally, no proxies/VPNs or 3rd party scripts/websites are being used.
 - `ttv_adEraser` - [chrome](https://chrome.google.com/webstore/detail/ttv-aderaser/pjnopimdnmhiaanhjfficogijajbhjnc) / [firefox (manual install)](https://github.com/LeonHeidelbach/ttv_adEraser#mozilla-firefox) / [code](https://github.com/LeonHeidelbach/ttv_adEraser)
   - Switches to the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
 - `ttv-tools` - [firefox (manual install)](https://github.com/Nerixyz/ttv-tools/releases) / [code](https://github.com/Nerixyz/ttv-tools)

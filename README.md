@@ -16,7 +16,7 @@ Alternatively:
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
 - `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
 - `AdGuard Extra (Beta)` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox)
-- `Video Ad-Block, for Twitch` (fork) - [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
+- `Twitch Adblock (No-Pepe) (Fork of "Video Ad-Block, for Twitch")` - [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-adblock-no-pepe) / [code](https://github.com/single-right-quote/VideoAdBlockForTwitchNoPepe)
 - `video-swap-new` - see below
 
 [Read this for a full list and descriptions.](full-list.md)
