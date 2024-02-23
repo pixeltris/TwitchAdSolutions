@@ -523,11 +523,21 @@ twitch-videoad.js text/javascript
             }
             return null;
         }
-        var reactRootNode = null;
-        var rootNode = document.querySelector('#root');
-        if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
-            reactRootNode = rootNode._reactRootContainer._internalRoot.current;
+        function findReactRootNode() {
+            var reactRootNode = null;
+            var rootNode = document.querySelector('#root');
+            if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
+                reactRootNode = rootNode._reactRootContainer._internalRoot.current;
+            }
+            if (reactRootNode == null) {
+                var containerName = Object.keys(rootNode).find(x => x.startsWith('__reactContainer'));
+                if (containerName != null) {
+                    reactRootNode = rootNode[containerName];
+                }
+            }
+            return reactRootNode;
         }
+        var reactRootNode = findReactRootNode();
         if (!reactRootNode) {
             console.log('Could not find react root');
             return;
@@ -543,7 +553,7 @@ twitch-videoad.js text/javascript
             console.log('Could not find player state');
             return;
         }
-        if (player.paused) {
+        if (player.paused || player.core?.paused) {
             return;
         }
         if (isSeek) {

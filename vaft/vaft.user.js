@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      5.8.5
+// @version      6.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -732,10 +732,24 @@
                 }
                 return null;
             }
-            var reactRootNode = null;
-            var rootNode = document.querySelector('#root');
-            if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
-                reactRootNode = rootNode._reactRootContainer._internalRoot.current;
+            function findReactRootNode() {
+                var reactRootNode = null;
+                var rootNode = document.querySelector('#root');
+                if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
+                    reactRootNode = rootNode._reactRootContainer._internalRoot.current;
+                }
+                if (reactRootNode == null) {
+                    var containerName = Object.keys(rootNode).find(x => x.startsWith('__reactContainer'));
+                    if (containerName != null) {
+                        reactRootNode = rootNode[containerName];
+                    }
+                }
+                return reactRootNode;
+            }
+            var reactRootNode = findReactRootNode();
+            if (!reactRootNode) {
+                console.log('Could not find react root');
+                return;
             }
             videoPlayer = findReactNode(reactRootNode, node => node.setPlayerActive && node.props && node.props.mediaPlayerInstance);
             videoPlayer = videoPlayer && videoPlayer.props && videoPlayer.props.mediaPlayerInstance ? videoPlayer.props.mediaPlayerInstance : null;
