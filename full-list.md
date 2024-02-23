@@ -1,5 +1,3 @@
-*There was an update on 31st May 2023 which may have broken some solutions.*
-
 ## Web browser extensions
 
 - `TTV LOL PRO` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol-pro/bpaoeijjlplfjbagceilcgbkcdjbomjd) / [firefox](https://addons.mozilla.org/addon/ttv-lol-pro/) / [code](https://github.com/younesaassila/ttv-lol-pro)
@@ -8,20 +6,12 @@
   - **NOTE: Incompatible with proxies made for the original TTV LOL.**
 - `TTV LOL PRO (v1)` - [code](https://github.com/younesaassila/ttv-lol-pro/tree/v1)
   - The older, deprecated version of `TTV LOL PRO` that still uses TTV LOL-compatible proxies. Only use this if you're having issues with the current version and know what you're doing.
-- `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
-  - Uses a proxy on the main m3u8 file to get a stream without ads.
 - `Alternate Player for Twitch.tv` - [chrome](https://chrome.google.com/webstore/detail/alternate-player-for-twit/bhplkbgoehhhddaoolmakpocnenplmhf) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch_5/)
   - Removes ad segments (no playback until ad-free stream).
 - `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
   - Replaces ad segments with ad-free segments. Proxy fallback which is currently broken. Loading wheel when all methods fail.
-- `AdGuard Extra (Beta)` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox)
-  - Uses segments from the `embed` player during ads. This can get a clean stream faster but suffers from audio sync / freezing issues.
-- `Video Ad-Block, for Twitch` (fork) - [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
-  - Replaces ad segments with ad-free segments. Opt-in proxy fallback during ad segments when the ad-free stream fails locally. Adblocker warning when all methods fail.
-- `ttv_adEraser` - [chrome](https://chrome.google.com/webstore/detail/ttv-aderaser/pjnopimdnmhiaanhjfficogijajbhjnc) / [firefox (manual install)](https://github.com/LeonHeidelbach/ttv_adEraser#mozilla-firefox) / [code](https://github.com/LeonHeidelbach/ttv_adEraser)
-  - Switches to the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
-- `ttv-tools` - [firefox (manual install)](https://github.com/Nerixyz/ttv-tools/releases) / [code](https://github.com/Nerixyz/ttv-tools)
-  - Removes ad segments (no playback until ad-free stream).
+- `AdGuard Extra` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox) / [userscript](https://userscripts.adtidy.org/release/adguard-extra/1.0/adguard-extra.user.js)
+  - Forked from one of the userscripts from this repo. Should behave similarly to `vaft` / `video-swap-new`.
   
 ---
 
@@ -30,14 +20,23 @@
 - `luminous-ttv` - [server code](https://github.com/AlyoshaVasilieva/luminous-ttv) / [extension code](https://github.com/AlyoshaVasilieva/luminous-ttv-ext)
   - Uses a proxy on the main m3u8 file to get a stream without ads.
 
+## Web browser extensions (unmaintained)
+
+- `TTV LOL` - [chrome](https://chrome.google.com/webstore/detail/ttv-lol/ofbbahodfeppoklmgjiokgfdgcndngjm) / [code](https://github.com/TTV-LOL/extensions)
+  - Uses a proxy on the main m3u8 file to get a stream without ads.
+- `Video Ad-Block, for Twitch` (fork) - [code](https://github.com/cleanlock/VideoAdBlockForTwitch)
+  - Replaces ad segments with ad-free segments. Opt-in proxy fallback during ad segments when the ad-free stream fails locally. Adblocker warning when all methods fail.
+- `ttv_adEraser` - [chrome](https://chrome.google.com/webstore/detail/ttv-aderaser/pjnopimdnmhiaanhjfficogijajbhjnc) / [firefox (manual install)](https://github.com/LeonHeidelbach/ttv_adEraser#mozilla-firefox) / [code](https://github.com/LeonHeidelbach/ttv_adEraser)
+  - Switches to the `embed` player when there's ads. May display purple screen if both ads and purple screen show at the same time?
+- `ttv-tools` - [firefox (manual install)](https://github.com/Nerixyz/ttv-tools/releases) / [code](https://github.com/Nerixyz/ttv-tools)
+  - Removes ad segments (no playback until ad-free stream).
+
 ## Web browser scripts (uBlock Origin / userscript)
 
-*These haven't been updated in a while and probably don't work.*
-
-- https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code
-  - Reloads the player (or page) when it detects the ad banner in DOM.
 - https://greasyfork.org/en/scripts/371186-twitch-mute-ads-and-optionally-hide-them/code
   - Mutes / hides ads.
+- ~~https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code~~ (broken / unmaintained)
+  - Reloads the player (or page) when it detects the ad banner in DOM.
 
 ## Applications / third party websites
 - `streamlink` - [code](https://github.com/streamlink/streamlink) / [website](https://streamlink.github.io/streamlink-twitch-gui/)
@@ -57,3 +56,24 @@
 Proxy solutions can have downtime and you'll either see ads or error 2000. This isn't Twitch retaliating.
 
 Buffering may occur at higher resolutions. This happens because traffic comes from a Twitch server closest to the initial m3u8 proxy request. The only solution to this is asking the proxy maintainer to add a proxy in a country closer to you. If they wont then you'll need to use a lower resolution, or use a different ad blocking solution. A VPN might also be better solution for you.
+
+## Extensions to avoid
+
+> [!CAUTION]
+> These extensions most likely have bad intentions. Use at your own risk. These are being listed due to the number of installs (which may be artificially inflated).
+
+- `Stream Cleaner` - [chrome](https://chromewebstore.google.com/detail/stream-cleaner/lehcglgkjkamolcflammloedahjocbbg)
+  - Uses some variation of the `vaft` script
+  - Runs a script on every web page (not just twitch.tv). Uses push notifications (likely for abuse). Read more in [#171](https://github.com/pixeltris/TwitchAdSolutions/issues/171#issuecomment-1615553539)
+- `Adblock for Twitch` - [chrome](https://chromewebstore.google.com/detail/adblock-for-twitch/mdomkpjejpboocpojfikalapgholajdc)
+  - Uses some variation of the `vaft` script
+  - Runs a script on every web page (not just twitch.tv). Uses push notifications (likely for abuse).
+- `TwiBlocker - Video AdBlocker` - [chrome](https://chromewebstore.google.com/detail/twiblocker-video-adblocke/mdohdkncgoaamplcaokhmlppgafhlima)
+  - Uses some variation of the `vaft` script
+  - Runs a script on every web page (not just twitch.tv). Uses push notifications (likely for abuse).
+- `Twitch™ Adblock Plus` - [chrome](https://chromewebstore.google.com/detail/twitch-adblock-plus/efdkmejbldmccndljocbkmpankbjhaao)
+  - Uses some variation of the `vaft` script
+  - Runs a script on every web page (not just twitch.tv).
+- `Twitch Ad Blocker` - [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-ad-blocker/)
+  - Forces the `thunderdome` player type
+  - Runs a script on every web page (not just twitch.tv)
