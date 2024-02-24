@@ -31,11 +31,11 @@
 - `ttv-tools` - [firefox (manual install)](https://github.com/Nerixyz/ttv-tools/releases) / [code](https://github.com/Nerixyz/ttv-tools)
   - Removes ad segments (no playback until ad-free stream).
 
-## Web browser scripts (uBlock Origin / userscript)
+## Web browser scripts (userscript)
 
 - https://greasyfork.org/en/scripts/371186-twitch-mute-ads-and-optionally-hide-them/code
-  - Mutes / hides ads.
-- ~~https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code~~ (broken / unmaintained)
+  - Mute ads and optionally hide them (tweak the settings at the top of the script).
+- https://greasyfork.org/en/scripts/415412-twitch-refresh-on-advert/code
   - Reloads the player (or page) when it detects the ad banner in DOM.
 
 ## Applications / third party websites
