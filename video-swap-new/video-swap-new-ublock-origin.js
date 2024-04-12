@@ -34,14 +34,10 @@ twitch-videoad.js text/javascript
         scope.AuthorizationHeader = null;
     }
     declareOptions(window);
-    var twitchMainWorker = null;
+    var twitchWorkers = [];
     const oldWorker = window.Worker;
     window.Worker = class Worker extends oldWorker {
         constructor(twitchBlobUrl) {
-            if (twitchMainWorker) {
-                super(twitchBlobUrl);
-                return;
-            }
             var jsURL = getWasmWorkerUrl(twitchBlobUrl);
             if (typeof jsURL !== 'string') {
                 super(twitchBlobUrl);
@@ -71,7 +67,7 @@ twitch-videoad.js text/javascript
                 importScripts('${jsURL}');
             `
             super(URL.createObjectURL(new Blob([newBlobStr])));
-            twitchMainWorker = this;
+            twitchWorkers.push(this);
             this.onmessage = function(e) {
                 // NOTE: Removed adDiv caching as '.video-player' can change between streams?
                 if (e.data.key == 'UboShowAdBanner') {
@@ -443,6 +439,11 @@ twitch-videoad.js text/javascript
             return 0;
         }
     }
+    function postTwitchWorkerMessage(key, value) {
+        twitchWorkers.forEach((worker) => {
+            worker.postMessage({key: key, value: value});
+        });
+    }
     function hookFetch() {
         var realFetch = window.fetch;
         window.fetch = function(url, init, ...args) {
@@ -455,11 +456,8 @@ twitch-videoad.js text/javascript
                     if (typeof deviceId === 'string') {
                         gql_device_id = deviceId;
                     }
-                    if (gql_device_id && twitchMainWorker) {
-                        twitchMainWorker.postMessage({
-                            key: 'UboUpdateDeviceId',
-                            value: gql_device_id
-                        });
+                    if (gql_device_id) {
+                        postTwitchWorkerMessage('UboUpdateDeviceId', gql_device_id);
                     }
                     if (typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
                         if (OPT_ACCESS_TOKEN_PLAYER_TYPE) {
@@ -483,20 +481,14 @@ twitch-videoad.js text/javascript
                         }
                         if (typeof init.headers['Client-Integrity'] === 'string') {
                             ClientIntegrityHeader = init.headers['Client-Integrity'];
-                            if (ClientIntegrityHeader && twitchMainWorker) {
-                                twitchMainWorker.postMessage({
-                                    key: 'UpdateClientIntegrityHeader',
-                                    value: init.headers['Client-Integrity']
-                                });
+                            if (ClientIntegrityHeader) {
+                                postTwitchWorkerMessage('UpdateClientIntegrityHeader', init.headers['Client-Integrity']);
                             }
                         }
                         if (typeof init.headers['Authorization'] === 'string') {
                             AuthorizationHeader = init.headers['Authorization'];
-                            if (AuthorizationHeader && twitchMainWorker) {
-                                twitchMainWorker.postMessage({
-                                    key: 'UpdateAuthorizationHeader',
-                                    value: init.headers['Authorization']
-                                });
+                            if (AuthorizationHeader) {
+                                postTwitchWorkerMessage('UpdateAuthorizationHeader', init.headers['Authorization']);
                             }
                         }
                     }
