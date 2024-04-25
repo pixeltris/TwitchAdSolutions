@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      7.0.0
+// @version      8.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -55,15 +55,6 @@
             });
         }
     } catch (err) {}
-    //Send settings updates to worker.
-    window.addEventListener('message', (event) => {
-        if (event.source != window) {
-            return;
-        }
-        if (event.data.type && event.data.type == 'SetTwitchAdblockSettings' && event.data.settings) {
-            TwitchAdblockSettings = event.data.settings;
-        }
-    }, false);
     function declareOptions(scope) {
         scope.AdSignifier = 'stitched';
         scope.ClientID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
@@ -85,10 +76,6 @@
         scope.AuthorizationHeader = null;
     }
     declareOptions(window);
-    var TwitchAdblockSettings = {
-        BannerVisible: true,
-        ForcedQuality: null,
-    };
     var twitchWorkers = [];
     var adBlockDiv = null;
     var OriginalVideoPlayerQuality = null;
@@ -114,7 +101,6 @@
                 ${tryNotifyTwitch.toString()}
                 ${parseAttributes.toString()}
                 declareOptions(self);
-                self.TwitchAdblockSettings = ${JSON.stringify(TwitchAdblockSettings)};
                 self.addEventListener('message', function(e) {
                     if (e.data.key == 'UpdateIsSquadStream') {
                         IsSquadStream = e.data.value;
@@ -139,9 +125,6 @@
             twitchWorkers.push(this);
             this.onmessage = function(e) {
                 if (e.data.key == 'ShowAdBlockBanner') {
-                    if (!TwitchAdblockSettings.BannerVisible) {
-                        return;
-                    }
                     if (adBlockDiv == null) {
                         adBlockDiv = getAdBlockDiv();
                     }
@@ -276,7 +259,7 @@
         var realFetch = fetch;
         fetch = async function(url, options) {
             if (typeof url === 'string') {
-                if (url.includes('video-weaver')) {
+                if (url.endsWith('m3u8')) {
                     return new Promise(function(resolve, reject) {
                         var processAfter = async function(response) {
                             //Here we check the m3u8 for any ads and also try fallback player types if needed.
