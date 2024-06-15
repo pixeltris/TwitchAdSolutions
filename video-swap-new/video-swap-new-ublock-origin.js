@@ -172,14 +172,17 @@ twitch-videoad.js text/javascript
                     }
                 }
             }
-            if (streamInfo.BackupEncodings == null) {
-                return '';
-            }
         } else if (haveAdTags) {
             onFoundAd(streamInfo, textStr, true);
-            return '';
         } else {
             postMessage({key:'UboHideAdBanner'});
+        }
+        if (haveAdTags && streamInfo.BackupEncodings != null) {
+            var streamM3u8Url = streamInfo.BackupEncodings.match(/^https:.*\.m3u8$/m)[0];
+            var streamM3u8Response = await realFetch(streamM3u8Url);
+            if (streamM3u8Response.status == 200) {
+                textStr = await streamM3u8Response.text();
+            }
         }
         return textStr;
     }
@@ -193,7 +196,11 @@ twitch-videoad.js text/javascript
                     return new Promise(function(resolve, reject) {
                         var processAfter = async function(response) {
                             var str = await processM3U8(url, await response.text(), realFetch);
-                            resolve(new Response(str));
+                            resolve(new Response(str, {
+                                status: response.status,
+                                statusText: response.statusText,
+                                headers: response.headers
+                            }));
                         };
                         var send = function() {
                             return realFetch(url, options).then(function(response) {
@@ -220,7 +227,10 @@ twitch-videoad.js text/javascript
                             // - First m3u8 request is the m3u8 with the video encodings (360p,480p,720p,etc).
                             // - Second m3u8 request is the m3u8 for the given encoding obtained in the first request. At this point we will know if there's ads.
                             var streamInfo = StreamInfos[channelName];
-                            var useBackupStream = false;
+                            if (streamInfo != null && streamInfo.Encodings != null && (await realFetch(streamInfo.Encodings.match(/^https:.*\.m3u8$/m)[0])).status !== 200) {
+                                // The cached encodings are dead (the stream probably restarted)
+                                streamInfo = null;
+                            }
                             if (streamInfo == null || streamInfo.Encodings == null || streamInfo.BackupEncodings == null) {
                                 StreamInfos[channelName] = streamInfo = {
                                     RequestedAds: new Set(),
