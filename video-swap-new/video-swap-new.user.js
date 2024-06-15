@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.25
+// @version      1.26
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -190,7 +190,7 @@
             postMessage({key:'UboHideAdBanner'});
         }
         if (haveAdTags && streamInfo.BackupEncodings != null) {
-            var streamM3u8Url = streamInfo.BackupEncodings.match(/^https:.*\.m3u8$/m)[0];
+            var streamM3u8Url = streamInfo.BackupEncodings.match(/^https:.*\.m3u8.*$/m)[0];
             var streamM3u8Response = await realFetch(streamM3u8Url);
             if (streamM3u8Response.status == 200) {
                 textStr = await streamM3u8Response.text();

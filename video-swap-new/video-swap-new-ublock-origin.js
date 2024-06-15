@@ -178,7 +178,7 @@ twitch-videoad.js text/javascript
             postMessage({key:'UboHideAdBanner'});
         }
         if (haveAdTags && streamInfo.BackupEncodings != null) {
-            var streamM3u8Url = streamInfo.BackupEncodings.match(/^https:.*\.m3u8$/m)[0];
+            var streamM3u8Url = streamInfo.BackupEncodings.match(/^https:.*\.m3u8.*$/m)[0];
             var streamM3u8Response = await realFetch(streamM3u8Url);
             if (streamM3u8Response.status == 200) {
                 textStr = await streamM3u8Response.text();
