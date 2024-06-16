@@ -71,11 +71,6 @@ twitch-videoad.js text/javascript
     const oldWorker = window.Worker;
     window.Worker = class Worker extends oldWorker {
         constructor(twitchBlobUrl) {
-            var jsURL = getWasmWorkerUrl(twitchBlobUrl);
-            if (typeof jsURL !== 'string') {
-                super(twitchBlobUrl);
-                return;
-            }
             var newBlobStr = `
                 ${getStreamUrlForResolution.toString()}
                 ${getStreamForResolution.toString()}
@@ -88,26 +83,30 @@ twitch-videoad.js text/javascript
                 ${adRecordgqlPacket.toString()}
                 ${tryNotifyTwitch.toString()}
                 ${parseAttributes.toString()}
-                declareOptions(self);
-                self.addEventListener('message', function(e) {
-                    if (e.data.key == 'UpdateIsSquadStream') {
-                        IsSquadStream = e.data.value;
-                    } else if (e.data.key == 'UpdateClientVersion') {
-                        ClientVersion = e.data.value;
-                    } else if (e.data.key == 'UpdateClientSession') {
-                        ClientSession = e.data.value;
-                    } else if (e.data.key == 'UpdateClientId') {
-                        ClientID = e.data.value;
-                    } else if (e.data.key == 'UpdateDeviceId') {
-                        GQLDeviceID = e.data.value;
-                    } else if (e.data.key == 'UpdateClientIntegrityHeader') {
-                        ClientIntegrityHeader = e.data.value;
-                    } else if (e.data.key == 'UpdateAuthorizationHeader') {
-                        AuthorizationHeader = e.data.value;
-                    }
-                });
-                hookWorkerFetch();
-                importScripts('${jsURL}');
+                ${getWasmWorkerUrl.toString()}
+                var workerUrl = getWasmWorkerUrl('${twitchBlobUrl}');
+                if (workerUrl && workerUrl.includes('assets.twitch.tv/assets/amazon-ivs-wasmworker')) {
+                    declareOptions(self);
+                    self.addEventListener('message', function(e) {
+                        if (e.data.key == 'UpdateIsSquadStream') {
+                            IsSquadStream = e.data.value;
+                        } else if (e.data.key == 'UpdateClientVersion') {
+                            ClientVersion = e.data.value;
+                        } else if (e.data.key == 'UpdateClientSession') {
+                            ClientSession = e.data.value;
+                        } else if (e.data.key == 'UpdateClientId') {
+                            ClientID = e.data.value;
+                        } else if (e.data.key == 'UpdateDeviceId') {
+                            GQLDeviceID = e.data.value;
+                        } else if (e.data.key == 'UpdateClientIntegrityHeader') {
+                            ClientIntegrityHeader = e.data.value;
+                        } else if (e.data.key == 'UpdateAuthorizationHeader') {
+                            AuthorizationHeader = e.data.value;
+                        }
+                    });
+                    hookWorkerFetch();
+                    importScripts(workerUrl);
+                }
             `;
             super(URL.createObjectURL(new Blob([newBlobStr])));
             twitchWorkers.push(this);

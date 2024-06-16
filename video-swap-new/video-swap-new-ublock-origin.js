@@ -3,7 +3,6 @@ twitch-videoad.js text/javascript
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
     function declareOptions(scope) {
         // Options / globals
-        scope.OPT_ROLLING_DEVICE_ID = false;
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = false;
@@ -21,15 +20,6 @@ twitch-videoad.js text/javascript
         scope.CurrentChannelNameFromM3U8 = null;
         // Need this in both scopes. Window scope needs to update this to worker scope.
         scope.gql_device_id = null;
-        scope.gql_device_id_rolling = '';
-        // Rolling device id crap... TODO: improve this
-        var charTable = []; for (var i = 97; i <= 122; i++) { charTable.push(String.fromCharCode(i)); } for (var i = 65; i <= 90; i++) { charTable.push(String.fromCharCode(i)); } for (var i = 48; i <= 57; i++) { charTable.push(String.fromCharCode(i)); }
-        var bs = 'eVI6jx47kJvCFfFowK86eVI6jx47kJvC';
-        var di = (new Date()).getUTCFullYear() + (new Date()).getUTCMonth() + ((new Date()).getUTCDate() / 7) | 0;
-        for (var i = 0; i < bs.length; i++) {
-            scope.gql_device_id_rolling += charTable[(bs.charCodeAt(i) ^ di) % charTable.length];
-        }
-        scope.gql_device_id_rolling = '1';//temporary
         scope.ClientIntegrityHeader = null;
         scope.AuthorizationHeader = null;
     }
@@ -38,11 +28,6 @@ twitch-videoad.js text/javascript
     const oldWorker = window.Worker;
     window.Worker = class Worker extends oldWorker {
         constructor(twitchBlobUrl) {
-            var jsURL = getWasmWorkerUrl(twitchBlobUrl);
-            if (typeof jsURL !== 'string') {
-                super(twitchBlobUrl);
-                return;
-            }
             var newBlobStr = `
                 ${processM3U8.toString()}
                 ${hookWorkerFetch.toString()}
@@ -53,18 +38,22 @@ twitch-videoad.js text/javascript
                 ${tryNotifyAdsWatchedM3U8.toString()}
                 ${parseAttributes.toString()}
                 ${onFoundAd.toString()}
-                declareOptions(self);
-                self.addEventListener('message', function(e) {
-                    if (e.data.key == 'UboUpdateDeviceId') {
-                        gql_device_id = e.data.value;
-                    } else if (e.data.key == 'UpdateClientIntegrityHeader') {
-                        ClientIntegrityHeader = e.data.value;
-                    } else if (e.data.key == 'UpdateAuthorizationHeader') {
-                        AuthorizationHeader = e.data.value;
-                    }
-                });
-                hookWorkerFetch();
-                importScripts('${jsURL}');
+                ${getWasmWorkerUrl.toString()}
+                var workerUrl = getWasmWorkerUrl('${twitchBlobUrl}');
+                if (workerUrl && workerUrl.includes('assets.twitch.tv/assets/amazon-ivs-wasmworker')) {
+                    declareOptions(self);
+                    self.addEventListener('message', function(e) {
+                        if (e.data.key == 'UboUpdateDeviceId') {
+                            gql_device_id = e.data.value;
+                        } else if (e.data.key == 'UpdateClientIntegrityHeader') {
+                            ClientIntegrityHeader = e.data.value;
+                        } else if (e.data.key == 'UpdateAuthorizationHeader') {
+                            AuthorizationHeader = e.data.value;
+                        }
+                    });
+                    hookWorkerFetch();
+                    importScripts(workerUrl);
+                }
             `
             super(URL.createObjectURL(new Blob([newBlobStr])));
             twitchWorkers.push(this);
@@ -373,7 +362,7 @@ twitch-videoad.js text/javascript
             headers: {
                 'Client-Id': CLIENT_ID,
                 'Client-Integrity': ClientIntegrityHeader,
-                'X-Device-Id': OPT_ROLLING_DEVICE_ID ? gql_device_id_rolling : gql_device_id,
+                'X-Device-Id': gql_device_id,
                 'Authorization': AuthorizationHeader
             }
         });
@@ -480,14 +469,6 @@ twitch-videoad.js text/javascript
                                 newBody.variables.playerType = OPT_ACCESS_TOKEN_PLAYER_TYPE;
                             }
                             init.body = JSON.stringify(newBody);
-                        }
-                        if (OPT_ROLLING_DEVICE_ID) {
-                            if (typeof init.headers['X-Device-Id'] === 'string') {
-                                init.headers['X-Device-Id'] = gql_device_id_rolling;
-                            }
-                            if (typeof init.headers['Device-ID'] === 'string') {
-                                init.headers['Device-ID'] = gql_device_id_rolling;
-                            }
                         }
                         if (typeof init.headers['Client-Integrity'] === 'string') {
                             ClientIntegrityHeader = init.headers['Client-Integrity'];
