@@ -70,7 +70,15 @@ twitch-videoad.js text/javascript
     var IsPlayerAutoQuality = null;
     const oldWorker = window.Worker;
     window.Worker = class Worker extends oldWorker {
-        constructor(twitchBlobUrl) {
+        constructor(twitchBlobUrl, options) {
+            var isTwitchWorker = false;
+            try {
+                isTwitchWorker = new URL(twitchBlobUrl).origin.endsWith('.twitch.tv');
+            } catch {}
+            if (!isTwitchWorker) {
+                super(twitchBlobUrl, options);
+                return;
+            }
             var newBlobStr = `
                 ${getStreamUrlForResolution.toString()}
                 ${getStreamForResolution.toString()}
@@ -84,7 +92,7 @@ twitch-videoad.js text/javascript
                 ${tryNotifyTwitch.toString()}
                 ${parseAttributes.toString()}
                 ${getWasmWorkerUrl.toString()}
-                var workerUrl = getWasmWorkerUrl('${twitchBlobUrl}');
+                var workerUrl = getWasmWorkerUrl('${twitchBlobUrl.replaceAll("'", "%27")}');
                 if (workerUrl && workerUrl.includes('assets.twitch.tv/assets/amazon-ivs-wasmworker')) {
                     declareOptions(self);
                     self.addEventListener('message', function(e) {
@@ -108,7 +116,7 @@ twitch-videoad.js text/javascript
                     importScripts(workerUrl);
                 }
             `;
-            super(URL.createObjectURL(new Blob([newBlobStr])));
+            super(URL.createObjectURL(new Blob([newBlobStr])), options);
             twitchWorkers.push(this);
             this.onmessage = function(e) {
                 if (e.data.key == 'ShowAdBlockBanner') {
@@ -238,6 +246,7 @@ twitch-videoad.js text/javascript
     function getWasmWorkerUrl(twitchBlobUrl) {
         var req = new XMLHttpRequest();
         req.open('GET', twitchBlobUrl, false);
+        req.overrideMimeType("text/javascript");
         req.send();
         return req.responseText.split("'")[1];
     }

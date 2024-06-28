@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      9.0.0
+// @version      10.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -82,7 +82,15 @@
     var IsPlayerAutoQuality = null;
     const oldWorker = window.Worker;
     window.Worker = class Worker extends oldWorker {
-        constructor(twitchBlobUrl) {
+        constructor(twitchBlobUrl, options) {
+            var isTwitchWorker = false;
+            try {
+                isTwitchWorker = new URL(twitchBlobUrl).origin.endsWith('.twitch.tv');
+            } catch {}
+            if (!isTwitchWorker) {
+                super(twitchBlobUrl, options);
+                return;
+            }
             var newBlobStr = `
                 ${getStreamUrlForResolution.toString()}
                 ${getStreamForResolution.toString()}
@@ -96,7 +104,7 @@
                 ${tryNotifyTwitch.toString()}
                 ${parseAttributes.toString()}
                 ${getWasmWorkerUrl.toString()}
-                var workerUrl = getWasmWorkerUrl('${twitchBlobUrl}');
+                var workerUrl = getWasmWorkerUrl('${twitchBlobUrl.replaceAll("'", "%27")}');
                 if (workerUrl && workerUrl.includes('assets.twitch.tv/assets/amazon-ivs-wasmworker')) {
                     declareOptions(self);
                     self.addEventListener('message', function(e) {
@@ -120,7 +128,7 @@
                     importScripts(workerUrl);
                 }
             `;
-            super(URL.createObjectURL(new Blob([newBlobStr])));
+            super(URL.createObjectURL(new Blob([newBlobStr])), options);
             twitchWorkers.push(this);
             this.onmessage = function(e) {
                 if (e.data.key == 'ShowAdBlockBanner') {
@@ -250,6 +258,7 @@
     function getWasmWorkerUrl(twitchBlobUrl) {
         var req = new XMLHttpRequest();
         req.open('GET', twitchBlobUrl, false);
+        req.overrideMimeType("text/javascript");
         req.send();
         return req.responseText.split("'")[1];
     }
