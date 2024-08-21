@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      11.0.0
+// @version      12.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -824,27 +824,7 @@
             return realFetch.apply(this, arguments);
         };
     }
-    function isWorkerIntact() {
-        // Taken from Adguard Extra
-        const iframe = window.document.createElement('iframe');
-        window.document.body.append(iframe);
-        const cleanWindow = iframe.contentWindow;
-        if (cleanWindow.Worker.toString() === window.Worker.toString()) {
-            iframe.remove();
-            return true;
-        }
-        iframe.remove();
-        return false;
-    }
     function onContentLoaded() {
-        if (!isWorkerIntact()) {
-            console.log('Twitch Worker is already hooked');
-            return;
-        }
-        window.reloadTwitchPlayer = reloadTwitchPlayer;
-        declareOptions(window);
-        hookWindowWorker();
-        hookFetch();
         // This stops Twitch from pausing the player when in another tab and an ad shows.
         // Taken from https://github.com/saucettv/VideoAdBlockForTwitch/blob/cefce9d2b565769c77e3666ac8234c3acfe20d83/chrome/content.js#L30
         try {
@@ -886,11 +866,19 @@
             }
         }catch{}
     }
-    if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
-        onContentLoaded();
+    if (window.Worker.toString().includes('twitch')) {
+        console.log('Twitch Worker is already hooked');
     } else {
-        window.addEventListener("DOMContentLoaded", function() {
+        window.reloadTwitchPlayer = reloadTwitchPlayer;
+        declareOptions(window);
+        hookWindowWorker();
+        hookFetch();
+        if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
             onContentLoaded();
-        });
+        } else {
+            window.addEventListener("DOMContentLoaded", function() {
+                onContentLoaded();
+            });
+        }
     }
 })();
