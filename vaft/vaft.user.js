@@ -39,12 +39,16 @@
     var IsPlayerAutoQuality = null;
     const oldWorker = window.Worker;
     function hookWindowWorker() {
-        window.Worker = class Worker extends oldWorker {
+        var newWorker = window.Worker = class Worker extends oldWorker {
             constructor(twitchBlobUrl, options) {
                 var isTwitchWorker = false;
                 try {
                     isTwitchWorker = new URL(twitchBlobUrl).origin.endsWith('.twitch.tv');
                 } catch {}
+                if (newWorker.toString() !== window.Worker.toString()) {
+                    console.log('Multiple twitch adblockers installed. Skipping Worker hook (vaft)');
+                    isTwitchWorker = false;
+                }
                 if (!isTwitchWorker) {
                     super(twitchBlobUrl, options);
                     return;
