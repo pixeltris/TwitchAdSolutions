@@ -13,6 +13,9 @@
 // ==/UserScript==
 (function() {
     'use strict';
+    if (window.location.href.startsWith("https://www.twitch.tv/videos/")) {
+        return;
+    }
     function declareOptions(scope) {
         scope.AdSignifier = 'stitched';
         scope.ClientID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
