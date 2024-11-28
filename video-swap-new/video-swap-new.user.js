@@ -43,7 +43,7 @@
         while (proto)
         {
             var workerString = proto.toString();
-            if (workerString.includes(identifier) && workerString !== ourWorkerString) {
+            if (workerString.includes(identifier) && workerString.startsWith('class Worker extends oldWorker')) {
                 return true;
             }
             proto = Object.getPrototypeOf(proto);
