@@ -95,7 +95,6 @@ twitch-videoad.js text/javascript
         return !workerStringConflicts.some((x) => workerString.includes(x))
             || workerStringAllow.some((x) => workerString.includes(x))
             || workerStringReinsert.some((x) => workerString.includes(x));
-
     }
     function hookWindowWorker() {
         var reinsert = getWorkersForReinsert(window.Worker);
