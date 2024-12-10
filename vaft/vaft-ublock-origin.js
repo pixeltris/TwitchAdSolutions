@@ -1,6 +1,13 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
+    var ourTwitchAdSolutionsVersion = 1;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
+    if (window.twitchAdSolutionsVersion && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
+        console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
+        window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
+        return;
+    }
+    window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
     function declareOptions(scope) {
         scope.AdSignifier = 'stitched';
         scope.ClientID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
@@ -25,31 +32,79 @@ twitch-videoad.js text/javascript
     var adBlockDiv = null;
     var OriginalVideoPlayerQuality = null;
     var IsPlayerAutoQuality = null;
-    const oldWorker = window.Worker;
-    function isWorkerDoubleHooked(ourWorker, identifier) {
-        var ourWorkerString = ourWorker ? ourWorker.toString() : null;
-        var proto = window.Worker;
-        while (proto)
-        {
+    var workerStringConflicts = [
+        'twitch',
+        'isVariantA'// TwitchNoSub
+    ];
+    var workerStringAllow = [];
+    //
+    // TwitchNoSub (userscript) conflicts in this scenario:
+    // - TwitchAdSolutions : TwitchNoSub : window.Worker
+    //
+    // But it's fine in this scenario:
+    // - TwitchNoSub : TwitchAdSolutions : window.Worker
+    //
+    // This is because their script ignores the incoming blob (our script) and replaces it with their own importScripts call
+    // To fix this we scoop out TwitchNoSub and re-insert it so that it inherits from our worker
+    var workerStringReinsert = [
+        'isVariantA'// TwitchNoSub
+    ];
+    function getCleanWorker(worker) {
+        var root = null;
+        var parent = null;
+        var proto = worker;
+        while (proto) {
             var workerString = proto.toString();
-            if (workerString.includes(identifier) && workerString !== ourWorkerString) {
-                return true;
+            if (workerStringConflicts.some((x) => workerString.includes(x)) && !workerStringAllow.some((x) => workerString.includes(x))) {
+                if (parent !== null) {
+                    Object.setPrototypeOf(parent, Object.getPrototypeOf(proto));
+                }
+            } else {
+                if (root === null) {
+                    root = proto;
+                }
+                parent = proto;
             }
             proto = Object.getPrototypeOf(proto);
         }
-        return false;
+        return root;
+    }
+    function getWorkersForReinsert(worker) {
+        var result = [];
+        var proto = worker;
+        while (proto) {
+            var workerString = proto.toString();
+            if (workerStringReinsert.some((x) => workerString.includes(x))) {
+                result.push(proto);
+            } else {
+            }
+            proto = Object.getPrototypeOf(proto);
+        }
+        return result;
+    }
+    function reinsertWorkers(worker, reinsert) {
+        var parent = worker;
+        for (var i = 0; i < reinsert.length; i++) {
+            Object.setPrototypeOf(reinsert[i], parent);
+            parent = reinsert[i];
+        }
+        return parent;
+    }
+    function isValidWorker(worker) {
+        var workerString = worker.toString();
+        return !workerStringConflicts.some((x) => workerString.includes(x))
+            || workerStringAllow.some((x) => workerString.includes(x))
+            || workerStringReinsert.some((x) => workerString.includes(x));
+
     }
     function hookWindowWorker() {
-        var newWorker = window.Worker = class Worker extends oldWorker {
+        var reinsert = getWorkersForReinsert(window.Worker);
+        var newWorker = class Worker extends getCleanWorker(window.Worker) {
             constructor(twitchBlobUrl, options) {
                 var isTwitchWorker = false;
                 try {
                     isTwitchWorker = new URL(twitchBlobUrl).origin.endsWith('.twitch.tv');
                 } catch {}
-                if (isWorkerDoubleHooked(newWorker, 'twitch')) {
-                    console.log('Multiple twitch adblockers installed. Skipping Worker hook (vaft)');
-                    isTwitchWorker = false;
-                }
                 if (!isTwitchWorker) {
                     super(twitchBlobUrl, options);
                     return;
@@ -66,34 +121,32 @@ twitch-videoad.js text/javascript
                     ${adRecordgqlPacket.toString()}
                     ${tryNotifyTwitch.toString()}
                     ${parseAttributes.toString()}
-                    ${getWasmWorkerUrl.toString()}
-                    var workerUrl = getWasmWorkerUrl('${twitchBlobUrl.replaceAll("'", "%27")}');
-                    if (workerUrl && workerUrl.includes('assets.twitch.tv/assets/amazon-ivs-wasmworker')) {
-                        declareOptions(self);
-                        self.addEventListener('message', function(e) {
-                            if (e.data.key == 'UpdateIsSquadStream') {
-                                IsSquadStream = e.data.value;
-                            } else if (e.data.key == 'UpdateClientVersion') {
-                                ClientVersion = e.data.value;
-                            } else if (e.data.key == 'UpdateClientSession') {
-                                ClientSession = e.data.value;
-                            } else if (e.data.key == 'UpdateClientId') {
-                                ClientID = e.data.value;
-                            } else if (e.data.key == 'UpdateDeviceId') {
-                                GQLDeviceID = e.data.value;
-                            } else if (e.data.key == 'UpdateClientIntegrityHeader') {
-                                ClientIntegrityHeader = e.data.value;
-                            } else if (e.data.key == 'UpdateAuthorizationHeader') {
-                                AuthorizationHeader = e.data.value;
-                            }
-                        });
-                        hookWorkerFetch();
-                        importScripts(workerUrl);
-                    }
+                    ${getWasmWorkerJs.toString()}
+                    var workerString = getWasmWorkerJs('${twitchBlobUrl.replaceAll("'", "%27")}');
+                    declareOptions(self);
+                    self.addEventListener('message', function(e) {
+                        if (e.data.key == 'UpdateIsSquadStream') {
+                            IsSquadStream = e.data.value;
+                        } else if (e.data.key == 'UpdateClientVersion') {
+                            ClientVersion = e.data.value;
+                        } else if (e.data.key == 'UpdateClientSession') {
+                            ClientSession = e.data.value;
+                        } else if (e.data.key == 'UpdateClientId') {
+                            ClientID = e.data.value;
+                        } else if (e.data.key == 'UpdateDeviceId') {
+                            GQLDeviceID = e.data.value;
+                        } else if (e.data.key == 'UpdateClientIntegrityHeader') {
+                            ClientIntegrityHeader = e.data.value;
+                        } else if (e.data.key == 'UpdateAuthorizationHeader') {
+                            AuthorizationHeader = e.data.value;
+                        }
+                    });
+                    hookWorkerFetch();
+                    eval(workerString);
                 `;
                 super(URL.createObjectURL(new Blob([newBlobStr])), options);
                 twitchWorkers.push(this);
-                this.onmessage = function(e) {
+                this.addEventListener('message', (e) => {
                     if (e.data.key == 'ShowAdBlockBanner') {
                         if (adBlockDiv == null) {
                             adBlockDiv = getAdBlockDiv();
@@ -198,7 +251,7 @@ twitch-videoad.js text/javascript
                             IsPlayerAutoQuality = null;
                         }
                     }
-                };
+                });
                 function getAdBlockDiv() {
                     //To display a notification to the user, that an ad is being blocked.
                     var playerRootDiv = document.querySelector('.video-player');
@@ -218,16 +271,29 @@ twitch-videoad.js text/javascript
                 }
             }
         };
+        var workerInstance = reinsertWorkers(newWorker, reinsert);
+        Object.defineProperty(window, 'Worker', {
+            get: function() {
+                return workerInstance;
+            },
+            set: function(value) {
+                if (isValidWorker(value)) {
+                    workerInstance = value;
+                } else {
+                    console.log('Attempt to set twitch worker denied');
+                }
+            }
+        });
     }
-    function getWasmWorkerUrl(twitchBlobUrl) {
+    function getWasmWorkerJs(twitchBlobUrl) {
         var req = new XMLHttpRequest();
         req.open('GET', twitchBlobUrl, false);
         req.overrideMimeType("text/javascript");
         req.send();
-        return req.responseText.split("'")[1];
+        return req.responseText;
     }
     function hookWorkerFetch() {
-        console.log('hookWorkerFetch');
+        console.log('hookWorkerFetch (vaft)');
         var realFetch = fetch;
         fetch = async function(url, options) {
             if (typeof url === 'string') {
@@ -875,19 +941,14 @@ twitch-videoad.js text/javascript
             }
         }catch{}
     }
-    if (isWorkerDoubleHooked(null, 'twitch')) {
-        console.log('Twitch Worker is already hooked. Skipping (vaft)');
+    declareOptions(window);
+    hookWindowWorker();
+    hookFetch();
+    if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
+        onContentLoaded();
     } else {
-        window.reloadTwitchPlayer = reloadTwitchPlayer;
-        declareOptions(window);
-        hookWindowWorker();
-        hookFetch();
-        if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
+        window.addEventListener("DOMContentLoaded", function() {
             onContentLoaded();
-        } else {
-            window.addEventListener("DOMContentLoaded", function() {
-                onContentLoaded();
-            });
-        }
+        });
     }
 })();
