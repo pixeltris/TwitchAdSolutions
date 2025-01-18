@@ -1,0 +1,43 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - "vaft/**"
+      - "video-swap-new/**"
+
+jobs:
+  create-release:
+    permissions:
+      contents: write
+    name: Create Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Git user
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+    - name: Set release notes
+      id: set-notes
+      run: |
+        changes=$(git log -1 --pretty=format:%s)
+        echo "release_notes=$changes" >> $GITHUB_ENV
+
+    - name: Create Release
+      id: create-release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: "v${{ github.run_number }}"
+        release_name: "Release v${{ github.run_number }}"
+        body: ${{ env.release_notes }}
+        draft: false
+        prerelease: false
