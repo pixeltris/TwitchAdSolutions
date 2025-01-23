@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.33
+// @version      1.34
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function() {
     'use strict';
-    var ourTwitchAdSolutionsVersion = 1;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
+    var ourTwitchAdSolutionsVersion = 2;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
     if (window.twitchAdSolutionsVersion && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping video-swap-new as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -45,7 +45,8 @@
     var twitchWorkers = [];
     var workerStringConflicts = [
         'twitch',
-        'isVariantA'// TwitchNoSub
+        'isVariantA',// TwitchNoSub
+        'besuper/'// TwitchNoSub (0.9)
     ];
     var workerStringAllow = [];
     //
@@ -58,7 +59,8 @@
     // This is because their script ignores the incoming blob (our script) and replaces it with their own importScripts call
     // To fix this we scoop out TwitchNoSub and re-insert it so that it inherits from our worker
     var workerStringReinsert = [
-        'isVariantA'// TwitchNoSub
+        'isVariantA',// TwitchNoSub
+        'besuper/'// TwitchNoSub (0.9)
     ];
     function getCleanWorker(worker) {
         var root = null;

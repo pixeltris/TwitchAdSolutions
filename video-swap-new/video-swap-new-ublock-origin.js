@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    var ourTwitchAdSolutionsVersion = 1;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
+    var ourTwitchAdSolutionsVersion = 2;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
     if (window.twitchAdSolutionsVersion && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping video-swap-new as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -33,7 +33,8 @@ twitch-videoad.js text/javascript
     var twitchWorkers = [];
     var workerStringConflicts = [
         'twitch',
-        'isVariantA'// TwitchNoSub
+        'isVariantA',// TwitchNoSub
+        'besuper/'// TwitchNoSub (0.9)
     ];
     var workerStringAllow = [];
     //
@@ -46,7 +47,8 @@ twitch-videoad.js text/javascript
     // This is because their script ignores the incoming blob (our script) and replaces it with their own importScripts call
     // To fix this we scoop out TwitchNoSub and re-insert it so that it inherits from our worker
     var workerStringReinsert = [
-        'isVariantA'// TwitchNoSub
+        'isVariantA',// TwitchNoSub
+        'besuper/'// TwitchNoSub (0.9)
     ];
     function getCleanWorker(worker) {
         var root = null;

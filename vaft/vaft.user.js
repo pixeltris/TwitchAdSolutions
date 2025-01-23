@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      15.0.0
+// @version      16.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function() {
     'use strict';
-    var ourTwitchAdSolutionsVersion = 1;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
+    var ourTwitchAdSolutionsVersion = 2;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
     if (window.twitchAdSolutionsVersion && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -46,7 +46,8 @@
     var IsPlayerAutoQuality = null;
     var workerStringConflicts = [
         'twitch',
-        'isVariantA'// TwitchNoSub
+        'isVariantA',// TwitchNoSub
+        'besuper/'// TwitchNoSub (0.9)
     ];
     var workerStringAllow = [];
     //
@@ -59,7 +60,8 @@
     // This is because their script ignores the incoming blob (our script) and replaces it with their own importScripts call
     // To fix this we scoop out TwitchNoSub and re-insert it so that it inherits from our worker
     var workerStringReinsert = [
-        'isVariantA'// TwitchNoSub
+        'isVariantA',// TwitchNoSub
+        'besuper/'// TwitchNoSub (0.9)
     ];
     function getCleanWorker(worker) {
         var root = null;
