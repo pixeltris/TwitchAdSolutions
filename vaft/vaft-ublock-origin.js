@@ -1,6 +1,6 @@
 twitch-videoad.js text/javascript
 (function() {
-    if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
+    if (!(/(^|\.)twitch\.tv$/.test(document.location.hostname))) return;
     var ourTwitchAdSolutionsVersion = 2;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
     if (window.twitchAdSolutionsVersion && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
@@ -78,7 +78,6 @@ twitch-videoad.js text/javascript
             var workerString = proto.toString();
             if (workerStringReinsert.some((x) => workerString.includes(x))) {
                 result.push(proto);
-            } else {
             }
             proto = Object.getPrototypeOf(proto);
         }
@@ -196,41 +195,24 @@ twitch-videoad.js text/javascript
                                                             e.data.value = 'auto';
                                                         }
                                                     }
-                                                    if (e.data.value.includes('160p')) {
-                                                        qualityToSelect = 5;
-                                                    }
-                                                    if (e.data.value.includes('360p')) {
-                                                        qualityToSelect = 4;
-                                                    }
-                                                    if (e.data.value.includes('480p')) {
-                                                        qualityToSelect = 3;
-                                                    }
-                                                    if (e.data.value.includes('720p')) {
-                                                        qualityToSelect = 2;
-                                                    }
-                                                    if (e.data.value.includes('822p')) {
-                                                        qualityToSelect = 2;
-                                                    }
-                                                    if (e.data.value.includes('864p')) {
-                                                        qualityToSelect = 2;
-                                                    }
-                                                    if (e.data.value.includes('900p')) {
-                                                        qualityToSelect = 2;
-                                                    }
-                                                    if (e.data.value.includes('936p')) {
-                                                        qualityToSelect = 2;
-                                                    }
-                                                    if (e.data.value.includes('960p')) {
-                                                        qualityToSelect = 2;
-                                                    }
-                                                    if (e.data.value.includes('1080p')) {
-                                                        qualityToSelect = 2;
-                                                    }
-                                                    if (e.data.value.includes('source')) {
-                                                        qualityToSelect = 1;
-                                                    }
-                                                    if (e.data.value.includes('auto')) {
-                                                        qualityToSelect = 0;
+                                                    const qualityPreset = {
+                                                        '160p': 5,
+                                                        '360p': 4,
+                                                        '480p': 3,
+                                                        '720p': 2,
+                                                        '822p': 2,
+                                                        '864p': 2,
+                                                        '900p': 2,
+                                                        '936p': 2,
+                                                        '960p': 2,
+                                                        '1080p': 2,
+                                                        'source': 1,
+                                                        'auto': 0
+                                                    };
+                                                    for (let quality of Object.keys(qualityPreset)) {
+                                                        if (e.data.value.includes(quality)) {
+                                                        qualityToSelect = qualityPreset[quality];
+                                                        }
                                                     }
                                                 }
                                                 var currentQualityLS = window.localStorage.getItem('video-quality');
