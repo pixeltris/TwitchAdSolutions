@@ -33,22 +33,13 @@ twitch-videoad.js text/javascript
     var twitchWorkers = [];
     var workerStringConflicts = [
         'twitch',
-        'isVariantA',// TwitchNoSub
-        'besuper/'// TwitchNoSub (0.9)
+        'isVariantA'// TwitchNoSub
     ];
     var workerStringAllow = [];
-    //
-    // TwitchNoSub (userscript) conflicts in this scenario:
-    // - TwitchAdSolutions : TwitchNoSub : window.Worker
-    //
-    // But it's fine in this scenario:
-    // - TwitchNoSub : TwitchAdSolutions : window.Worker
-    //
-    // This is because their script ignores the incoming blob (our script) and replaces it with their own importScripts call
-    // To fix this we scoop out TwitchNoSub and re-insert it so that it inherits from our worker
     var workerStringReinsert = [
-        'isVariantA',// TwitchNoSub
-        'besuper/'// TwitchNoSub (0.9)
+        'isVariantA',// TwitchNoSub (prior to (0.9))
+        'besuper/',// TwitchNoSub (0.9)
+        '${patch_url}'// TwitchNoSub (0.9.1)
     ];
     function getCleanWorker(worker) {
         var root = null;
