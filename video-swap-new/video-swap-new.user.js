@@ -747,4 +747,5 @@
             onContentLoaded();
         });
     }
+    window.sessionStorage.setItem('directoryGameChannelPageSort', '"VIEWER_COUNT"');
 })();
