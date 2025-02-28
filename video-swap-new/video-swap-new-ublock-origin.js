@@ -735,4 +735,5 @@ twitch-videoad.js text/javascript
             onContentLoaded();
         });
     }
+    window.sessionStorage.setItem('directoryGameChannelPageSort', '"VIEWER_COUNT"');
 })();
