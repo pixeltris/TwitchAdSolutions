@@ -13,7 +13,7 @@ twitch-videoad.js text/javascript
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = false;
-        scope.OPT_BACKUP_PLAYER_TYPE = 'autoplay';
+        scope.OPT_BACKUP_PLAYER_TYPE = 'picture-by-picture';
         scope.OPT_BACKUP_PLATFORM = 'ios';
         scope.OPT_REGULAR_PLAYER_TYPE = 'site';
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = null;
