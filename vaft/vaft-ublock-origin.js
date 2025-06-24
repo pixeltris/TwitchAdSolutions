@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    var ourTwitchAdSolutionsVersion = 4;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
+    var ourTwitchAdSolutionsVersion = 5;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
     if (window.twitchAdSolutionsVersion && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -846,7 +846,7 @@ twitch-videoad.js text/javascript
     }
     async function handleWorkerFetchRequest(fetchRequest) {
         try {
-            const response = await window.fetch(fetchRequest.url, fetchRequest.options);
+            const response = await window.realFetch(fetchRequest.url, fetchRequest.options);
             const responseBody = await response.text();
             const responseObject = {
                 id: fetchRequest.id,
@@ -865,6 +865,7 @@ twitch-videoad.js text/javascript
     }
     function hookFetch() {
         var realFetch = window.fetch;
+        window.realFetch = realFetch;
         window.fetch = function(url, init, ...args) {
             if (typeof url === 'string') {
                 //Check if squad stream.
