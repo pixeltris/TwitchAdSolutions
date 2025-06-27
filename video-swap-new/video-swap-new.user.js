@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.38
+// @version      1.39
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -9,23 +9,27 @@
 // @match        *://*.twitch.tv/*
 // @run-at       document-start
 // @inject-into  page
-// @grant        none
+// @grant        GM.xmlHttpRequest
+// @connect      gql.twitch.tv
 // ==/UserScript==
 (function() {
     'use strict';
-    var ourTwitchAdSolutionsVersion = 5;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
-    if (window.twitchAdSolutionsVersion && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
-        console.log("skipping video-swap-new as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
-        window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
+    var ourTwitchAdSolutionsVersion = 6;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
+    if (typeof unsafeWindow === 'undefined') {
+        unsafeWindow = window;
+    }
+    if (typeof unsafeWindow.twitchAdSolutionsVersion !== 'undefined' && unsafeWindow.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
+        console.log("skipping video-swap-new as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + unsafeWindow.twitchAdSolutionsVersion);
+        unsafeWindow.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
         return;
     }
-    window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
+    unsafeWindow.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
     function declareOptions(scope) {
         // Options / globals
         scope.OPT_MODE_STRIP_AD_SEGMENTS = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED = true;
         scope.OPT_MODE_NOTIFY_ADS_WATCHED_MIN_REQUESTS = false;
-        scope.OPT_BACKUP_PLAYER_TYPE = 'picture-by-picture';
+        scope.OPT_BACKUP_PLAYER_TYPE = 'autoplay';
         scope.OPT_BACKUP_PLATFORM = 'ios';
         scope.OPT_REGULAR_PLAYER_TYPE = 'site';
         scope.OPT_ACCESS_TOKEN_PLAYER_TYPE = null;
@@ -101,8 +105,8 @@
             || workerStringReinsert.some((x) => workerString.includes(x));
     }
     function hookWindowWorker() {
-        var reinsert = getWorkersForReinsert(window.Worker);
-        var newWorker = class Worker extends getCleanWorker(window.Worker) {
+        var reinsert = getWorkersForReinsert(unsafeWindow.Worker);
+        var newWorker = class Worker extends getCleanWorker(unsafeWindow.Worker) {
             constructor(twitchBlobUrl, options) {
                 var isTwitchWorker = false;
                 try {
@@ -211,7 +215,7 @@
             }
         }
         var workerInstance = reinsertWorkers(newWorker, reinsert);
-        Object.defineProperty(window, 'Worker', {
+        Object.defineProperty(unsafeWindow, 'Worker', {
             get: function() {
                 return workerInstance;
             },
@@ -585,18 +589,73 @@
             worker.postMessage({key: key, value: value});
         });
     }
+    function makeGmXmlHttpRequest(fetchRequest) {
+        return new Promise((resolve, reject) => {
+            GM.xmlHttpRequest({
+                method: fetchRequest.options.method,
+                url: fetchRequest.url,
+                data: fetchRequest.options.body,
+                headers: fetchRequest.options.headers,
+                onload: response => resolve(response),
+                onerror: error => reject(error)
+            });
+        });
+    }
+    // Taken from https://github.com/dimdenGD/YeahTwitter/blob/9e0520f5abe029f57929795d8de0d2e5d3751cf3/us.js#L48
+    function parseHeaders(headersString) {
+        const headers = new Headers();
+        const lines = headersString.trim().split(/[\r\n]+/);
+        lines.forEach(line => {
+            const parts = line.split(':');
+            const header = parts.shift();
+            const value = parts.join(':');
+            headers.append(header, value);
+        });
+        return headers;
+    }
+    var serverLikesThisBrowser = false;
+    var serverHatesThisBrowser = false;
     async function handleWorkerFetchRequest(fetchRequest) {
         try {
-            const response = await window.realFetch(fetchRequest.url, fetchRequest.options);
-            const responseBody = await response.text();
-            const responseObject = {
-                id: fetchRequest.id,
-                status: response.status,
-                statusText: response.statusText,
-                headers: Object.fromEntries(response.headers.entries()),
-                body: responseBody
-            };
-            return responseObject;
+            if (serverLikesThisBrowser || !serverHatesThisBrowser) {
+                const response = await unsafeWindow.realFetch(fetchRequest.url, fetchRequest.options);
+                const responseBody = await response.text();
+                const responseObject = {
+                    id: fetchRequest.id,
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    body: responseBody
+                };
+                if (responseObject.status === 200) {
+                    var resp = JSON.parse(responseBody);
+                    if (typeof resp.errors !== 'undefined') {
+                        serverHatesThisBrowser = true;
+                    } else {
+                        serverLikesThisBrowser = true;
+                    }
+                }
+                if (serverLikesThisBrowser || !serverHatesThisBrowser) {
+                    return responseObject;
+                }
+            }
+            if (typeof GM !== 'undefined' && typeof GM.xmlHttpRequest !== 'undefined') {
+                fetchRequest.options.headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux i686; rv:140.0) Gecko/20100101 Firefox/140.0';
+                fetchRequest.options.headers['Referer'] = 'https://www.twitch.tv/';
+                fetchRequest.options.headers['Origin'] = 'https://www.twitch.tv/';
+                fetchRequest.options.headers['Host'] = 'gql.twitch.tv';
+                const response = await makeGmXmlHttpRequest(fetchRequest);
+                const responseBody = response.responseText;
+                const responseObject = {
+                    id: fetchRequest.id,
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(parseHeaders(response.responseHeaders).entries()),
+                    body: responseBody
+                };
+                return responseObject;
+            }
+            throw { message: 'Failed to resolve GQL request. Try the userscript version of the ad blocking solution' };
         } catch (error) {
             return {
                 id: fetchRequest.id,
@@ -605,9 +664,9 @@
         }
     }
     function hookFetch() {
-        var realFetch = window.fetch;
-        window.realFetch = realFetch;
-        window.fetch = function(url, init, ...args) {
+        var realFetch = unsafeWindow.fetch;
+        unsafeWindow.realFetch = realFetch;
+        unsafeWindow.fetch = function(url, init, ...args) {
             if (typeof url === 'string') {
                 if (url.includes('gql')) {
                     var deviceId = init.headers['X-Device-Id'];
@@ -801,14 +860,14 @@
             return realGetItem.apply(this, arguments);
         };
     }
-    window.reloadTwitchPlayer = reloadTwitchPlayer;
-    declareOptions(window);
+    unsafeWindow.reloadTwitchPlayer = reloadTwitchPlayer;
+    declareOptions(unsafeWindow);
     hookWindowWorker();
     hookFetch();
     if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
         onContentLoaded();
     } else {
-        window.addEventListener("DOMContentLoaded", function() {
+        unsafeWindow.addEventListener("DOMContentLoaded", function() {
             onContentLoaded();
         });
     }
