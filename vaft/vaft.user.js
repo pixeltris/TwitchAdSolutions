@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      22.0.0
+// @version      22.2.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -202,18 +202,19 @@
                             }
                             if (!currentQuality.includes('360') || e.data.value != null) {
                                 if (!OriginalVideoPlayerQuality.includes('360')) {
-                                    var settingsMenu = document.querySelector('div[data-a-target="player-settings-menu"]');
+                                    var settingsMenu = [].find.call(document.getElementsByClassName('react-modal__content')[0]?.getElementsByTagName('div') || [], el => el.dataset.aTarget === 'player-settings-menu');
                                     if (settingsMenu == null) {
-                                        var settingsCog = document.querySelector('button[data-a-target="player-settings-button"]');
+                                        var playerControls = [...document.getElementsByClassName('player-controls__right-control-group')].find(el => el.hasAttribute('style'));
+                                        var settingsCog = [].find.call(playerControls.getElementsByTagName('button'), el => el.dataset.aTarget === 'player-settings-button');
                                         if (settingsCog) {
                                             settingsCog.click();
-                                            var qualityMenu = document.querySelector('button[data-a-target="player-settings-menu-item-quality"]');
+                                            var qualityMenu = [].find.call(playerControls.getElementsByTagName('button'), el => el.dataset.aTarget === 'player-settings-menu-item-quality');
                                             if (qualityMenu) {
                                                 qualityMenu.click();
                                             }
-                                            var lowQuality = document.querySelectorAll('input[data-a-target="tw-radio"');
-                                            if (lowQuality) {
-                                                var qualityToSelect = lowQuality.length - 2;
+                                            var qualityOptions = [].filter.call(playerControls.getElementsByClassName('tw-radio__input'), el => !el.hasAttribute('disabled'));
+                                            if (qualityOptions) {
+                                                var qualityToSelect = qualityOptions.length - 2;
                                                 if (e.data.value != null) {
                                                     if (e.data.value.includes('original')) {
                                                         e.data.value = OriginalVideoPlayerQuality;
@@ -259,7 +260,7 @@
                                                     }
                                                 }
                                                 var currentQualityLS = unsafeWindow.localStorage.getItem('video-quality');
-                                                lowQuality[qualityToSelect].click();
+                                                qualityOptions[qualityToSelect].click();
                                                 settingsCog.click();
                                                 unsafeWindow.localStorage.setItem('video-quality', currentQualityLS);
                                                 if (e.data.value != null) {
@@ -290,16 +291,16 @@
                 });
                 function getAdBlockDiv() {
                     //To display a notification to the user, that an ad is being blocked.
-                    var playerRootDiv = document.querySelector('.video-player');
+                    var playerRootDiv = document.getElementsByClassName('video-player')[0];
                     var adBlockDiv = null;
                     if (playerRootDiv != null) {
-                        adBlockDiv = playerRootDiv.querySelector('.adblock-overlay');
+                        adBlockDiv = playerRootDiv.getElementsByClassName('adblock-overlay')[0];
                         if (adBlockDiv == null) {
                             adBlockDiv = document.createElement('div');
                             adBlockDiv.className = 'adblock-overlay';
                             adBlockDiv.innerHTML = '<div class="player-adblock-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 5px;"><p></p></div>';
                             adBlockDiv.style.display = 'none';
-                            adBlockDiv.P = adBlockDiv.querySelector('p');
+                            adBlockDiv.P = adBlockDiv.getElementsByTagName('p')[0];
                             playerRootDiv.appendChild(adBlockDiv);
                         }
                     }
@@ -776,7 +777,7 @@
             }
             function findReactRootNode() {
                 var reactRootNode = null;
-                var rootNode = document.querySelector('#root');
+                var rootNode = document.getElementById('root');
                 if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
                     reactRootNode = rootNode._reactRootContainer._internalRoot.current;
                 }
