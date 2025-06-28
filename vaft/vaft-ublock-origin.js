@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    var ourTwitchAdSolutionsVersion = 6;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
+    var ourTwitchAdSolutionsVersion = 7;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
     if (typeof unsafeWindow === 'undefined') {
         unsafeWindow = window;
     }
@@ -898,7 +898,7 @@ twitch-videoad.js text/javascript
                 }
             }
             if (typeof GM !== 'undefined' && typeof GM.xmlHttpRequest !== 'undefined') {
-                fetchRequest.options.headers['User-Agent'] = 'Mozilla/5.0 (X11; Linux i686; rv:140.0) Gecko/20100101 Firefox/140.0';
+                fetchRequest.options.headers['Sec-Ch-Ua'] = '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"';
                 fetchRequest.options.headers['Referer'] = 'https://www.twitch.tv/';
                 fetchRequest.options.headers['Origin'] = 'https://www.twitch.tv/';
                 fetchRequest.options.headers['Host'] = 'gql.twitch.tv';
