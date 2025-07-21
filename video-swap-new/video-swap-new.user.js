@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.41
+// @version      1.42
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -14,7 +14,7 @@
 // ==/UserScript==
 (function() {
     'use strict';
-    var ourTwitchAdSolutionsVersion = 8;// Used to prevent conflicts with outdated versions of the scripts
+    var ourTwitchAdSolutionsVersion = 9;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof unsafeWindow === 'undefined') {
         unsafeWindow = window;
     }
@@ -803,6 +803,7 @@
             });
         }catch{}
         let hidden = document.__lookupGetter__('hidden');
+        let webkitHidden = document.__lookupGetter__('webkitHidden');
         try {
             Object.defineProperty(document, 'hidden', {
                 get() {
@@ -820,7 +821,7 @@
             if (typeof chrome !== 'undefined') {
                 const videos = document.getElementsByTagName('video');
                 if (videos.length > 0) {
-                    if (hidden.apply(document) === true) {
+                    if (hidden.apply(document) === true || (webkitHidden && webkitHidden.apply(document) === true)) {
                         wasVideoPlaying = !videos[0].paused && !videos[0].ended;
                     } else if (wasVideoPlaying && !videos[0].ended) {
                         videos[0].play();

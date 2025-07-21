@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    var ourTwitchAdSolutionsVersion = 8;// Used to prevent conflicts with outdated versions of the scripts
+    var ourTwitchAdSolutionsVersion = 9;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof unsafeWindow === 'undefined') {
         unsafeWindow = window;
     }
@@ -790,6 +790,7 @@ twitch-videoad.js text/javascript
             });
         }catch{}
         let hidden = document.__lookupGetter__('hidden');
+        let webkitHidden = document.__lookupGetter__('webkitHidden');
         try {
             Object.defineProperty(document, 'hidden', {
                 get() {
@@ -807,7 +808,7 @@ twitch-videoad.js text/javascript
             if (typeof chrome !== 'undefined') {
                 const videos = document.getElementsByTagName('video');
                 if (videos.length > 0) {
-                    if (hidden.apply(document) === true) {
+                    if (hidden.apply(document) === true || (webkitHidden && webkitHidden.apply(document) === true)) {
                         wasVideoPlaying = !videos[0].paused && !videos[0].ended;
                     } else if (wasVideoPlaying && !videos[0].ended) {
                         videos[0].play();

@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      23.0.0
+// @version      24.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -14,7 +14,7 @@
 // ==/UserScript==
 (function() {
     'use strict';
-    var ourTwitchAdSolutionsVersion = 8;// Used to prevent conflicts with outdated versions of the scripts
+    var ourTwitchAdSolutionsVersion = 9;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof unsafeWindow === 'undefined') {
         unsafeWindow = window;
     }
@@ -1032,6 +1032,7 @@
             });
         }catch{}
         let hidden = document.__lookupGetter__('hidden');
+        let webkitHidden = document.__lookupGetter__('webkitHidden');
         try {
             Object.defineProperty(document, 'hidden', {
                 get() {
@@ -1049,7 +1050,7 @@
             if (typeof chrome !== 'undefined') {
                 const videos = document.getElementsByTagName('video');
                 if (videos.length > 0) {
-                    if (hidden.apply(document) === true) {
+                    if (hidden.apply(document) === true || (webkitHidden && webkitHidden.apply(document) === true)) {
                         wasVideoPlaying = !videos[0].paused && !videos[0].ended;
                     } else if (wasVideoPlaying && !videos[0].ended) {
                         videos[0].play();
