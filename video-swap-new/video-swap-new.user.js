@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.42
+// @version      1.43
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
@@ -197,16 +197,16 @@
                     }
                 });
                 function getAdDiv() {
-                    var playerRootDiv = document.querySelector('.video-player');
+                    var playerRootDiv = document.getElementsByClassName('video-player')[0];
                     var adDiv = null;
                     if (playerRootDiv != null) {
-                        adDiv = playerRootDiv.querySelector('.ubo-overlay');
+                        adDiv = playerRootDiv.getElementsByClassName('ubo-overlay')[0];
                         if (adDiv == null) {
                             adDiv = document.createElement('div');
                             adDiv.className = 'ubo-overlay';
                             adDiv.innerHTML = '<div class="player-ad-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 5px;"><p></p></div>';
                             adDiv.style.display = 'none';
-                            adDiv.P = adDiv.querySelector('p');
+                            adDiv.P = adDiv.getElementsByTagName('p')[0];
                             playerRootDiv.appendChild(adDiv);
                         }
                     }
@@ -729,7 +729,7 @@
         }
         function findReactRootNode() {
             var reactRootNode = null;
-            var rootNode = document.querySelector('#root');
+            var rootNode = document.getElementById('root');
             if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
                 reactRootNode = rootNode._reactRootContainer._internalRoot.current;
             }

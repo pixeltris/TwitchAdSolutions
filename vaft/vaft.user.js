@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      24.0.0
+// @version      24.2.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -202,18 +202,42 @@
                             }
                             if (!currentQuality.includes('360') || e.data.value != null) {
                                 if (!OriginalVideoPlayerQuality.includes('360')) {
-                                    var settingsMenu = document.querySelector('div[data-a-target="player-settings-menu"]');
-                                    if (settingsMenu == null) {
-                                        var settingsCog = document.querySelector('button[data-a-target="player-settings-button"]');
+                                    var activeSettingsMenuHeader = document.getElementById('active-settings-menu-header');
+                                    if (activeSettingsMenuHeader == null) {
+                                        var playerControlRightControlGroup = document.getElementsByClassName('player-controls__right-control-group');
+                                        for (var i = 0; i < playerControlRightControlGroup.length; i++) {
+                                          if (playerControlRightControlGroup[i].offsetWidth > 0 && playerControlRightControlGroup[i].offsetHeight > 0) {
+                                            var playerControls = playerControlRightControlGroup[i];
+                                            break;
+                                          }
+                                        }
+                                        var buttons = playerControls.getElementsByTagName('button');
+                                        for (var i = 0; i < buttons.length; i++) {
+                                          if (buttons[i].dataset.aTarget === 'player-settings-button') {
+                                            var settingsCog = buttons[i];
+                                            break;
+                                          }
+                                        }
                                         if (settingsCog) {
                                             settingsCog.click();
-                                            var qualityMenu = document.querySelector('button[data-a-target="player-settings-menu-item-quality"]');
+                                            for (var i = 0; i < buttons.length; i++) {
+                                              if (buttons[i].dataset.aTarget === 'player-settings-menu-item-quality') {
+                                                var qualityMenu = buttons[i];
+                                                break;
+                                              }
+                                            }
                                             if (qualityMenu) {
                                                 qualityMenu.click();
                                             }
-                                            var lowQuality = document.querySelectorAll('input[data-a-target="tw-radio"');
-                                            if (lowQuality) {
-                                                var qualityToSelect = lowQuality.length - 2;
+                                            var qualityOptions = [];
+                                            var inputs = playerControls.getElementsByClassName('tw-radio__input');
+                                            for (var i = 0; i < inputs.length; i++) {
+                                              if (!inputs[i].hasAttribute('disabled')) {
+                                                qualityOptions.push(inputs[i]);
+                                              }
+                                            }
+                                            if (qualityOptions) {
+                                                var qualityToSelect = qualityOptions.length - 2;
                                                 if (e.data.value != null) {
                                                     if (e.data.value.includes('original')) {
                                                         e.data.value = OriginalVideoPlayerQuality;
@@ -251,6 +275,9 @@
                                                     if (e.data.value.includes('1080p')) {
                                                         qualityToSelect = 2;
                                                     }
+                                                    if (e.data.value.includes('1440p')) {
+                                                        qualityToSelect = 2;
+                                                    }
                                                     if (e.data.value.includes('source')) {
                                                         qualityToSelect = 1;
                                                     }
@@ -259,7 +286,7 @@
                                                     }
                                                 }
                                                 var currentQualityLS = unsafeWindow.localStorage.getItem('video-quality');
-                                                lowQuality[qualityToSelect].click();
+                                                qualityOptions[qualityToSelect].click();
                                                 settingsCog.click();
                                                 unsafeWindow.localStorage.setItem('video-quality', currentQualityLS);
                                                 if (e.data.value != null) {
@@ -290,16 +317,16 @@
                 });
                 function getAdBlockDiv() {
                     //To display a notification to the user, that an ad is being blocked.
-                    var playerRootDiv = document.querySelector('.video-player');
+                    var playerRootDiv = document.getElementsByClassName('video-player')[0];
                     var adBlockDiv = null;
                     if (playerRootDiv != null) {
-                        adBlockDiv = playerRootDiv.querySelector('.adblock-overlay');
+                        adBlockDiv = playerRootDiv.getElementsByClassName('adblock-overlay')[0];
                         if (adBlockDiv == null) {
                             adBlockDiv = document.createElement('div');
                             adBlockDiv.className = 'adblock-overlay';
                             adBlockDiv.innerHTML = '<div class="player-adblock-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 5px;"><p></p></div>';
                             adBlockDiv.style.display = 'none';
-                            adBlockDiv.P = adBlockDiv.querySelector('p');
+                            adBlockDiv.P = adBlockDiv.getElementsByTagName('p')[0];
                             playerRootDiv.appendChild(adBlockDiv);
                         }
                     }
@@ -776,7 +803,7 @@
             }
             function findReactRootNode() {
                 var reactRootNode = null;
-                var rootNode = document.querySelector('#root');
+                var rootNode = document.getElementById('root');
                 if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
                     reactRootNode = rootNode._reactRootContainer._internalRoot.current;
                 }
