@@ -25,9 +25,9 @@ Alternatively:
 
 **There are better / easier to use methods in the above recommendations.**
 
-- video-swap-new - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/video-swap-new/video-swap-new-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/0b5ea5ed8959a6b4eb4c1ea406aaa56313c9c907/video-swap-new/video-swap-new-ublock-origin.js)
+- video-swap-new - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/video-swap-new/video-swap-new-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/7240e9855ec73a2aa6ff60679c3386fbf1e75732/video-swap-new/video-swap-new-ublock-origin.js)
   - Uses a lower resolution stream during ads.
-- vaft - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/vaft/vaft-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/0b5ea5ed8959a6b4eb4c1ea406aaa56313c9c907/vaft/vaft-ublock-origin.js)
+- vaft - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/vaft/vaft-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/7240e9855ec73a2aa6ff60679c3386fbf1e75732/vaft/vaft-ublock-origin.js)
   - The same as `video-swap-new` but attempts to get a clean stream faster (may suffer from more freezing / playback issues).
 
 ## Applying a script (uBlock Origin)
@@ -42,6 +42,8 @@ To stop using a script remove the filter and make the url `unset`.
 *For the sake of security it's recommended to use a permalink when using uBlock Origin (permalinks do not auto update).*
 
 *The scripts __may randomly stop being applied by uBlock Origin__ for unknown reasons ([#200](https://github.com/pixeltris/TwitchAdSolutions/issues/200)). It's recommended to use the userscript versions instead.*
+
+**Brave currently doesn't work with the uBlock Origin scripts, use the userscript instead.**
 
 ## Applying a script (userscript)
 

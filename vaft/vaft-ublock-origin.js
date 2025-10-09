@@ -1,13 +1,17 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    var ourTwitchAdSolutionsVersion = 2;// Only bump this when there's a breaking change to Twitch, the script, or there's a conflict with an unmaintained extension which uses this script
-    if (window.twitchAdSolutionsVersion && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
-        console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
-        window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
+    'use strict';
+    var ourTwitchAdSolutionsVersion = 11;// Used to prevent conflicts with outdated versions of the scripts
+    if (typeof unsafeWindow === 'undefined') {
+        unsafeWindow = window;
+    }
+    if (typeof unsafeWindow.twitchAdSolutionsVersion !== 'undefined' && unsafeWindow.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
+        console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + unsafeWindow.twitchAdSolutionsVersion);
+        unsafeWindow.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
         return;
     }
-    window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
+    unsafeWindow.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
     function declareOptions(scope) {
         scope.AdSignifier = 'stitched';
         scope.ClientID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
@@ -90,8 +94,8 @@ twitch-videoad.js text/javascript
             || workerStringReinsert.some((x) => workerString.includes(x));
     }
     function hookWindowWorker() {
-        var reinsert = getWorkersForReinsert(window.Worker);
-        var newWorker = class Worker extends getCleanWorker(window.Worker) {
+        var reinsert = getWorkersForReinsert(unsafeWindow.Worker);
+        var newWorker = class Worker extends getCleanWorker(unsafeWindow.Worker) {
             constructor(twitchBlobUrl, options) {
                 var isTwitchWorker = false;
                 try {
@@ -102,6 +106,7 @@ twitch-videoad.js text/javascript
                     return;
                 }
                 var newBlobStr = `
+                    const pendingFetchRequests = new Map();
                     ${getStreamUrlForResolution.toString()}
                     ${getStreamForResolution.toString()}
                     ${stripUnusedParams.toString()}
@@ -131,6 +136,23 @@ twitch-videoad.js text/javascript
                             ClientIntegrityHeader = e.data.value;
                         } else if (e.data.key == 'UpdateAuthorizationHeader') {
                             AuthorizationHeader = e.data.value;
+                        } else if (e.data.key == 'FetchResponse') {
+                            const responseData = e.data.value;
+                            if (pendingFetchRequests.has(responseData.id)) {
+                                const { resolve, reject } = pendingFetchRequests.get(responseData.id);
+                                pendingFetchRequests.delete(responseData.id);
+                                if (responseData.error) {
+                                    reject(new Error(responseData.error));
+                                } else {
+                                    // Create a Response object from the response data
+                                    const response = new Response(responseData.body, {
+                                        status: responseData.status,
+                                        statusText: responseData.statusText,
+                                        headers: responseData.headers
+                                    });
+                                    resolve(response);
+                                }
+                            }
                         }
                     });
                     hookWorkerFetch();
@@ -224,10 +246,10 @@ twitch-videoad.js text/javascript
                                                         qualityToSelect = 0;
                                                     }
                                                 }
-                                                var currentQualityLS = window.localStorage.getItem('video-quality');
+                                                var currentQualityLS = unsafeWindow.localStorage.getItem('video-quality');
                                                 lowQuality[qualityToSelect].click();
                                                 settingsCog.click();
-                                                window.localStorage.setItem('video-quality', currentQualityLS);
+                                                unsafeWindow.localStorage.setItem('video-quality', currentQualityLS);
                                                 if (e.data.value != null) {
                                                     OriginalVideoPlayerQuality = null;
                                                     IsPlayerAutoQuality = null;
@@ -242,6 +264,16 @@ twitch-videoad.js text/javascript
                             OriginalVideoPlayerQuality = null;
                             IsPlayerAutoQuality = null;
                         }
+                    }
+                });
+                this.addEventListener('message', async event => {
+                    if (event.data.key == 'FetchRequest') {
+                        const fetchRequest = event.data.value;
+                        const responseData = await handleWorkerFetchRequest(fetchRequest);
+                        this.postMessage({
+                            key: 'FetchResponse',
+                            value: responseData
+                        });
                     }
                 });
                 function getAdBlockDiv() {
@@ -264,7 +296,7 @@ twitch-videoad.js text/javascript
             }
         };
         var workerInstance = reinsertWorkers(newWorker, reinsert);
-        Object.defineProperty(window, 'Worker', {
+        Object.defineProperty(unsafeWindow, 'Worker', {
             get: function() {
                 return workerInstance;
             },
@@ -296,12 +328,15 @@ twitch-videoad.js text/javascript
                                 //Here we check the m3u8 for any ads and also try fallback player types if needed.
                                 var responseText = await response.text();
                                 var weaverText = null;
-                                weaverText = await processM3U8(url, responseText, realFetch, PlayerType2);
+                                var fallbackWeaverText = weaverText = await processM3U8(url, responseText, realFetch, PlayerType2);
                                 if (weaverText.includes(AdSignifier)) {
                                     weaverText = await processM3U8(url, responseText, realFetch, PlayerType3);
                                 }
                                 if (weaverText.includes(AdSignifier)) {
                                     weaverText = await processM3U8(url, responseText, realFetch, PlayerType4);
+                                }
+                                if (weaverText.includes(AdSignifier)) {
+                                    weaverText = fallbackWeaverText;
                                 }
                                 resolve(new Response(weaverText));
                             } else {
@@ -655,9 +690,9 @@ twitch-videoad.js text/javascript
             },
         }];
     }
-    function getAccessToken(channelName, playerType, realFetch) {
+    function getAccessToken(channelName, playerType) {
         var body = null;
-        var templateQuery = 'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "ios", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature    __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "ios", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}';
+        var templateQuery = 'query PlaybackAccessToken_Template($login: String!, $isLive: Boolean!, $vodID: ID!, $isVod: Boolean!, $playerType: String!) {  streamPlaybackAccessToken(channelName: $login, params: {platform: "android", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isLive) {    value    signature    __typename  }  videoPlaybackAccessToken(id: $vodID, params: {platform: "android", playerBackend: "mediaplayer", playerType: $playerType}) @include(if: $isVod) {    value    signature    __typename  }}';
         body = {
             operationName: 'PlaybackAccessToken_Template',
             query: templateQuery,
@@ -669,14 +704,9 @@ twitch-videoad.js text/javascript
                 'playerType': playerType
             }
         };
-        return gqlRequest(body, realFetch);
+        return gqlRequest(body);
     }
-    function gqlRequest(body, realFetch) {
-        if (ClientIntegrityHeader == null) {
-            //console.warn('ClientIntegrityHeader is null');
-            //throw 'ClientIntegrityHeader is null';
-        }
-        var fetchFunc = realFetch ? realFetch : fetch;
+    function gqlRequest(body) {
         if (!GQLDeviceID) {
             var dcharacters = 'abcdefghijklmnopqrstuvwxyz0123456789';
             var dcharactersLength = dcharacters.length;
@@ -684,18 +714,34 @@ twitch-videoad.js text/javascript
                 GQLDeviceID += dcharacters.charAt(Math.floor(Math.random() * dcharactersLength));
             }
         }
-        return fetchFunc('https://gql.twitch.tv/gql', {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'Client-ID': ClientID,
-                'Client-Integrity': ClientIntegrityHeader,
-                'Device-ID': GQLDeviceID,
-                'X-Device-Id': GQLDeviceID,
-                'Client-Version': ClientVersion,
-                'Client-Session-Id': ClientSession,
-                'Authorization': AuthorizationHeader
-            }
+        var headers = {
+            'Client-ID': ClientID,
+            'Client-Integrity': ClientIntegrityHeader,
+            'Device-ID': GQLDeviceID,
+            'X-Device-Id': GQLDeviceID,
+            'Client-Version': ClientVersion,
+            'Client-Session-Id': ClientSession,
+            'Authorization': AuthorizationHeader
+        };
+        return new Promise((resolve, reject) => {
+            const requestId = Math.random().toString(36).substring(2, 15);
+            const fetchRequest = {
+                id: requestId,
+                url: 'https://gql.twitch.tv/gql',
+                options: {
+                    method: 'POST',
+                    body: JSON.stringify(body),
+                    headers
+                }
+            };
+            pendingFetchRequests.set(requestId, {
+                resolve,
+                reject
+            });
+            postMessage({
+                key: 'FetchRequest',
+                value: fetchRequest
+            });
         });
     }
     function doTwitchPlayerTask(isPausePlay, isCheckQuality, isCorrectBuffer, isAutoQuality, setAutoQuality) {
@@ -797,20 +843,95 @@ twitch-videoad.js text/javascript
             } catch (err) {}
         } catch (err) {}
     }
-    window.reloadTwitchPlayer = doTwitchPlayerTask;
+    unsafeWindow.reloadTwitchPlayer = doTwitchPlayerTask;
     var localDeviceID = null;
-    localDeviceID = window.localStorage.getItem('local_copy_unique_id');
+    localDeviceID = unsafeWindow.localStorage.getItem('local_copy_unique_id');
     function postTwitchWorkerMessage(key, value) {
         twitchWorkers.forEach((worker) => {
             worker.postMessage({key: key, value: value});
         });
     }
+    function makeGmXmlHttpRequest(fetchRequest) {
+        return new Promise((resolve, reject) => {
+            GM.xmlHttpRequest({
+                method: fetchRequest.options.method,
+                url: fetchRequest.url,
+                data: fetchRequest.options.body,
+                headers: fetchRequest.options.headers,
+                onload: response => resolve(response),
+                onerror: error => reject(error)
+            });
+        });
+    }
+    // Taken from https://github.com/dimdenGD/YeahTwitter/blob/9e0520f5abe029f57929795d8de0d2e5d3751cf3/us.js#L48
+    function parseHeaders(headersString) {
+        const headers = new Headers();
+        const lines = headersString.trim().split(/[\r\n]+/);
+        lines.forEach(line => {
+            const parts = line.split(':');
+            const header = parts.shift();
+            const value = parts.join(':');
+            headers.append(header, value);
+        });
+        return headers;
+    }
+    var serverLikesThisBrowser = false;
+    var serverHatesThisBrowser = false;
+    async function handleWorkerFetchRequest(fetchRequest) {
+        try {
+            if (serverLikesThisBrowser || !serverHatesThisBrowser) {
+                const response = await unsafeWindow.realFetch(fetchRequest.url, fetchRequest.options);
+                const responseBody = await response.text();
+                const responseObject = {
+                    id: fetchRequest.id,
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(response.headers.entries()),
+                    body: responseBody
+                };
+                if (responseObject.status === 200) {
+                    var resp = JSON.parse(responseBody);
+                    if (typeof resp.errors !== 'undefined') {
+                        serverHatesThisBrowser = true;
+                    } else {
+                        serverLikesThisBrowser = true;
+                    }
+                }
+                if (serverLikesThisBrowser || !serverHatesThisBrowser) {
+                    return responseObject;
+                }
+            }
+            if (typeof GM !== 'undefined' && typeof GM.xmlHttpRequest !== 'undefined') {
+                fetchRequest.options.headers['Sec-Ch-Ua'] = '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"';
+                fetchRequest.options.headers['Referer'] = 'https://www.twitch.tv/';
+                fetchRequest.options.headers['Origin'] = 'https://www.twitch.tv/';
+                fetchRequest.options.headers['Host'] = 'gql.twitch.tv';
+                const response = await makeGmXmlHttpRequest(fetchRequest);
+                const responseBody = response.responseText;
+                const responseObject = {
+                    id: fetchRequest.id,
+                    status: response.status,
+                    statusText: response.statusText,
+                    headers: Object.fromEntries(parseHeaders(response.responseHeaders).entries()),
+                    body: responseBody
+                };
+                return responseObject;
+            }
+            throw { message: 'Failed to resolve GQL request. Try the userscript version of the ad blocking solution' };
+        } catch (error) {
+            return {
+                id: fetchRequest.id,
+                error: error.message
+            };
+        }
+    }
     function hookFetch() {
-        var realFetch = window.fetch;
-        window.fetch = function(url, init, ...args) {
+        var realFetch = unsafeWindow.fetch;
+        unsafeWindow.realFetch = realFetch;
+        unsafeWindow.fetch = function(url, init, ...args) {
             if (typeof url === 'string') {
                 //Check if squad stream.
-                if (window.location.pathname.includes('/squad')) {
+                if (unsafeWindow.location.pathname.includes('/squad')) {
                     postTwitchWorkerMessage('UpdateIsSquadStream', true);
                 } else {
                     postTwitchWorkerMessage('UpdateIsSquadStream', false);
@@ -901,6 +1022,8 @@ twitch-videoad.js text/javascript
                 }
             });
         }catch{}
+        let hidden = document.__lookupGetter__('hidden');
+        let webkitHidden = document.__lookupGetter__('webkitHidden');
         try {
             Object.defineProperty(document, 'hidden', {
                 get() {
@@ -913,9 +1036,23 @@ twitch-videoad.js text/javascript
             e.stopPropagation();
             e.stopImmediatePropagation();
         };
-        document.addEventListener('visibilitychange', block, true);
-        document.addEventListener('webkitvisibilitychange', block, true);
-        document.addEventListener('mozvisibilitychange', block, true);
+        let wasVideoPlaying = true;
+        var visibilityChange = e => {
+            if (typeof chrome !== 'undefined') {
+                const videos = document.getElementsByTagName('video');
+                if (videos.length > 0) {
+                    if (hidden.apply(document) === true || (webkitHidden && webkitHidden.apply(document) === true)) {
+                        wasVideoPlaying = !videos[0].paused && !videos[0].ended;
+                    } else if (wasVideoPlaying && !videos[0].ended) {
+                        videos[0].play();
+                    }
+                }
+            }
+            block(e);
+        };
+        document.addEventListener('visibilitychange', visibilityChange, true);
+        document.addEventListener('webkitvisibilitychange', visibilityChange, true);
+        document.addEventListener('mozvisibilitychange', visibilityChange, true);
         document.addEventListener('hasFocus', block, true);
         try {
             if (/Firefox/.test(navigator.userAgent)) {
@@ -933,13 +1070,13 @@ twitch-videoad.js text/javascript
             }
         }catch{}
     }
-    declareOptions(window);
+    declareOptions(unsafeWindow);
     hookWindowWorker();
     hookFetch();
     if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
         onContentLoaded();
     } else {
-        window.addEventListener("DOMContentLoaded", function() {
+        unsafeWindow.addEventListener("DOMContentLoaded", function() {
             onContentLoaded();
         });
     }
