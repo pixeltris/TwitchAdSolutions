@@ -25,7 +25,7 @@ Alternatively:
 
 **There are better / easier to use methods in the above recommendations.**
 
-- video-swap-new - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/video-swap-new/video-swap-new-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/7bc595fb70b73920788b1e7140bbe6cabf4cfaf5/video-swap-new/video-swap-new-ublock-origin.js)
+- video-swap-new - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/video-swap-new/video-swap-new-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/61c634b379dd1cfffc282e68dde86e4c4fcb0832/video-swap-new/video-swap-new-ublock-origin.js)
   - Uses a lower resolution stream during ads.
 - vaft - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/vaft/vaft-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/7240e9855ec73a2aa6ff60679c3386fbf1e75732/vaft/vaft-ublock-origin.js)
   - The same as `video-swap-new` but attempts to get a clean stream faster (may suffer from more freezing / playback issues).
