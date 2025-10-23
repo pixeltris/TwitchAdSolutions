@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    var ourTwitchAdSolutionsVersion = 12;// Used to prevent conflicts with outdated versions of the scripts
+    var ourTwitchAdSolutionsVersion = 13;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof unsafeWindow === 'undefined') {
         unsafeWindow = window;
     }
@@ -280,12 +280,14 @@ twitch-videoad.js text/javascript
                                         // TODO: Do a better matching up of the resolutions rather than picking the highest low res for all
                                         var lowResLines = encodingsM3u8.replace('\r', '').split('\n');
                                         var lowResBestUrl = null;
+                                        var lowResSettings = [];
                                         for (var j = 0; j < lowResLines.length; j++) {
                                             if (lowResLines[j].startsWith('#EXT-X-STREAM-INF')) {
                                                 var res = parseAttributes(lowResLines[j])['RESOLUTION'];
                                                 if (res && lowResLines[j + 1].endsWith('.m3u8')) {
                                                     // Assumes resolutions are correctly ordered
                                                     lowResBestUrl = lowResLines[j + 1];
+                                                    lowResSettings = parseAttributes(lowResLines[j].substring(lowResLines[j].indexOf(':') + 1));
                                                     break;
                                                 }
                                             }
@@ -295,6 +297,17 @@ twitch-videoad.js text/javascript
                                             var normalLines = normalEncodingsM3u8.replace('\r', '').split('\n');
                                             for (var j = 0; j < normalLines.length - 1; j++) {
                                                 if (normalLines[j].startsWith('#EXT-X-STREAM-INF')) {
+                                                    var resSettings = parseAttributes(normalLines[j].substring(normalLines[j].indexOf(':') + 1));
+                                                    const codecsKey = 'CODECS';
+                                                    if (typeof resSettings[codecsKey] === 'string' && typeof lowResSettings[codecsKey] === 'string' &&
+                                                        resSettings[codecsKey].length >= 3 && lowResSettings[codecsKey].length >= 3 &&
+                                                        resSettings[codecsKey].substring(0, 3) === 'hev' &&
+                                                        resSettings[codecsKey].substring(0, 3) !== lowResSettings[codecsKey].substring(0, 3)
+                                                    ) {
+                                                        console.log('swap ' + resSettings[codecsKey] + ' to ' + lowResSettings[codecsKey]);
+                                                        normalLines[j] = normalLines[j].replace(/CODECS="[^"]+"/, `CODECS="${lowResSettings[codecsKey]}"`);
+                                                        console.log(normalLines[j]);
+                                                    }
                                                     var res = parseAttributes(normalLines[j])['RESOLUTION'];
                                                     if (res) {
                                                         lowResBestUrl += ' ';// The stream doesn't load unless each url line is unique
@@ -334,7 +347,7 @@ twitch-videoad.js text/javascript
             return textStr;
         }
         var haveAdTags = textStr.includes(AD_SIGNIFIER);
-        if (SimulatedAdsDepth && (!streamInfo.BackupEncodings || !streamInfo.BackupEncodings.includes(url) || SimulatedAdsDepth - 1 > streamInfo.BackupEncodingsPlayerTypeIndex)) {
+        if (SimulatedAdsDepth > 0 && (!streamInfo.BackupEncodings || !streamInfo.BackupEncodings.includes(url) || SimulatedAdsDepth - 1 > streamInfo.BackupEncodingsPlayerTypeIndex)) {
             haveAdTags = true;
         }
         if (streamInfo.BackupEncodings) {
@@ -343,7 +356,7 @@ twitch-videoad.js text/javascript
             if (streamM3u8Response.status == 200) {
                 var streamM3u8 = await streamM3u8Response.text();
                 if (streamM3u8 != null) {
-                    if (!streamM3u8.includes(AD_SIGNIFIER) && !SimulatedAdsDepth) {
+                    if (!streamM3u8.includes(AD_SIGNIFIER) && SimulatedAdsDepth == 0) {
                         console.log('No more ads on main stream. Triggering player reload to go back to main stream...');
                         streamInfo.IsMovingOffBackupEncodings = true;
                         streamInfo.BackupEncodings = null;
