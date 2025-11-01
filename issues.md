@@ -8,6 +8,10 @@ If you're using the uBlock Origin version of the script you need to make sure th
 
 This needs to be fixed but currently the exact cause is unknown.
 
+## The scripts don't work on mobile (m.twitch.tv)
+
+There are no plans of implementing the scripts on m.twitch.tv but there are other solutions which blocking ads on Twitch for mobile. See https://github.com/pixeltris/TwitchAdSolutions/blob/master/full-list.md
+
 ## `vaft`
 
 ### Freezing / buffering
