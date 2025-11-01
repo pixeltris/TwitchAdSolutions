@@ -43,8 +43,17 @@ To stop using a script remove the filter and make the url `unset`.
 
 *The scripts __may randomly stop being applied by uBlock Origin__ for unknown reasons ([#200](https://github.com/pixeltris/TwitchAdSolutions/issues/200)). It's recommended to use the userscript versions instead.*
 
-**Brave currently doesn't work with the uBlock Origin scripts, use the userscript instead.**
-
 ## Applying a script (userscript)
 
-- Viewing one of the userscript files should prompt the given script to be added (assuming you have a userscript manager).
+Viewing one of the userscript files should prompt the given script to be added when you have a userscript manager installed.
+
+Userscript managers:
+
+- https://violentmonkey.github.io/
+- https://www.tampermonkey.net/
+- https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/
+- https://apps.apple.com/us/app/userscripts/id1463298887
+
+## Issues with the scripts
+
+If the script doesn't work or you're experiencing freezing / buffering issues see [issues.md](issues.md)
