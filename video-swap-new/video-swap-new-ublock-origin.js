@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    var ourTwitchAdSolutionsVersion = 14;// Used to prevent conflicts with outdated versions of the scripts
+    var ourTwitchAdSolutionsVersion = 15;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof window.twitchAdSolutionsVersion !== 'undefined' && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping video-swap-new as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -24,6 +24,7 @@ twitch-videoad.js text/javascript
         scope.ClientIntegrityHeader = null;
         scope.AuthorizationHeader = undefined;
         scope.SimulatedAdsDepth = 0;
+        scope.V2API = false;
     }
     var localStorageHookFailed = false;
     var adBlockDiv = null;
@@ -264,7 +265,7 @@ twitch-videoad.js text/javascript
                     var accessTokenResponse = await getAccessToken(streamInfo.ChannelName, playerType, OPT_BACKUP_PLATFORM);
                     if (accessTokenResponse != null && accessTokenResponse.status === 200) {
                         var accessToken = await accessTokenResponse.json();
-                        var urlInfo = new URL('https://usher.ttvnw.net/api/channel/hls/' + streamInfo.ChannelName + '.m3u8' + streamInfo.UsherParams);
+                        var urlInfo = new URL('https://usher.ttvnw.net/api/' + (V2API ? 'v2/' : '') + 'channel/hls/' + streamInfo.ChannelName + '.m3u8' + streamInfo.UsherParams);
                         urlInfo.searchParams.set('sig', accessToken.data.streamPlaybackAccessToken.signature);
                         urlInfo.searchParams.set('token', accessToken.data.streamPlaybackAccessToken.value);
                         var encodingsM3u8Response = await realFetch(urlInfo.href);
@@ -413,7 +414,8 @@ twitch-videoad.js text/javascript
                         send();
                     });
                 }
-                else if (url.includes('/api/channel/hls/') && !url.includes('picture-by-picture')) {
+                else if (url.includes('/channel/hls/') && !url.includes('picture-by-picture')) {
+                    V2API = url.includes('/api/v2/');
                     var channelName = (new URL(url)).pathname.match(/([^\/]+)(?=\.\w+$)/)[0];
                     if (OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE) {
                         // parent_domains is used to determine if the player is embeded and stripping it gets rid of fake ads
@@ -481,10 +483,17 @@ twitch-videoad.js text/javascript
         }
     }
     function getServerTimeFromM3u8(encodingsM3u8) {
+        if (V2API) {
+            var matches = encodingsM3u8.match(/#EXT-X-SESSION-DATA:DATA-ID="SERVER-TIME",VALUE="([^"]+)"/);
+            return matches.length > 1 ? matches[1] : null;
+        }
         var matches = encodingsM3u8.match('SERVER-TIME="([0-9.]+)"');
         return matches.length > 1 ? matches[1] : null;
     }
     function replaceServerTimeInM3u8(encodingsM3u8, newServerTime) {
+        if (V2API) {
+            return newServerTime ? encodingsM3u8.replace(/(#EXT-X-SESSION-DATA:DATA-ID="SERVER-TIME",VALUE=")[^"]+(")/, `$1${newServerTime}$2`) : encodingsM3u8;
+        }
         return newServerTime ? encodingsM3u8.replace(new RegExp('(SERVER-TIME=")[0-9.]+"'), `SERVER-TIME="${newServerTime}"`) : encodingsM3u8;
     }
     function getStreamUrlForResolution(encodingsM3u8, resolutionInfo) {
