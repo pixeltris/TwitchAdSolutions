@@ -46,6 +46,8 @@
   - An alternate Twitch player for Android with extra features, including ad blocking. This currently only uses the TTV LOL API for proxying. However, TTV LOL itself no longer works, so entering a custom proxy URL in settings is required for ad-blocking capabilities. For example: `https://eu.luminous.dev/live/$channel?allow_source=true&allow_audio_only=true&fast_bread=true`
 - `ReVanced` - [code](https://github.com/revanced)
   - A collection of tools that allows you to patch Twitch and other Android apps such as YouTube to remove ads. ReVanced's Twitch patches use the TTV LOL and PurpleAdBlocker proxies (can be toggled between in settings). The setup is complicated, so anyone who doesn't want the hassle should just use Xtra instead.
+- https://github.com/level3tjg/TwitchAdBlock
+  - Blocks Twitch ads on iOS
 - https://twitchls.com/
   - Uses the `embed` player. Purple screen may display every 10-15 mins.
 - https://reddit.com/r/Twitch/comments/kisdsy/i_did_a_little_test_regarding_ads_on_twitch_and/
@@ -56,24 +58,3 @@
 Proxy solutions can have downtime and you'll either see ads or error 2000. This isn't Twitch retaliating.
 
 Buffering may occur at higher resolutions. This happens because traffic comes from a Twitch server closest to the initial m3u8 proxy request. The only solution to this is asking the proxy maintainer to add a proxy in a country closer to you. If they wont then you'll need to use a lower resolution, or use a different ad blocking solution. A VPN might also be better solution for you.
-
-## Extensions to avoid
-
-> [!CAUTION]
-> These extensions most likely have bad intentions. Use at your own risk. These are being listed due to the number of installs (which may be artificially inflated).
-
-- `Stream Cleaner` - [chrome](https://chromewebstore.google.com/detail/stream-cleaner/lehcglgkjkamolcflammloedahjocbbg)
-  - Uses some variation of the `vaft` script
-  - Runs a script on every web page (not just twitch.tv). Uses push notifications (likely for abuse). Read more in [#171](https://github.com/pixeltris/TwitchAdSolutions/issues/171#issuecomment-1615553539)
-- `Adblock for Twitch` - [chrome](https://chromewebstore.google.com/detail/adblock-for-twitch/mdomkpjejpboocpojfikalapgholajdc)
-  - Uses some variation of the `vaft` script
-  - Runs a script on every web page (not just twitch.tv). Uses push notifications (likely for abuse).
-- `TwiBlocker - Video AdBlocker` - [chrome](https://chromewebstore.google.com/detail/twiblocker-video-adblocke/mdohdkncgoaamplcaokhmlppgafhlima)
-  - Uses some variation of the `vaft` script
-  - Runs a script on every web page (not just twitch.tv). Uses push notifications (likely for abuse).
-- `Twitch™ Adblock Plus` - [chrome](https://chromewebstore.google.com/detail/twitch-adblock-plus/efdkmejbldmccndljocbkmpankbjhaao)
-  - Uses some variation of the `vaft` script
-  - Runs a script on every web page (not just twitch.tv).
-- `Twitch Ad Blocker` - [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-ad-blocker/)
-  - Forces the `thunderdome` player type
-  - Runs a script on every web page (not just twitch.tv)

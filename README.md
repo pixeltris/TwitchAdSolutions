@@ -25,9 +25,9 @@ Alternatively:
 
 **There are better / easier to use methods in the above recommendations.**
 
-- video-swap-new - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/video-swap-new/video-swap-new-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/7240e9855ec73a2aa6ff60679c3386fbf1e75732/video-swap-new/video-swap-new-ublock-origin.js)
+- video-swap-new - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/video-swap-new/video-swap-new-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/ed898b750f7e62030afd5561a4305c1832a188da/video-swap-new/video-swap-new-ublock-origin.js)
   - Uses a lower resolution stream during ads.
-- vaft - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/vaft/vaft-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/7240e9855ec73a2aa6ff60679c3386fbf1e75732/vaft/vaft-ublock-origin.js)
+- vaft - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js) / [ublock](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/master/vaft/vaft-ublock-origin.js) / [ublock (permalink)](https://raw.githubusercontent.com/pixeltris/TwitchAdSolutions/ed898b750f7e62030afd5561a4305c1832a188da/vaft/vaft-ublock-origin.js)
   - The same as `video-swap-new` but attempts to get a clean stream faster (may suffer from more freezing / playback issues).
 
 ## Applying a script (uBlock Origin)
@@ -43,8 +43,17 @@ To stop using a script remove the filter and make the url `unset`.
 
 *The scripts __may randomly stop being applied by uBlock Origin__ for unknown reasons ([#200](https://github.com/pixeltris/TwitchAdSolutions/issues/200)). It's recommended to use the userscript versions instead.*
 
-**Brave currently doesn't work with the uBlock Origin scripts, use the userscript instead.**
-
 ## Applying a script (userscript)
 
-- Viewing one of the userscript files should prompt the given script to be added (assuming you have a userscript manager).
+Viewing one of the userscript files should prompt the given script to be added when you have a userscript manager installed.
+
+Userscript managers:
+
+- https://violentmonkey.github.io/
+- https://www.tampermonkey.net/
+- https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/
+- https://apps.apple.com/us/app/userscripts/id1463298887
+
+## Issues with the scripts
+
+If the script doesn't work or you're experiencing freezing / buffering issues see [issues.md](issues.md)
