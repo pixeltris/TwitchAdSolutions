@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (video-swap-new)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      1.50
+// @version      1.51
 // @description  Multiple solutions for blocking Twitch ads (video-swap-new)
 // @author       pixeltris
 // @match        *://*.twitch.tv/*
@@ -440,6 +440,11 @@
                 }
                 else if (url.includes('/channel/hls/') && !url.includes('picture-by-picture')) {
                     V2API = url.includes('/api/v2/');
+                    /*if (V2API) {
+                        console.log('downgrade V2 API');
+                        url = url.replace('/api/v2/', '/api/');
+                        V2API = false;
+                    }*/
                     var channelName = (new URL(url)).pathname.match(/([^\/]+)(?=\.\w+$)/)[0];
                     if (OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE) {
                         // parent_domains is used to determine if the player is embeded and stripping it gets rid of fake ads
@@ -554,7 +559,7 @@
     function getAccessToken(channelName, playerType, platform) {
         if (playerType == 'embed') {
             //return gqlRequest(`{"operationName":"PlaybackAccessToken","variables":{"isLive":true,"login":"${channelName}","isVod":false,"vodID":"","playerType":"embed","platform":"web"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9"}}}`);
-            return gqlRequest({"operationName":"PlaybackAccessToken","variables":{"isLive":true,"login":channelName,"isVod":false,"vodID":"","playerType":"embed","platform":"web"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9"}}});
+            return gqlRequest({"operationName":"PlaybackAccessToken","variables":{"isLive":true,"login":channelName,"isVod":false,"vodID":"","playerType":"embed","platform":"web"},"extensions":{"persistedQuery":{"version":1,"sha256Hash":"ed230aa1e33e07eebb8928504583da78a5173989fadfb1ac94be06a04f3cdbe9"}}}, playerType);
         }
         if (!platform) {
             platform = 'web';
@@ -572,9 +577,9 @@
                 'playerType': playerType
             }
         };
-        return gqlRequest(body);
+        return gqlRequest(body, playerType);
     }
-    function gqlRequest(body) {
+    function gqlRequest(body, playerType) {
         if (!gql_device_id) {
             const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
             for (let i = 0; i < 32; i += 1) {
@@ -588,6 +593,19 @@
             'Authorization': AuthorizationHeader,
             ...(ClientIntegrityHeader && {'Client-Integrity': ClientIntegrityHeader})
         };
+        if (playerType == 'embed') {
+            var embedDeviceId = '';
+            const cccc = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            for (let i = 0; i < 16; i += 1) {
+                    embedDeviceId += cccc.charAt(Math.floor(Math.random() * cccc.length));
+            }
+            headers = {
+                'Client-Id': CLIENT_ID,
+                'X-Device-Id': embedDeviceId,
+                'Client-Version': '73b082d6-a087-419d-9a91-2afaa1a167b4'
+            };
+            console.log('use alt headers');
+        }
         return new Promise((resolve, reject) => {
             const requestId = Math.random().toString(36).substring(2, 15);
             const fetchRequest = {
