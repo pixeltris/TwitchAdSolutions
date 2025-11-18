@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    var ourTwitchAdSolutionsVersion = 15;// Used to prevent conflicts with outdated versions of the scripts
+    var ourTwitchAdSolutionsVersion = 16;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof window.twitchAdSolutionsVersion !== 'undefined' && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping video-swap-new as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -13,6 +13,7 @@ twitch-videoad.js text/javascript
         scope.OPT_BACKUP_PLAYER_TYPES = [ 'autoplay', 'picture-by-picture', 'embed' ];
         scope.OPT_BACKUP_PLATFORM = 'android';
         scope.OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE = 'site';
+        scope.OPT_DISABLE_MATURE_CONTENT_POPUP = false;// If true this avoids having to log in to watch age gated content
         scope.AD_SIGNIFIER = 'stitched-ad';
         scope.LIVE_SIGNIFIER = ',live';
         scope.CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
@@ -275,12 +276,12 @@ twitch-videoad.js text/javascript
                             var streamM3u8Response = await realFetch(streamM3u8Url);
                             if (streamM3u8Response.status === 200) {
                                 var backTextStr = await streamM3u8Response.text();
-                                if ((!backTextStr.includes(AD_SIGNIFIER) && (SimulatedAdsDepth == 0 || i >= SimulatedAdsDepth - 1)) || streamInfo.BackupEncodingsStatus.size >= playerTypes.length - 1) {
+                                if ((!backTextStr.includes(AD_SIGNIFIER) && (SimulatedAdsDepth == 0 || i >= SimulatedAdsDepth - 1)) || i >= playerTypes.length - 1) {
                                     result = backTextStr;
                                     backupPlayerTypeInfo = ' (' + playerType + ')';
                                     streamInfo.BackupEncodingsStatus.set(playerType, 1);
                                     streamInfo.BackupEncodingsPlayerTypeIndex = i;
-                                    if (playerType !== 'embed' && streamInfo.Encodings != null) {
+                                    if (streamInfo.Encodings != null) {
                                         // Low resolution streams will reduce the number of resolutions in the UI. To fix this we merge the low res URLs into the main m3u8
                                         var normalEncodingsM3u8 = streamInfo.Encodings;
                                         var normalLines = normalEncodingsM3u8.replace('\r', '').split('\n');
@@ -544,9 +545,9 @@ twitch-videoad.js text/javascript
                 'playerType': playerType
             }
         };
-        return gqlRequest(body);
+        return gqlRequest(body, playerType);
     }
-    function gqlRequest(body) {
+    function gqlRequest(body, playerType) {
         if (!gql_device_id) {
             const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
             for (let i = 0; i < 32; i += 1) {
@@ -560,6 +561,12 @@ twitch-videoad.js text/javascript
             'Authorization': AuthorizationHeader,
             ...(ClientIntegrityHeader && {'Client-Integrity': ClientIntegrityHeader})
         };
+        if (playerType != 'site') {
+            headers = {
+                'Client-Id': CLIENT_ID,
+                'X-Device-Id': gql_device_id
+            };
+        }
         return new Promise((resolve, reject) => {
             const requestId = Math.random().toString(36).substring(2, 15);
             const fetchRequest = {
@@ -637,7 +644,7 @@ twitch-videoad.js text/javascript
                     if (typeof init.headers['Authorization'] === 'string' && init.headers['Authorization'] !== AuthorizationHeader) {
                         postTwitchWorkerMessage('UpdateAuthorizationHeader', AuthorizationHeader = init.headers['Authorization']);
                     }
-                    if (OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && !init.body.includes('picture-by-picture')) {
+                    if (OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && !init.body.includes('picture-by-picture') && !init.body.includes('frontpage')) {
                         let replacedPlayerType = '';
                         const newBody = JSON.parse(init.body);
                         if (Array.isArray(newBody)) {
@@ -656,6 +663,22 @@ twitch-videoad.js text/javascript
                         if (replacedPlayerType) {
                             console.log(`Replaced '${replacedPlayerType}' player type with '${OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE}' player type`);
                             init.body = JSON.stringify(newBody);
+                        }
+                    }
+                    if (OPT_DISABLE_MATURE_CONTENT_POPUP) {
+                        const newBody2 = JSON.parse(init.body);
+                        if (Array.isArray(newBody2)) {
+                            var hasRemovedClassification = false;
+                            for (let i = 0; i < newBody2.length; i++) {
+                                if (newBody2[i]?.operationName == 'ContentClassificationContext') {
+                                    hasRemovedClassification = true;
+                                    // Doesn't seem like it if we remove this element from the array so instead we duplicate another entry into this index. TODO: Find out why
+                                    newBody2[i] = newBody2[i == 0 && newBody2.length > 1 ? 1 : 0];
+                                }
+                            }
+                            if (hasRemovedClassification) {
+                                init.body = JSON.stringify(newBody2);
+                            }
                         }
                     }
                 }
@@ -729,23 +752,36 @@ twitch-videoad.js text/javascript
         const lsKeyQuality = 'video-quality';
         const lsKeyMuted = 'video-muted';
         const lsKeyVolume = 'volume';
-        var currentQualityLS = localStorage.getItem(lsKeyQuality);
-        var currentMutedLS = localStorage.getItem(lsKeyMuted);
-        var currentVolumeLS = localStorage.getItem(lsKeyVolume);
-        if (localStorageHookFailed && player?.core?.state) {
-            localStorage.setItem(lsKeyMuted, JSON.stringify({default:player.core.state.muted}));
-            localStorage.setItem(lsKeyVolume, player.core.state.volume);
-        }
-        if (localStorageHookFailed && player?.core?.state?.quality?.group) {
-            localStorage.setItem(lsKeyQuality, JSON.stringify({default:player.core.state.quality.group}));
-        }
+        var currentQualityLS = null;
+        var currentMutedLS = null;
+        var currentVolumeLS = null;
+        try {
+            currentQualityLS = localStorage.getItem(lsKeyQuality);
+            currentMutedLS = localStorage.getItem(lsKeyMuted);
+            currentVolumeLS = localStorage.getItem(lsKeyVolume);
+            if (localStorageHookFailed && player?.core?.state) {
+                localStorage.setItem(lsKeyMuted, JSON.stringify({default:player.core.state.muted}));
+                localStorage.setItem(lsKeyVolume, player.core.state.volume);
+            }
+            if (localStorageHookFailed && player?.core?.state?.quality?.group) {
+                localStorage.setItem(lsKeyQuality, JSON.stringify({default:player.core.state.quality.group}));
+            }
+        } catch {}
         playerState.setSrc({ isNewMediaPlayerInstance: true, refreshAccessToken: true });
         player.play();
-        if (localStorageHookFailed) {
+        if (localStorageHookFailed && (currentQualityLS || currentMutedLS || currentVolumeLS)) {
             setTimeout(() => {
-                localStorage.setItem(lsKeyQuality, currentQualityLS);
-                localStorage.setItem(lsKeyMuted, currentMutedLS);
-                localStorage.setItem(lsKeyVolume, currentVolumeLS);
+                try {
+                    if (currentQualityLS) {
+                        localStorage.setItem(lsKeyQuality, currentQualityLS);
+                    }
+                    if (currentMutedLS) {
+                        localStorage.setItem(lsKeyMuted, currentMutedLS);
+                    }
+                    if (currentVolumeLS) {
+                        localStorage.setItem(lsKeyVolume, currentVolumeLS);
+                    }
+                } catch {}
             }, 3000);
         }
     }
@@ -807,34 +843,39 @@ twitch-videoad.js text/javascript
             }
         }catch{}
         // Hooks for preserving volume / resolution
-        var keysToCache = [
-            'video-quality',
-            'video-muted',
-            'volume',
-            'lowLatencyModeEnabled',// Low Latency
-            'persistenceEnabled',// Mini Player
-        ];
-        var cachedValues = new Map();
-        for (var i = 0; i < keysToCache.length; i++) {
-            cachedValues.set(keysToCache[i], localStorage.getItem(keysToCache[i]));
-        }
-        var realSetItem = localStorage.setItem;
-        localStorage.setItem = function(key, value) {
-            if (cachedValues.has(key)) {
-                cachedValues.set(key, value);
+        try {
+            var keysToCache = [
+                'video-quality',
+                'video-muted',
+                'volume',
+                'lowLatencyModeEnabled',// Low Latency
+                'persistenceEnabled',// Mini Player
+            ];
+            var cachedValues = new Map();
+            for (var i = 0; i < keysToCache.length; i++) {
+                cachedValues.set(keysToCache[i], localStorage.getItem(keysToCache[i]));
             }
-            realSetItem.apply(this, arguments);
-        };
-        var realGetItem = localStorage.getItem;
-        localStorage.getItem = function(key) {
-            if (cachedValues.has(key)) {
-                return cachedValues.get(key);
+            var realSetItem = localStorage.setItem;
+            localStorage.setItem = function(key, value) {
+                if (cachedValues.has(key)) {
+                    cachedValues.set(key, value);
+                }
+                realSetItem.apply(this, arguments);
+            };
+            var realGetItem = localStorage.getItem;
+            localStorage.getItem = function(key) {
+                if (cachedValues.has(key)) {
+                    return cachedValues.get(key);
+                }
+                return realGetItem.apply(this, arguments);
+            };
+            if (!localStorage.getItem.toString().includes(Object.keys({cachedValues})[0])) {
+                // These hooks are useful to preserve player state on player reload
+                // Firefox doesn't allow hooking of localStorage functions but chrome does
+                localStorageHookFailed = true;
             }
-            return realGetItem.apply(this, arguments);
-        };
-        if (!localStorage.getItem.toString().includes(Object.keys({cachedValues})[0])) {
-            // These hooks are useful to preserve player state on player reload
-            // Firefox doesn't allow hooking of localStorage functions but chrome does
+        } catch (err) {
+            console.log('localStorageHooks failed ' + err)
             localStorageHookFailed = true;
         }
     }

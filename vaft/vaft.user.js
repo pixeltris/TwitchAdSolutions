@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      28.0.0
+// @version      29.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function() {
     'use strict';
-    var ourTwitchAdSolutionsVersion = 15;// Used to prevent conflicts with outdated versions of the scripts
+    var ourTwitchAdSolutionsVersion = 16;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof window.twitchAdSolutionsVersion !== 'undefined' && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -33,6 +33,7 @@
         scope.SkipPlayerReloadOnHevc = false;// If true this will skip player reload on streams which have 2k/4k quality (if you enable this and you use the 2k/4k quality setting you'll get error #4000 / #3000 / spinning wheel on chrome based browsers)
         scope.AlwaysReloadPlayerOnAd = false;
         scope.PlayerReloadLowResTime = 1500;
+        scope.DisableMatureConentPopup = false;// If true this avoids having to log in to watch age gated content
         scope.StreamInfos = [];
         scope.StreamInfosByUrl = [];
         scope.GQLDeviceID = null;
@@ -543,7 +544,7 @@
                                     if (playerType == FallbackPlayerType) {
                                         fallbackM3u8 = m3u8Text;
                                     }
-                                    if (!m3u8Text.includes(AdSignifier) && (SimulatedAdsDepth == 0 || playerTypeIndex >= SimulatedAdsDepth - 1)) {
+                                    if ((!m3u8Text.includes(AdSignifier) && (SimulatedAdsDepth == 0 || playerTypeIndex >= SimulatedAdsDepth - 1)) || (!fallbackM3u8 && playerTypeIndex >= BackupPlayerTypes.length - 1)) {
                                         backupPlayerType = playerType;
                                         backupM3u8 = m3u8Text;
                                         break;
@@ -612,9 +613,9 @@
                 'playerType': playerType
             }
         };
-        return gqlRequest(body);
+        return gqlRequest(body, playerType);
     }
-    function gqlRequest(body) {
+    function gqlRequest(body, playerType) {
         if (!GQLDeviceID) {
             var dcharacters = 'abcdefghijklmnopqrstuvwxyz0123456789';
             var dcharactersLength = dcharacters.length;
@@ -631,6 +632,12 @@
             ...(ClientVersion && {'Client-Version': ClientVersion}),
             ...(ClientSession && {'Client-Session-Id': ClientSession})
         };
+        if (playerType != 'site') {
+            headers = {
+                'Client-Id': ClientID,
+                'X-Device-Id': GQLDeviceID
+            };
+        }
         return new Promise((resolve, reject) => {
             const requestId = Math.random().toString(36).substring(2, 15);
             const fetchRequest = {
@@ -709,23 +716,36 @@
             const lsKeyQuality = 'video-quality';
             const lsKeyMuted = 'video-muted';
             const lsKeyVolume = 'volume';
-            var currentQualityLS = localStorage.getItem(lsKeyQuality);
-            var currentMutedLS = localStorage.getItem(lsKeyMuted);
-            var currentVolumeLS = localStorage.getItem(lsKeyVolume);
-            if (localStorageHookFailed && player?.core?.state) {
-                localStorage.setItem(lsKeyMuted, JSON.stringify({default:player.core.state.muted}));
-                localStorage.setItem(lsKeyVolume, player.core.state.volume);
-            }
-            if (localStorageHookFailed && player?.core?.state?.quality?.group) {
-                localStorage.setItem(lsKeyQuality, JSON.stringify({default:player.core.state.quality.group}));
-            }
+            var currentQualityLS = null;
+            var currentMutedLS = null;
+            var currentVolumeLS = null;
+            try {
+                currentQualityLS = localStorage.getItem(lsKeyQuality);
+                currentMutedLS = localStorage.getItem(lsKeyMuted);
+                currentVolumeLS = localStorage.getItem(lsKeyVolume);
+                if (localStorageHookFailed && player?.core?.state) {
+                    localStorage.setItem(lsKeyMuted, JSON.stringify({default:player.core.state.muted}));
+                    localStorage.setItem(lsKeyVolume, player.core.state.volume);
+                }
+                if (localStorageHookFailed && player?.core?.state?.quality?.group) {
+                    localStorage.setItem(lsKeyQuality, JSON.stringify({default:player.core.state.quality.group}));
+                }
+            } catch {}
             playerState.setSrc({ isNewMediaPlayerInstance: true, refreshAccessToken: true });
             player.play();
-            if (localStorageHookFailed) {
+            if (localStorageHookFailed && (currentQualityLS || currentMutedLS || currentVolumeLS)) {
                 setTimeout(() => {
-                    localStorage.setItem(lsKeyQuality, currentQualityLS);
-                    localStorage.setItem(lsKeyMuted, currentMutedLS);
-                    localStorage.setItem(lsKeyVolume, currentVolumeLS);
+                    try {
+                        if (currentQualityLS) {
+                            localStorage.setItem(lsKeyQuality, currentQualityLS);
+                        }
+                        if (currentMutedLS) {
+                            localStorage.setItem(lsKeyMuted, currentMutedLS);
+                        }
+                        if (currentVolumeLS) {
+                            localStorage.setItem(lsKeyVolume, currentVolumeLS);
+                        }
+                    } catch {}
                 }, 3000);
             }
             return;
@@ -783,7 +803,7 @@
                     if (typeof init.headers['Authorization'] === 'string' && init.headers['Authorization'] !== AuthorizationHeader) {
                         postTwitchWorkerMessage('UpdateAuthorizationHeader', AuthorizationHeader = init.headers['Authorization']);
                     }
-                    if (ForceAccessTokenPlayerType && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && !init.body.includes('picture-by-picture')) {
+                    if (ForceAccessTokenPlayerType && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && !init.body.includes('picture-by-picture') && !init.body.includes('frontpage')) {
                         let replacedPlayerType = '';
                         const newBody = JSON.parse(init.body);
                         if (Array.isArray(newBody)) {
@@ -802,6 +822,22 @@
                         if (replacedPlayerType) {
                             console.log(`Replaced '${replacedPlayerType}' player type with '${ForceAccessTokenPlayerType}' player type`);
                             init.body = JSON.stringify(newBody);
+                        }
+                    }
+                    if (DisableMatureConentPopup) {
+                        const newBody2 = JSON.parse(init.body);
+                        if (Array.isArray(newBody2)) {
+                            var hasRemovedClassification = false;
+                            for (let i = 0; i < newBody2.length; i++) {
+                                if (newBody2[i]?.operationName == 'ContentClassificationContext') {
+                                    hasRemovedClassification = true;
+                                    // Doesn't seem like it if we remove this element from the array so instead we duplicate another entry into this index. TODO: Find out why
+                                    newBody2[i] = newBody2[i == 0 && newBody2.length > 1 ? 1 : 0];
+                                }
+                            }
+                            if (hasRemovedClassification) {
+                                init.body = JSON.stringify(newBody2);
+                            }
                         }
                     }
                 }
@@ -867,34 +903,39 @@
             }
         }catch{}
         // Hooks for preserving volume / resolution
-        var keysToCache = [
-            'video-quality',
-            'video-muted',
-            'volume',
-            'lowLatencyModeEnabled',// Low Latency
-            'persistenceEnabled',// Mini Player
-        ];
-        var cachedValues = new Map();
-        for (var i = 0; i < keysToCache.length; i++) {
-            cachedValues.set(keysToCache[i], localStorage.getItem(keysToCache[i]));
-        }
-        var realSetItem = localStorage.setItem;
-        localStorage.setItem = function(key, value) {
-            if (cachedValues.has(key)) {
-                cachedValues.set(key, value);
+        try {
+            var keysToCache = [
+                'video-quality',
+                'video-muted',
+                'volume',
+                'lowLatencyModeEnabled',// Low Latency
+                'persistenceEnabled',// Mini Player
+            ];
+            var cachedValues = new Map();
+            for (var i = 0; i < keysToCache.length; i++) {
+                cachedValues.set(keysToCache[i], localStorage.getItem(keysToCache[i]));
             }
-            realSetItem.apply(this, arguments);
-        };
-        var realGetItem = localStorage.getItem;
-        localStorage.getItem = function(key) {
-            if (cachedValues.has(key)) {
-                return cachedValues.get(key);
+            var realSetItem = localStorage.setItem;
+            localStorage.setItem = function(key, value) {
+                if (cachedValues.has(key)) {
+                    cachedValues.set(key, value);
+                }
+                realSetItem.apply(this, arguments);
+            };
+            var realGetItem = localStorage.getItem;
+            localStorage.getItem = function(key) {
+                if (cachedValues.has(key)) {
+                    return cachedValues.get(key);
+                }
+                return realGetItem.apply(this, arguments);
+            };
+            if (!localStorage.getItem.toString().includes(Object.keys({cachedValues})[0])) {
+                // These hooks are useful to preserve player state on player reload
+                // Firefox doesn't allow hooking of localStorage functions but chrome does
+                localStorageHookFailed = true;
             }
-            return realGetItem.apply(this, arguments);
-        };
-        if (!localStorage.getItem.toString().includes(Object.keys({cachedValues})[0])) {
-            // These hooks are useful to preserve player state on player reload
-            // Firefox doesn't allow hooking of localStorage functions but chrome does
+        } catch (err) {
+            console.log('localStorageHooks failed ' + err)
             localStorageHookFailed = true;
         }
     }
