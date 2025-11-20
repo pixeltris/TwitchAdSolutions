@@ -30,14 +30,7 @@ This happens because the script forces the player to consume multiple different 
 
 The script is configured to do this automatically for you:
 
-```js
-PlayerBufferingFix = true;// If true this will pause/play the player when it gets stuck buffering
-PlayerBufferingDelay = 500;// How often should we check the player state (in milliseconds)
-PlayerBufferingSameStateCount = 3;// How many times of seeing the same player state until we trigger pause/play (it will only trigger it one time until the player state changes again)
-PlayerBufferingDangerZone = 1;// The buffering time left (in seconds) when we should ignore the players playback position in the player state check
-PlayerBufferingDoPlayerReload = false;// If true this will do a player reload instead of pause/play (player reloading is better at fixing the playback issues but it takes slightly longer)
-PlayerBufferingMinRepeatDelay = 5000;// Minimum delay (in milliseconds) between each pause/play (this is to avoid over pressing pause/play when there are genuine buffering problems)
-```
+https://github.com/pixeltris/TwitchAdSolutions/blob/9cae451c04a9a94859da7de19c367b58afdd95bc/vaft/vaft.user.js#L49-L54
 
 - If it triggers but it still freezes try setting `PlayerBufferingDoPlayerReload` to `true`. Player reloads generally have less problems.
 - If you're having issues with it triggering when the player is genuinely buffering then adjust `PlayerBufferingDelay` / `PlayerBufferingSameStateCount`.
