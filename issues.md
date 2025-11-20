@@ -6,37 +6,47 @@ If you're using the uBlock Origin version of the script you need to make sure th
 
 ## Streams sometimes appear offline when ads occur
 
-This needs to be fixed but currently the exact cause is unknown.
+This needs to be fixed but currently the exact cause is unknown. https://github.com/pixeltris/TwitchAdSolutions/issues/477
 
-## The scripts don't work on mobile (m.twitch.tv)
+## The player shows a loading wheel for a long time
+
+If it says `Blocking ads (stripping)` in the top left of the stream then it's actively removing the ad segments but doesn't have a backup stream to show you. If it doesn't say `Blocking ads (stripping)` provide additional information in https://github.com/pixeltris/TwitchAdSolutions/issues/474
+
+## The script don't work on mobile (m.twitch.tv)
 
 There are no plans of implementing the scripts on m.twitch.tv but there are other solutions which blocking ads on Twitch for mobile. See https://github.com/pixeltris/TwitchAdSolutions/blob/master/full-list.md
 
+## Long black screen during ads
+
+The scripts can reload the player when entering/leaving ads. On some systems this may cause a long period of time where the player is black as the player is loading back in. There currently isn't any fix for this. Try a different script / solution.
+
 ## `vaft`
 
-### Freezing / buffering
+### Freezing / buffering / repeating segments / audio desyncs
 
-The stream may have playback problems during ads. There is an integrated solution that attempts to automatically press pause/play if buffering occurs during ads. If this isn't working you could try changing `AlwaysReloadPlayerOnAd` from `false` to `true` which will trigger a player reload as it enters/leaves ads which may add some stability. If neither of those are working how you'd like you can disable the pause/play buffer fixing attempt by modifying the userscript and change `FixPlayerBufferingInsideAds` from `true` to `false`. You then need to find an alternative solution to the buffering such as the folloing:
+`vaft` has a long standing problem of playback problems (freezing / buffering / repeating segments / audio desyncs).
 
-- https://github.com/pixeltris/TwitchAdSolutions/issues/299#issuecomment-2509500697
-- https://github.com/pixeltris/TwitchAdSolutions/issues/313
+This happens because the script forces the player to consume multiple different m3u8 files during ads and it screws with the player. Simply pressing pause/play often fixes this.
 
-If you're still having problems it's recommended to switch to using `video-swap-new` (which is the recommended script in the README).
+The script is configured to do this automatically for you:
 
-### Audio desyncs
+```js
+PlayerBufferingFix = true;// If true this will pause/play the player when it gets stuck buffering
+PlayerBufferingDelay = 500;// How often should we check the player state (in milliseconds)
+PlayerBufferingSameStateCount = 3;// How many times of seeing the same player state until we trigger pause/play (it will only trigger it one time until the player state changes again)
+PlayerBufferingDangerZone = 1;// The buffering time left (in seconds) when we should ignore the players playback position in the player state check
+PlayerBufferingDoPlayerReload = false;// If true this will do a player reload instead of pause/play (player reloading is better at fixing the playback issues but it takes slightly longer)
+PlayerBufferingMinRepeatDelay = 5000;// Minimum delay (in milliseconds) between each pause/play (this is to avoid over pressing pause/play when there are genuine buffering problems)
+```
 
-This script can be susceptible to audio desyncs due to the way that it works. There currently isn't any fix for this. Try a different script / solution.
-
-### Freezing / buffering after ads
-
-You can try changing `FixPlayerBufferingOutsideAds` from `false` to `true` which will scan the player for buffering when ads aren't happening and will trigger a pause/play which may work for you.
+- If it triggers but it still freezes try setting `PlayerBufferingDoPlayerReload` to `true`. Player reloads generally have less problems.
+- If you're having issues with it triggering when the player is genuinely buffering then adjust `PlayerBufferingDelay` / `PlayerBufferingSameStateCount`.
+- If it triggers too frequently then increase the value of `PlayerBufferingMinRepeatDelay`. Decrease this if it triggers, freezes, then has to wait a long time to re-trigger.
+- If you don't want to use this and would like to fix the buffering manually yourself you can set `PlayerBufferingFix` to `false`.
+- Setting `AlwaysReloadPlayerOnAd` to `true` may reduce freezing issues when entering into ads.
 
 ## `video-swap-new`
 
-### Long black screen during ads
-
-The script reloads the player as it enters/leaves ads to switch the active m3u8 file that is being used. On some systems this may cause a long period of time where the player is black as the player is loading back in. There currently isn't any fix for this. Try a different script / solution. *This also applies to `vaft` where the streamer has a 2k/4k quality setting as a player reload is required to handle these.*
-
 ### Freezing / buffering during ads
 
-Generally `video-swap-new` should be less susceptible to buffering / freezing than `vaft` as all it does is switch the active m3u8 file as it enters / leaves ads. There currently isn't a fix for freezing / buffering issues for `video-swap-new`. Try a different script / solution.
+There currently isn't a fix for freezing / buffering issues for `video-swap-new`. Try a different script / solution.
