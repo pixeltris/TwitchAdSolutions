@@ -26,7 +26,7 @@
   - Mute ads and optionally hide them (tweak the settings at the top of the script).
 - `vaft` - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js)
   - Attempts to get a clean stream as fast as it can.
-  - If it fails to get a clean stream it removes ad segements (no playback until ad-free stream is found).
+  - If it fails to get a clean stream it removes ad segments (no playback until ad-free stream is found).
 - `video-swap-new` - [userscript](https://github.com/pixeltris/TwitchAdSolutions/raw/master/video-swap-new/video-swap-new.user.js)
   - Attempts to get a clean stream (often low resolution).
   - If it fails to get a clean stream it removes ad segments (no playback until ad-free stream is found).

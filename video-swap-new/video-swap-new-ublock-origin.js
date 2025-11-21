@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    const ourTwitchAdSolutionsVersion = 17;// Used to prevent conflicts with outdated versions of the scripts
+    const ourTwitchAdSolutionsVersion = 18;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof window.twitchAdSolutionsVersion !== 'undefined' && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping video-swap-new as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -29,8 +29,8 @@ twitch-videoad.js text/javascript
         scope.AdSegmentCache = new Map();
         scope.AllSegmentsAreAdSegments = false;
     }
+    let twitchPlayerAndState = null;
     let localStorageHookFailed = false;
-    let adBlockDiv = null;
     const twitchWorkers = [];
     const workerStringConflicts = [
         'twitch',
@@ -116,6 +116,7 @@ twitch-videoad.js text/javascript
                     ${getServerTimeFromM3u8.toString()}
                     ${replaceServerTimeInM3u8.toString()}
                     ${getStreamUrlForResolution.toString()}
+                    ${updateAdblockBannerForStream.toString()}
                     const workerString = getWasmWorkerJs('${twitchBlobUrl.replaceAll("'", "%27")}');
                     declareOptions(self);
                     gql_device_id = ${gql_device_id ? "'" + gql_device_id + "'" : null};
@@ -159,33 +160,8 @@ twitch-videoad.js text/javascript
                 super(URL.createObjectURL(new Blob([newBlobStr])), options);
                 twitchWorkers.push(this);
                 this.addEventListener('message', (e) => {
-                    // NOTE: Removed adDiv caching as '.video-player' can change between streams?
-                    if (e.data.key == 'UboShowAdBanner' || e.data.key == 'UpdateAdBlockBannerStripping') {
-                        if (adBlockDiv == null) {
-                            adBlockDiv = getAdDiv();
-                        }
-                        if (adBlockDiv != null) {
-                            if (e.data.key == 'UpdateAdBlockBannerStripping') {
-                                const strippingAdsSuffix = ' (stripping)';
-                                if (adBlockDiv.P.textContent.endsWith(strippingAdsSuffix)) {
-                                    if (!e.data.isStrippingAdSegments) {
-                                        adBlockDiv.P.textContent = adBlockDiv.P.textContent.substring(0, adBlockDiv.P.textContent.length - strippingAdsSuffix.length);
-                                    }
-                                } else if (e.data.isStrippingAdSegments) {
-                                    adBlockDiv.P.textContent += strippingAdsSuffix;
-                                }
-                            } else {
-                                adBlockDiv.P.textContent = 'Blocking' + (e.data.isMidroll ? ' midroll' : '') + ' ads';
-                                adBlockDiv.style.display = 'block';
-                            }
-                        }
-                    } else if (e.data.key == 'UboHideAdBanner') {
-                        if (adBlockDiv == null) {
-                            adBlockDiv = getAdDiv();
-                        }
-                        if (adBlockDiv != null) {
-                            adBlockDiv.style.display = 'none';
-                        }
+                    if (e.data.key == 'UboUpdateAdBanner') {
+                        updateAdblockBanner(e.data);
                     } else if (e.data.key == 'UboReloadPlayer') {
                         reloadTwitchPlayer(false);
                     } else if (e.data.key == 'UboPauseResumePlayer') {
@@ -202,22 +178,6 @@ twitch-videoad.js text/javascript
                         });
                     }
                 });
-                function getAdDiv() {
-                    const playerRootDiv = document.querySelector('.video-player');
-                    let adDiv = null;
-                    if (playerRootDiv != null) {
-                        adDiv = playerRootDiv.querySelector('.ubo-overlay');
-                        if (adDiv == null) {
-                            adDiv = document.createElement('div');
-                            adDiv.className = 'ubo-overlay';
-                            adDiv.innerHTML = '<div class="player-ad-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 5px;"><p></p></div>';
-                            adDiv.style.display = 'none';
-                            adDiv.P = adDiv.querySelector('p');
-                            playerRootDiv.appendChild(adDiv);
-                        }
-                    }
-                    return adDiv;
-                }
             }
         }
         let workerInstance = reinsertWorkers(newWorker, reinsert);
@@ -260,6 +220,20 @@ twitch-videoad.js text/javascript
                 }
             }
         }
+    }
+    function updateAdblockBannerForStream(streamInfo) {
+        const isShowingAd = !!streamInfo.BackupEncodings;
+        if (!isShowingAd && (streamInfo.IsStrippingAdSegments || streamInfo.NumStrippedAdSegments > 0)) {
+            streamInfo.IsStrippingAdSegments = false;
+            streamInfo.NumStrippedAdSegments = 0;
+        }
+        postMessage({
+            key: 'UboUpdateAdBanner',
+            isMidroll: streamInfo.IsMidroll,
+            hasAds: isShowingAd,
+            isStrippingAdSegments: streamInfo.IsStrippingAdSegments,
+            numStrippedAdSegments: streamInfo.NumStrippedAdSegments
+        });
     }
     async function onFoundAd(streamInfo, textStr, reloadPlayer, realFetch, url, resolutionInfo) {
         let result = textStr;
@@ -342,10 +316,10 @@ twitch-videoad.js text/javascript
         if (reloadPlayer) {
             postMessage({key:'UboReloadPlayer'});
         }
-        postMessage({key:'UboShowAdBanner',isMidroll:streamInfo.IsMidroll});
+        updateAdblockBannerForStream(streamInfo);
         return result;
     }
-    function stripAdSegments(textStr, stripAllSegments) {
+    function stripAdSegments(textStr, stripAllSegments, streamInfo) {
         let hasStrippedAdSegments = false;
         const lines = textStr.replaceAll('\r', '').split('\n');
         const newAdUrl = 'https://twitch.tv';
@@ -357,6 +331,9 @@ twitch-videoad.js text/javascript
                 .replaceAll(/(X-TV-TWITCH-AD-CLICK-TRACKING-URL=")(?:[^"]*)(")/g, `$1${newAdUrl}$2`);
             if (i < lines.length - 1 && line.startsWith('#EXTINF') && (!line.includes(',live') || stripAllSegments || AllSegmentsAreAdSegments)) {
                 const segmentUrl = lines[i + 1];
+                if (!AdSegmentCache.has(segmentUrl)) {
+                    streamInfo.NumStrippedAdSegments++;
+                }
                 AdSegmentCache.set(segmentUrl, Date.now());
                 hasStrippedAdSegments = true;
             }
@@ -371,15 +348,14 @@ twitch-videoad.js text/javascript
                     lines[i] = '';
                 }
             }
+        } else {
+            streamInfo.NumStrippedAdSegments = 0;
         }
+        streamInfo.IsStrippingAdSegments = hasStrippedAdSegments;
         AdSegmentCache.forEach((key, value, map) => {
             if (value < Date.now() - 120000) {
                 map.delete(key);
             }
-        });
-        postMessage({
-            key: 'UpdateAdBlockBannerStripping',
-            isStrippingAdSegments: hasStrippedAdSegments
         });
         return lines.join('\n');
     }
@@ -405,7 +381,6 @@ twitch-videoad.js text/javascript
                         streamInfo.BackupEncodings = null;
                         streamInfo.BackupEncodingsStatus.clear();
                         streamInfo.BackupEncodingsPlayerTypeIndex = -1;
-                        postMessage({key:'UboHideAdBanner'});
                         postMessage({key:'UboReloadPlayer'});
                     } else if (!streamM3u8.includes('"MIDROLL"') && !streamM3u8.includes('"midroll"')) {
                         const lines = streamM3u8.replaceAll('\r', '').split('\n');
@@ -429,12 +404,11 @@ twitch-videoad.js text/javascript
             }
         } else if (haveAdTags && !streamInfo.IsMovingOffBackupEncodings) {
             textStr = await onFoundAd(streamInfo, textStr, true, realFetch, url, currentResolution);
-        } else {
-            postMessage({key:'UboHideAdBanner'});
         }
         if (IsAdStrippingEnabled) {
-            textStr = stripAdSegments(textStr);
+            textStr = stripAdSegments(textStr, false, streamInfo);
         }
+        updateAdblockBannerForStream(streamInfo);
         return textStr;
     }
     function hookWorkerFetch() {
@@ -507,6 +481,8 @@ twitch-videoad.js text/javascript
                                 BackupEncodingsPlayerTypeIndex: -1,
                                 IsMovingOffBackupEncodings: false,
                                 IsMidroll: false,
+                                IsStrippingAdSegments: false,
+                                NumStrippedAdSegments: 0,
                                 UseFallbackStream: false,
                                 ChannelName: channelName,
                                 UsherParams: (new URL(url)).search,
@@ -710,18 +686,19 @@ twitch-videoad.js text/javascript
                     if (typeof init.headers['Authorization'] === 'string' && init.headers['Authorization'] !== AuthorizationHeader) {
                         postTwitchWorkerMessage('UpdateAuthorizationHeader', AuthorizationHeader = init.headers['Authorization']);
                     }
-                    if (OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && !init.body.includes('picture-by-picture') && !init.body.includes('frontpage')) {
+                    if (OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
+                        const targetPlayerType = 'embed';
                         let replacedPlayerType = '';
                         const newBody = JSON.parse(init.body);
                         if (Array.isArray(newBody)) {
                             for (let i = 0; i < newBody.length; i++) {
-                                if (newBody[i]?.variables?.playerType && newBody[i]?.variables?.playerType !== OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE) {
+                                if (newBody[i]?.variables?.playerType && newBody[i]?.variables?.playerType === targetPlayerType) {
                                     replacedPlayerType = newBody[i].variables.playerType;
                                     newBody[i].variables.playerType = OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE;
                                 }
                             }
                         } else {
-                            if (newBody?.variables?.playerType && newBody?.variables?.playerType !== OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE) {
+                            if (newBody?.variables?.playerType && newBody?.variables?.playerType === targetPlayerType) {
                                 replacedPlayerType = newBody.variables.playerType;
                                 newBody.variables.playerType = OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE;
                             }
@@ -752,10 +729,42 @@ twitch-videoad.js text/javascript
             return realFetch.apply(this, arguments);
         };
     }
-    function reloadTwitchPlayer(isPausePlay) {
-        // Taken from ttv-tools / ffz
-        // https://github.com/Nerixyz/ttv-tools/blob/master/src/context/twitch-player.ts
-        // https://github.com/FrankerFaceZ/FrankerFaceZ/blob/master/src/sites/twitch-twilight/modules/player.jsx
+    function updateAdblockBanner(data) {
+        const playerRootDiv = document.querySelector('.video-player');
+        if (playerRootDiv != null) {
+            let adBlockDiv = null;
+            adBlockDiv = playerRootDiv.querySelector('.adblock-overlay');
+            if (adBlockDiv == null) {
+                adBlockDiv = document.createElement('div');
+                adBlockDiv.className = 'adblock-overlay';
+                adBlockDiv.innerHTML = '<div class="player-adblock-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 5px;"><p></p></div>';
+                adBlockDiv.style.display = 'none';
+                adBlockDiv.P = adBlockDiv.querySelector('p');
+                playerRootDiv.appendChild(adBlockDiv);
+            }
+            if (adBlockDiv != null) {
+                if (!twitchPlayerAndState?.player?.core || !twitchPlayerAndState?.state) {
+                    twitchPlayerAndState = getPlayerAndState();
+                }
+                const isLive = twitchPlayerAndState?.state?.props?.content?.type === 'live';
+                adBlockDiv.P.textContent = 'Blocking' + (data.isMidroll ? ' midroll' : '') + ' ads' + (data.isStrippingAdSegments ? ' (stripping)' : '');// + (data.numStrippedAdSegments > 0 ? ` (${data.numStrippedAdSegments})` : '');
+                adBlockDiv.style.display = data.hasAds && isLive ? 'block' : 'none';
+            }
+        }
+    }
+    function monitorLiveStatus() {
+        if (!twitchPlayerAndState?.player?.core || !twitchPlayerAndState?.state) {
+            twitchPlayerAndState = getPlayerAndState();
+        }
+        const isLive = twitchPlayerAndState?.state?.props?.content?.type === 'live';
+        if (!isLive) {
+            updateAdblockBanner({
+                hasAds: false
+            });
+        }
+        setTimeout(monitorLiveStatus, 1000);
+    }
+    function getPlayerAndState() {
         function findReactNode(root, constraint) {
             if (root.stateNode && constraint(root.stateNode)) {
                 return root.stateNode;
@@ -776,7 +785,7 @@ twitch-videoad.js text/javascript
             if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
                 reactRootNode = rootNode._reactRootContainer._internalRoot.current;
             }
-            if (reactRootNode == null) {
+            if (reactRootNode == null && rootNode != null) {
                 const containerName = Object.keys(rootNode).find(x => x.startsWith('__reactContainer'));
                 if (containerName != null) {
                     reactRootNode = rootNode[containerName];
@@ -786,12 +795,24 @@ twitch-videoad.js text/javascript
         }
         const reactRootNode = findReactRootNode();
         if (!reactRootNode) {
-            console.log('Could not find react root');
-            return;
+            return null;
         }
         let player = findReactNode(reactRootNode, node => node.setPlayerActive && node.props && node.props.mediaPlayerInstance);
         player = player && player.props && player.props.mediaPlayerInstance ? player.props.mediaPlayerInstance : null;
         const playerState = findReactNode(reactRootNode, node => node.setSrc && node.setInitialPlaybackSettings);
+        return  {
+            player: player,
+            state: playerState
+        };
+    }
+    function reloadTwitchPlayer(isPausePlay) {
+        const playerAndState = getPlayerAndState();
+        if (!playerAndState) {
+            console.log('Could not find react root');
+            return;
+        }
+        const player = playerAndState.player;
+        const playerState = playerAndState.state;
         if (!player) {
             console.log('Could not find player');
             return;
@@ -942,6 +963,7 @@ twitch-videoad.js text/javascript
     declareOptions(window);
     hookWindowWorker();
     hookFetch();
+    monitorLiveStatus();
     if (document.readyState === "complete" || document.readyState === "loaded" || document.readyState === "interactive") {
         onContentLoaded();
     } else {

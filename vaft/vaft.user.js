@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      30.0.0
+// @version      31.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function() {
     'use strict';
-    const ourTwitchAdSolutionsVersion = 17;// Used to prevent conflicts with outdated versions of the scripts
+    const ourTwitchAdSolutionsVersion = 18;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof window.twitchAdSolutionsVersion !== 'undefined' && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -30,7 +30,7 @@
             'picture-by-picture-CACHED'//360p (-CACHED is an internal suffix and is removed)
         ];
         scope.FallbackPlayerType = 'embed';
-        scope.ForceAccessTokenPlayerType = 'site';
+        scope.ForceAccessTokenPlayerType = 'site';// Replaces 'embed' player type with 'site' (to reduce prerolls when on embeded websites)
         scope.SkipPlayerReloadOnHevc = false;// If true this will skip player reload on streams which have 2k/4k quality (if you enable this and you use the 2k/4k quality setting you'll get error #4000 / #3000 / spinning wheel on chrome based browsers)
         scope.AlwaysReloadPlayerOnAd = false;// Always pause/play when entering/leaving ads
         scope.ReloadPlayerAfterAd = true;// After the ad finishes do a player reload instead of pause/play
@@ -60,7 +60,6 @@
     let isActivelyStrippingAds = false;
     let localStorageHookFailed = false;
     const twitchWorkers = [];
-    let adBlockDiv = null;
     const workerStringConflicts = [
         'twitch',
         'isVariantA'// TwitchNoSub
@@ -197,20 +196,11 @@
                 twitchWorkers.push(this);
                 this.addEventListener('message', (e) => {
                     if (e.data.key == 'UpdateAdBlockBanner') {
-                        if (adBlockDiv == null) {
-                            adBlockDiv = getAdBlockDiv();
-                        }
-                        if (adBlockDiv != null) {
-                            isActivelyStrippingAds = e.data.isStrippingAdSegments;
-                            adBlockDiv.P.textContent = 'Blocking' + (e.data.isMidroll ? ' midroll' : '') + ' ads' + (e.data.isStrippingAdSegments ? ' (stripping)' : '');
-                            adBlockDiv.style.display = e.data.hasAds ? 'block' : 'none';
-                        }
+                        updateAdblockBanner(e.data);
                     } else if (e.data.key == 'PauseResumePlayer') {
-                        doTwitchPlayerTask(true, false, false);
+                        doTwitchPlayerTask(true, false);
                     } else if (e.data.key == 'ReloadPlayer') {
-                        doTwitchPlayerTask(false, true, false);
-                    } else if (e.data.key == 'MonitorPlayerForBuffering') {
-                        doTwitchPlayerTask(false, false, true);
+                        doTwitchPlayerTask(false, true);
                     }
                 });
                 this.addEventListener('message', async event => {
@@ -223,23 +213,6 @@
                         });
                     }
                 });
-                function getAdBlockDiv() {
-                    //To display a notification to the user, that an ad is being blocked.
-                    const playerRootDiv = document.querySelector('.video-player');
-                    let adBlockDiv = null;
-                    if (playerRootDiv != null) {
-                        adBlockDiv = playerRootDiv.querySelector('.adblock-overlay');
-                        if (adBlockDiv == null) {
-                            adBlockDiv = document.createElement('div');
-                            adBlockDiv.className = 'adblock-overlay';
-                            adBlockDiv.innerHTML = '<div class="player-adblock-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 5px;"><p></p></div>';
-                            adBlockDiv.style.display = 'none';
-                            adBlockDiv.P = adBlockDiv.querySelector('p');
-                            playerRootDiv.appendChild(adBlockDiv);
-                        }
-                    }
-                    return adBlockDiv;
-                }
             }
         };
         let workerInstance = reinsertWorkers(newWorker, reinsert);
@@ -314,13 +287,11 @@
                                 const encodingsM3u8 = await response.text();
                                 const serverTime = getServerTimeFromM3u8(encodingsM3u8);
                                 let streamInfo = StreamInfos[channelName];
-                                let isNewStream = false;
                                 if (streamInfo != null && streamInfo.EncodingsM3U8 != null && (await realFetch(streamInfo.EncodingsM3U8.match(/^https:.*\.m3u8$/m)[0])).status !== 200) {
                                     // The cached encodings are dead (the stream probably restarted)
                                     streamInfo = null;
                                 }
                                 if (streamInfo == null || streamInfo.EncodingsM3U8 == null) {
-                                    isNewStream = true;
                                     StreamInfos[channelName] = streamInfo = {
                                         ChannelName: channelName,
                                         IsShowingAd: false,
@@ -335,7 +306,8 @@
                                         BackupEncodingsM3U8Cache: [],
                                         ActiveBackupPlayerType: null,
                                         IsMidroll: false,
-                                        IsStrippingAdSegments: false
+                                        IsStrippingAdSegments: false,
+                                        NumStrippedAdSegments: 0
                                     };
                                     const lines = encodingsM3u8.replaceAll('\r', '').split('\n');
                                     for (let i = 0; i < lines.length - 1; i++) {
@@ -383,12 +355,7 @@
                                         }
                                     }
                                 }
-                                postMessage({
-                                    key: 'MonitorPlayerForBuffering'
-                                });
-                                if (streamInfo.IsUsingModifiedM3U8 || isNewStream) {
-                                    streamInfo.LastPlayerReload = Date.now();
-                                }
+                                streamInfo.LastPlayerReload = Date.now();
                                 resolve(new Response(replaceServerTimeInM3u8(streamInfo.IsUsingModifiedM3U8 ? streamInfo.ModifiedM3U8 : streamInfo.EncodingsM3U8, serverTime)));
                             } else {
                                 resolve(response);
@@ -434,6 +401,9 @@
                 .replaceAll(/(X-TV-TWITCH-AD-CLICK-TRACKING-URL=")(?:[^"]*)(")/g, `$1${newAdUrl}$2`);
             if (i < lines.length - 1 && line.startsWith('#EXTINF') && (!line.includes(',live') || stripAllSegments || AllSegmentsAreAdSegments)) {
                 const segmentUrl = lines[i + 1];
+                if (!AdSegmentCache.has(segmentUrl)) {
+                    streamInfo.NumStrippedAdSegments++;
+                }
                 AdSegmentCache.set(segmentUrl, Date.now());
                 hasStrippedAdSegments = true;
             }
@@ -448,6 +418,8 @@
                     lines[i] = '';
                 }
             }
+        } else {
+            streamInfo.NumStrippedAdSegments = 0;
         }
         streamInfo.IsStrippingAdSegments = hasStrippedAdSegments;
         AdSegmentCache.forEach((key, value, map) => {
@@ -500,6 +472,15 @@
         const haveAdTags = textStr.includes(AdSignifier) || SimulatedAdsDepth > 0;
         if (haveAdTags) {
             streamInfo.IsMidroll = textStr.includes('"MIDROLL"') || textStr.includes('"midroll"');
+            if (!streamInfo.IsShowingAd) {
+                streamInfo.IsShowingAd = true;
+                postMessage({
+                    key: 'UpdateAdBlockBanner',
+                    isMidroll: streamInfo.IsMidroll,
+                    hasAds: streamInfo.IsShowingAd,
+                    isStrippingAdSegments: false
+                });
+            }
             if (!streamInfo.IsMidroll) {
                 const lines = textStr.replaceAll('\r', '').split('\n');
                 for (let i = 0; i < lines.length; i++) {
@@ -519,9 +500,6 @@
             if (!currentResolution) {
                 console.log('Ads will leak due to missing resolution info for ' + url);
                 return textStr;
-            }
-            if (!streamInfo.IsShowingAd) {
-                streamInfo.IsShowingAd = true;
             }
             const isHevc = currentResolution.Codecs.startsWith('hev') || currentResolution.Codecs.startsWith('hvc');
             if (((isHevc && !SkipPlayerReloadOnHevc) || AlwaysReloadPlayerOnAd) && streamInfo.ModifiedM3U8 && !streamInfo.IsUsingModifiedM3U8) {
@@ -580,7 +558,12 @@
                                         backupM3u8 = m3u8Text;
                                         break;
                                     }
-                                    if (isDoingMinimalRequests || isFullyCachedPlayerType) {
+                                    if (isFullyCachedPlayerType) {
+                                        break;
+                                    }
+                                    if (isDoingMinimalRequests) {
+                                        backupPlayerType = playerType;
+                                        backupM3u8 = m3u8Text;
                                         break;
                                     }
                                 }
@@ -613,6 +596,7 @@
             console.log('Finished blocking ads');
             streamInfo.IsShowingAd = false;
             streamInfo.IsStrippingAdSegments = false;
+            streamInfo.NumStrippedAdSegments = 0;
             streamInfo.ActiveBackupPlayerType = null;
             if (streamInfo.IsUsingModifiedM3U8 || ReloadPlayerAfterAd) {
                 streamInfo.IsUsingModifiedM3U8 = false;
@@ -630,7 +614,8 @@
             key: 'UpdateAdBlockBanner',
             isMidroll: streamInfo.IsMidroll,
             hasAds: streamInfo.IsShowingAd,
-            isStrippingAdSegments: streamInfo.IsStrippingAdSegments
+            isStrippingAdSegments: streamInfo.IsStrippingAdSegments,
+            numStrippedAdSegments: streamInfo.NumStrippedAdSegments
         });
         return textStr;
     }
@@ -709,19 +694,24 @@
         bufferedPosition: 0,
         bufferDuration: 0,
         numSame: 0,
-        lastFixTime: 0
+        lastFixTime: 0,
+        isLive: true
     };
     function monitorPlayerBuffering() {
         if (playerForMonitoringBuffering) {
             try {
-                const player = playerForMonitoringBuffering;
-                if (!player.isPaused() && !player.getHTMLVideoElement()?.ended && playerBufferState.lastFixTime <= Date.now() - PlayerBufferingMinRepeatDelay && !isActivelyStrippingAds) {
+                const player = playerForMonitoringBuffering.player;
+                const state = playerForMonitoringBuffering.state;
+                if (!player.core) {
+                    playerForMonitoringBuffering = null;
+                } else if (state.props?.content?.type === 'live' && !player.isPaused() && !player.getHTMLVideoElement()?.ended && playerBufferState.lastFixTime <= Date.now() - PlayerBufferingMinRepeatDelay && !isActivelyStrippingAds) {
                     const position = player.core?.state?.position;
                     const bufferedPosition = player.core?.state?.bufferedPosition;
                     const bufferDuration = player.getBufferDuration();
                     //console.log('position:' + position + ' bufferDuration:' + bufferDuration + ' bufferPosition:' + bufferedPosition);
                     // NOTE: This could be improved. It currently lets the player fully eat the full buffer before it triggers pause/play
-                    if ((playerBufferState.position == position || bufferDuration < PlayerBufferingDangerZone)  &&
+                    if (position > 0 &&
+                        (playerBufferState.position == position || bufferDuration < PlayerBufferingDangerZone)  &&
                         playerBufferState.bufferedPosition == bufferedPosition &&
                         playerBufferState.bufferDuration >= bufferDuration &&
                         (position != 0 || bufferedPosition != 0 || bufferDuration != 0)
@@ -730,6 +720,9 @@
                         if (playerBufferState.numSame == PlayerBufferingSameStateCount) {
                             console.log('Attempt to fix buffering position:' + playerBufferState.position + ' bufferedPosition:' + playerBufferState.bufferedPosition + ' bufferDuration:' + playerBufferState.bufferDuration);
                             doTwitchPlayerTask(!PlayerBufferingDoPlayerReload, PlayerBufferingDoPlayerReload, false);
+                            const isPausePlay = !PlayerBufferingDoPlayerReload;
+                            const isReload = PlayerBufferingDoPlayerReload;
+                            doTwitchPlayerTask(isPausePlay, isReload);
                             playerBufferState.lastFixTime = Date.now();
                         }
                     } else {
@@ -744,9 +737,45 @@
                 playerForMonitoringBuffering = null;
             }
         }
+        if (!playerForMonitoringBuffering) {
+            const playerAndState = getPlayerAndState();
+            if (playerAndState && playerAndState.player && playerAndState.state) {
+                playerForMonitoringBuffering = {
+                    player: playerAndState.player,
+                    state: playerAndState.state
+                };
+            }
+        }
+        const isLive = playerForMonitoringBuffering?.state?.props?.content?.type === 'live';
+        if (playerBufferState.isLive && !isLive) {
+            updateAdblockBanner({
+                hasAds: false
+            });
+        }
+        playerBufferState.isLive = isLive;
         setTimeout(monitorPlayerBuffering, PlayerBufferingDelay);
     }
-    function doTwitchPlayerTask(isPausePlay, isReload, monitorPlayerForBuffering) {
+    function updateAdblockBanner(data) {
+        const playerRootDiv = document.querySelector('.video-player');
+        if (playerRootDiv != null) {
+            let adBlockDiv = null;
+            adBlockDiv = playerRootDiv.querySelector('.adblock-overlay');
+            if (adBlockDiv == null) {
+                adBlockDiv = document.createElement('div');
+                adBlockDiv.className = 'adblock-overlay';
+                adBlockDiv.innerHTML = '<div class="player-adblock-notice" style="color: white; background-color: rgba(0, 0, 0, 0.8); position: absolute; top: 0px; left: 0px; padding: 5px;"><p></p></div>';
+                adBlockDiv.style.display = 'none';
+                adBlockDiv.P = adBlockDiv.querySelector('p');
+                playerRootDiv.appendChild(adBlockDiv);
+            }
+            if (adBlockDiv != null) {
+                isActivelyStrippingAds = data.isStrippingAdSegments;
+                adBlockDiv.P.textContent = 'Blocking' + (data.isMidroll ? ' midroll' : '') + ' ads' + (data.isStrippingAdSegments ? ' (stripping)' : '');// + (data.numStrippedAdSegments > 0 ? ` (${data.numStrippedAdSegments})` : '');
+                adBlockDiv.style.display = data.hasAds && playerBufferState.isLive ? 'block' : 'none';
+            }
+        }
+    }
+    function getPlayerAndState() {
         function findReactNode(root, constraint) {
             if (root.stateNode && constraint(root.stateNode)) {
                 return root.stateNode;
@@ -767,7 +796,7 @@
             if (rootNode && rootNode._reactRootContainer && rootNode._reactRootContainer._internalRoot && rootNode._reactRootContainer._internalRoot.current) {
                 reactRootNode = rootNode._reactRootContainer._internalRoot.current;
             }
-            if (reactRootNode == null) {
+            if (reactRootNode == null && rootNode != null) {
                 const containerName = Object.keys(rootNode).find(x => x.startsWith('__reactContainer'));
                 if (containerName != null) {
                     reactRootNode = rootNode[containerName];
@@ -777,12 +806,24 @@
         }
         const reactRootNode = findReactRootNode();
         if (!reactRootNode) {
-            console.log('Could not find react root');
-            return;
+            return null;
         }
         let player = findReactNode(reactRootNode, node => node.setPlayerActive && node.props && node.props.mediaPlayerInstance);
         player = player && player.props && player.props.mediaPlayerInstance ? player.props.mediaPlayerInstance : null;
         const playerState = findReactNode(reactRootNode, node => node.setSrc && node.setInitialPlaybackSettings);
+        return  {
+            player: player,
+            state: playerState
+        };
+    }
+    function doTwitchPlayerTask(isPausePlay, isReload) {
+        const playerAndState = getPlayerAndState();
+        if (!playerAndState) {
+            console.log('Could not find react root');
+            return;
+        }
+        const player = playerAndState.player;
+        const playerState = playerAndState.state;
         if (!player) {
             console.log('Could not find player');
             return;
@@ -791,14 +832,7 @@
             console.log('Could not find player state');
             return;
         }
-        if (!playerForMonitoringBuffering) {
-            playerForMonitoringBuffering = player;
-        }
         if (player.isPaused() || player.core?.paused) {
-            return;
-        }
-        if (monitorPlayerForBuffering) {
-            playerBufferState.lastFixTime = 0;
             return;
         }
         if (isPausePlay) {
@@ -900,18 +934,19 @@
                     if (typeof init.headers['Authorization'] === 'string' && init.headers['Authorization'] !== AuthorizationHeader) {
                         postTwitchWorkerMessage('UpdateAuthorizationHeader', AuthorizationHeader = init.headers['Authorization']);
                     }
-                    if (ForceAccessTokenPlayerType && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && !init.body.includes('picture-by-picture') && !init.body.includes('frontpage')) {
+                    if (ForceAccessTokenPlayerType && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken')) {
+                        const targetPlayerType = 'embed';
                         let replacedPlayerType = '';
                         const newBody = JSON.parse(init.body);
                         if (Array.isArray(newBody)) {
                             for (let i = 0; i < newBody.length; i++) {
-                                if (newBody[i]?.variables?.playerType && newBody[i]?.variables?.playerType !== ForceAccessTokenPlayerType) {
+                                if (newBody[i]?.variables?.playerType && newBody[i]?.variables?.playerType === targetPlayerType) {
                                     replacedPlayerType = newBody[i].variables.playerType;
                                     newBody[i].variables.playerType = ForceAccessTokenPlayerType;
                                 }
                             }
                         } else {
-                            if (newBody?.variables?.playerType && newBody?.variables?.playerType !== ForceAccessTokenPlayerType) {
+                            if (newBody?.variables?.playerType && newBody?.variables?.playerType === targetPlayerType) {
                                 replacedPlayerType = newBody.variables.playerType;
                                 newBody.variables.playerType = ForceAccessTokenPlayerType;
                             }
