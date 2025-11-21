@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         TwitchAdSolutions (vaft)
 // @namespace    https://github.com/pixeltris/TwitchAdSolutions
-// @version      31.0.0
+// @version      32.0.0
 // @description  Multiple solutions for blocking Twitch ads (vaft)
 // @updateURL    https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
 // @downloadURL  https://github.com/pixeltris/TwitchAdSolutions/raw/master/vaft/vaft.user.js
@@ -13,7 +13,7 @@
 // ==/UserScript==
 (function() {
     'use strict';
-    const ourTwitchAdSolutionsVersion = 18;// Used to prevent conflicts with outdated versions of the scripts
+    const ourTwitchAdSolutionsVersion = 19;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof window.twitchAdSolutionsVersion !== 'undefined' && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping vaft as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -37,7 +37,6 @@
         scope.PlayerReloadMinimalRequestsTime = 1500;
         scope.PlayerReloadMinimalRequestsPlayerIndex = 0;//embed
         scope.HasTriggeredPlayerReload = false;
-        scope.DisableMatureConentPopup = false;// If true this avoids having to log in to watch age gated content
         scope.StreamInfos = [];
         scope.StreamInfosByUrl = [];
         scope.GQLDeviceID = null;
@@ -956,21 +955,13 @@
                             init.body = JSON.stringify(newBody);
                         }
                     }
-                    if (DisableMatureConentPopup) {
-                        const newBody2 = JSON.parse(init.body);
-                        if (Array.isArray(newBody2)) {
-                            let hasRemovedClassification = false;
-                            for (let i = 0; i < newBody2.length; i++) {
-                                if (newBody2[i]?.operationName == 'ContentClassificationContext') {
-                                    hasRemovedClassification = true;
-                                    // Doesn't seem like it if we remove this element from the array so instead we duplicate another entry into this index. TODO: Find out why
-                                    newBody2[i] = newBody2[i == 0 && newBody2.length > 1 ? 1 : 0];
-                                }
-                            }
-                            if (hasRemovedClassification) {
-                                init.body = JSON.stringify(newBody2);
-                            }
-                        }
+                    // Get rid of mini player above chat
+                    if (init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && init.body.includes('picture-by-picture')) {
+                        init.body = '';
+                    }
+                    var isPBYPRequest = url.includes('picture-by-picture');
+                    if (isPBYPRequest) {
+                        url = '';
                     }
                 }
             }

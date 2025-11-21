@@ -1,7 +1,7 @@
 twitch-videoad.js text/javascript
 (function() {
     if ( /(^|\.)twitch\.tv$/.test(document.location.hostname) === false ) { return; }
-    const ourTwitchAdSolutionsVersion = 18;// Used to prevent conflicts with outdated versions of the scripts
+    const ourTwitchAdSolutionsVersion = 19;// Used to prevent conflicts with outdated versions of the scripts
     if (typeof window.twitchAdSolutionsVersion !== 'undefined' && window.twitchAdSolutionsVersion >= ourTwitchAdSolutionsVersion) {
         console.log("skipping video-swap-new as there's another script active. ourVersion:" + ourTwitchAdSolutionsVersion + " activeVersion:" + window.twitchAdSolutionsVersion);
         window.twitchAdSolutionsVersion = ourTwitchAdSolutionsVersion;
@@ -12,7 +12,6 @@ twitch-videoad.js text/javascript
         // Options / globals
         scope.OPT_BACKUP_PLAYER_TYPES = [ 'autoplay', 'picture-by-picture', 'autoplay-ALT', 'embed' ];
         scope.OPT_FORCE_ACCESS_TOKEN_PLAYER_TYPE = 'site';
-        scope.OPT_DISABLE_MATURE_CONTENT_POPUP = false;// If true this avoids having to log in to watch age gated content
         scope.AD_SIGNIFIER = 'stitched-ad';
         scope.LIVE_SIGNIFIER = ',live';
         scope.CLIENT_ID = 'kimne78kx3ncx6brgo4mv6wki5h1ko';
@@ -708,21 +707,13 @@ twitch-videoad.js text/javascript
                             init.body = JSON.stringify(newBody);
                         }
                     }
-                    if (OPT_DISABLE_MATURE_CONTENT_POPUP) {
-                        const newBody2 = JSON.parse(init.body);
-                        if (Array.isArray(newBody2)) {
-                            let hasRemovedClassification = false;
-                            for (let i = 0; i < newBody2.length; i++) {
-                                if (newBody2[i]?.operationName == 'ContentClassificationContext') {
-                                    hasRemovedClassification = true;
-                                    // Doesn't seem like it if we remove this element from the array so instead we duplicate another entry into this index. TODO: Find out why
-                                    newBody2[i] = newBody2[i == 0 && newBody2.length > 1 ? 1 : 0];
-                                }
-                            }
-                            if (hasRemovedClassification) {
-                                init.body = JSON.stringify(newBody2);
-                            }
-                        }
+                    // Get rid of mini player above chat
+                    if (init && typeof init.body === 'string' && init.body.includes('PlaybackAccessToken') && init.body.includes('picture-by-picture')) {
+                        init.body = '';
+                    }
+                    var isPBYPRequest = url.includes('picture-by-picture');
+                    if (isPBYPRequest) {
+                        url = '';
                     }
                 }
             }
