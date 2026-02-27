@@ -17,6 +17,7 @@ Alternatively:
 - `Purple AdBlock` - [chrome](https://chrome.google.com/webstore/detail/purple-adblock/lkgcfobnmghhbhgekffaadadhmeoindg) / [firefox](https://addons.mozilla.org/en-US/firefox/addon/purpleadblock/) / [userscript](https://raw.githubusercontent.com/arthurbolsoni/Purple-adblock/refs/heads/main/platform/tampermonkey/dist/purpleadblocker.user.js) / [code](https://github.com/arthurbolsoni/Purple-adblock/)
 - `AdGuard Extra` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox) / [userscript](https://userscripts.adtidy.org/release/adguard-extra/1.0/adguard-extra.user.js)
 - `vaft` - see below
+- `TTV Ad Mute` - [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-tv-ad-mute/) / [code](https://github.com/drj101687/ttv-ad-mute)
 
 [Read this for a full list and descriptions.](full-list.md)
 
