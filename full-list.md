@@ -18,6 +18,10 @@
   - Replaces ad segments with ad-free segments. Can use a proxy fallback. Removes ad segments if both methods fail (no playback until ad-free stream is found).
 - `AdGuard Extra` - [chrome](https://chrome.google.com/webstore/detail/adguard-extra-beta/mglpocjcjbekdckiahfhagndealpkpbj) / [firefox](https://github.com/AdguardTeam/AdGuardExtra/#firefox) / [userscript](https://userscripts.adtidy.org/release/adguard-extra/1.0/adguard-extra.user.js)
   - Forked from `vaft` (should behave similarly to `vaft`). Attempts to get a high resolution clean stream as fast as it can.
+- `TTV Ad Mute` - [firefox](https://addons.mozilla.org/en-US/firefox/addon/twitch-tv-ad-mute/) / [code](https://github.com/drj101687/ttv-ad-mute)
+  - Automatically mutes/unmutes appropriate Twitch tabs when the tab starts playing ads.
+  - Covers the ad player with a black box when ads are playing.
+  - Muting the browser Tab avoids negatively impacting metrics for the Streamer and prevents twitch-drops from being disabled.
   
 ---
 
